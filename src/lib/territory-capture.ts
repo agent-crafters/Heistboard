@@ -49,6 +49,7 @@ export async function captureTerritoryShot(
 
   // Dynamically import maplibre-gl to avoid SSR issues
   const maplibregl = await import("maplibre-gl");
+  maplibregl.config.WORKER_URL = "/maplibre/maplibre-gl-worker.mjs";
 
   // Create offscreen container matching exact dimensions
   const container = document.createElement("div");

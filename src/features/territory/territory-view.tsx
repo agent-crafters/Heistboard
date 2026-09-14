@@ -72,6 +72,8 @@ export function TerritoryView({
         return;
       }
 
+      maplibregl.config.WORKER_URL = "/maplibre/maplibre-gl-worker.mjs";
+
       try {
         map = new maplibregl.Map({
           container: mapContainerRef.current,
@@ -97,6 +99,10 @@ export function TerritoryView({
           setContextLost(true);
         });
 
+        map.on("error", (e) => {
+          console.warn("MapLibre map notice:", e);
+        });
+
         map.on("load", () => {
           if (!active) return;
           setMapLoaded(true);
@@ -107,6 +113,9 @@ export function TerritoryView({
             if (style && map && !map.getLayer("heistboard-3d-buildings")) {
               const hasOpenMapTiles = Boolean(map.getSource("openmaptiles"));
               if (hasOpenMapTiles) {
+                if (map.getLayer("building-3d")) {
+                  map.setLayoutProperty("building-3d", "visibility", "none");
+                }
                 map.addLayer({
                   id: "heistboard-3d-buildings",
                   source: "openmaptiles",
@@ -117,7 +126,7 @@ export function TerritoryView({
                     "fill-extrusion-color": [
                       "interpolate",
                       ["linear"],
-                      ["get", "render_height"],
+                      ["coalesce", ["get", "render_height"], 0],
                       0,
                       "#252d3a",
                       40,
