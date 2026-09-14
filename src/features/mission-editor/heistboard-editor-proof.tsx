@@ -176,7 +176,7 @@ export function HeistboardEditorProof() {
     <main className="shell">
       <header className="masthead">
         <div>
-          <p className="eyebrow">Case file / HB-003 Territory & Mission Proof</p>
+          <p className="eyebrow">Case file / HB-004 Territory Search &amp; Composition</p>
           <h1>Plan the heist. Mark the streets.</h1>
           <p className="lede">
             From zero-cost 3D place search and locked camera rasterization, to browser-based

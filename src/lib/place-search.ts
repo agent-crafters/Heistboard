@@ -1,4 +1,7 @@
-import type { PlaceCandidate } from "@/domain/territory";
+import {
+  classifyPlaceCategory,
+  type PlaceCandidate,
+} from "@/domain/territory";
 
 export interface PlaceSearchOptions {
   endpoint?: string;
@@ -12,7 +15,10 @@ interface RawNominatimItem {
   display_name: string;
   lat: string;
   lon: string;
+  type?: string;
+  class?: string;
   boundingbox?: [string, string, string, string];
+  address?: Record<string, string>;
 }
 
 const DEFAULT_NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
@@ -32,6 +38,11 @@ export class PlaceSearchService {
       (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_NOMINATIM_URL) ||
       DEFAULT_NOMINATIM_URL;
     this.fetchFn = options.fetchFn || fetch;
+  }
+
+  getCooldownRemainingMs(): number {
+    const elapsed = Date.now() - lastRequestTimestamp;
+    return Math.max(0, MIN_REQUEST_INTERVAL_MS - elapsed);
   }
 
   async search(query: string, limit = 5): Promise<PlaceCandidate[]> {
@@ -65,7 +76,9 @@ export class PlaceSearchService {
 
     if (!response.ok) {
       if (response.status === 429) {
-        throw new Error("Search service rate limit reached. Please wait a moment before searching again.");
+        throw new Error(
+          "Search service rate limit reached. Please wait a moment before searching again.",
+        );
       }
       throw new Error(`Search service responded with status ${response.status}.`);
     }
@@ -78,20 +91,35 @@ export class PlaceSearchService {
     const results: PlaceCandidate[] = rawData.map((item) => {
       const lat = parseFloat(item.lat);
       const lon = parseFloat(item.lon);
+      const primaryName =
+        item.name || item.display_name.split(",")[0].trim();
+
+      // Extract meaningful subtitle by removing the primary name prefix
+      const parts = item.display_name.split(",").map((p) => p.trim());
+      const subtitleParts =
+        parts[0].toLowerCase() === primaryName.toLowerCase()
+          ? parts.slice(1)
+          : parts;
+      const subtitle = subtitleParts.slice(0, 3).join(", ");
+
+      const category = classifyPlaceCategory(item.type, item.class);
+
       const boundingBox: [number, number, number, number] | undefined =
         item.boundingbox && item.boundingbox.length === 4
           ? [
-              parseFloat(item.boundingbox[0]),
-              parseFloat(item.boundingbox[1]),
-              parseFloat(item.boundingbox[2]),
-              parseFloat(item.boundingbox[3]),
+              parseFloat(item.boundingbox[0]), // south
+              parseFloat(item.boundingbox[1]), // north
+              parseFloat(item.boundingbox[2]), // west
+              parseFloat(item.boundingbox[3]), // east
             ]
           : undefined;
 
       return {
         id: String(item.place_id),
-        name: item.name || item.display_name.split(",")[0].trim(),
+        name: primaryName,
         displayName: item.display_name,
+        subtitle: subtitle || item.display_name,
+        category,
         lat,
         lon,
         boundingBox,

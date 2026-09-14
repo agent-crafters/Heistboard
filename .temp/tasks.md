@@ -54,10 +54,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-15
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Let a user find a place, compose a useful neighborhood-scale Territory Shot, and lock it as the raster Map Base.
 - Dependencies: HB-003
-- GitHub issue: —
+- GitHub issue: #4
 - Acceptance criteria:
   - City, neighborhood, street, and address searches return disambiguated results.
   - Search runs only on explicit submission and respects provider identification, throttling, attribution, privacy, and endpoint-replacement requirements.

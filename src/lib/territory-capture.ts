@@ -1,11 +1,23 @@
-import type { TerritoryCameraState } from "@/domain/territory";
-import { OPENFREEMAP_LIBERTY_STYLE } from "@/domain/territory";
+import {
+  OPENFREEMAP_LIBERTY_STYLE,
+  STANDARD_MAP_BASE_HEIGHT,
+  STANDARD_MAP_BASE_WIDTH,
+  type TerritoryCameraState,
+} from "@/domain/territory";
+
+export type CapturePhase =
+  | "initializing"
+  | "loading-tiles"
+  | "rendering"
+  | "encoding"
+  | "verifying";
 
 export interface TerritoryCaptureOptions {
   styleUrl?: string;
   width?: number;
   height?: number;
   timeoutMs?: number;
+  onProgress?: (phase: CapturePhase) => void;
 }
 
 export interface TerritoryCaptureResult {
@@ -15,8 +27,8 @@ export interface TerritoryCaptureResult {
   camera: TerritoryCameraState;
 }
 
-export const DEFAULT_CAPTURE_WIDTH = 1200;
-export const DEFAULT_CAPTURE_HEIGHT = 800;
+export const DEFAULT_CAPTURE_WIDTH = STANDARD_MAP_BASE_WIDTH;
+export const DEFAULT_CAPTURE_HEIGHT = STANDARD_MAP_BASE_HEIGHT;
 export const DEFAULT_CAPTURE_TIMEOUT_MS = 15_000;
 
 export async function captureTerritoryShot(
@@ -27,10 +39,13 @@ export async function captureTerritoryShot(
   const height = options.height ?? DEFAULT_CAPTURE_HEIGHT;
   const timeoutMs = options.timeoutMs ?? DEFAULT_CAPTURE_TIMEOUT_MS;
   const styleUrl = options.styleUrl ?? OPENFREEMAP_LIBERTY_STYLE;
+  const onProgress = options.onProgress ?? (() => {});
 
   if (typeof window === "undefined" || typeof document === "undefined") {
     throw new Error("Territory capture can only be executed in a browser environment.");
   }
+
+  onProgress("initializing");
 
   // Dynamically import maplibre-gl to avoid SSR issues
   const maplibregl = await import("maplibre-gl");
@@ -67,18 +82,22 @@ export async function captureTerritoryShot(
     });
     mapInstance = map;
 
+    onProgress("loading-tiles");
     await waitForMapIdle(map, timeoutMs);
 
+    onProgress("rendering");
     const canvas = map.getCanvas();
     if (!canvas) {
       throw new Error("Failed to acquire WebGL canvas from MapLibre capture instance.");
     }
 
+    onProgress("encoding");
     const blob = await canvasToBlob(canvas);
     if (!blob || blob.size === 0) {
       throw new Error("The capture renderer produced an empty image blob.");
     }
 
+    onProgress("verifying");
     if (blob.size < 512) {
       throw new Error("The capture renderer produced a blank or invalid image.");
     }
@@ -122,7 +141,11 @@ function waitForMapIdle(
         if (map.loaded()) {
           resolve();
         } else {
-          reject(new Error(`Territory capture timed out after ${timeoutMs}ms waiting for map tiles.`));
+          reject(
+            new Error(
+              `Territory capture timed out after ${timeoutMs}ms waiting for map tiles.`,
+            ),
+          );
         }
       }
     }, timeoutMs);
