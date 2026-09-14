@@ -30,14 +30,14 @@ const searchCache = new Map<string, PlaceCandidate[]>();
 
 export class PlaceSearchService {
   private readonly endpoint: string;
-  private readonly fetchFn: typeof fetch;
+  private readonly customFetch?: typeof fetch;
 
   constructor(options: PlaceSearchOptions = {}) {
     this.endpoint =
       options.endpoint ||
       (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_NOMINATIM_URL) ||
       DEFAULT_NOMINATIM_URL;
-    this.fetchFn = options.fetchFn || fetch;
+    this.customFetch = options.fetchFn;
   }
 
   getCooldownRemainingMs(): number {
@@ -68,11 +68,17 @@ export class PlaceSearchService {
     url.searchParams.set("limit", String(limit));
     url.searchParams.set("addressdetails", "1");
 
-    const response = await this.fetchFn(url.toString(), {
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    const response = await (this.customFetch
+      ? this.customFetch(url.toString(), {
+          headers: {
+            Accept: "application/json",
+          },
+        })
+      : globalThis.fetch(url.toString(), {
+          headers: {
+            Accept: "application/json",
+          },
+        }));
 
     if (!response.ok) {
       if (response.status === 429) {
