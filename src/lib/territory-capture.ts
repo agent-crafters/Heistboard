@@ -20,6 +20,7 @@ export interface TerritoryCaptureOptions {
   height?: number;
   timeoutMs?: number;
   layerMode?: MapLayerMode;
+  show3dBuildings?: boolean;
   onProgress?: (phase: CapturePhase) => void;
 }
 
@@ -43,6 +44,8 @@ export async function captureTerritoryShot(
   const timeoutMs = options.timeoutMs ?? DEFAULT_CAPTURE_TIMEOUT_MS;
   const styleUrl = options.styleUrl ?? OPENFREEMAP_LIBERTY_STYLE;
   const onProgress = options.onProgress ?? (() => {});
+  const layerMode = options.layerMode ?? "realistic";
+  const show3dBuildings = options.show3dBuildings ?? false;
 
   if (typeof window === "undefined" || typeof document === "undefined") {
     throw new Error("Territory capture can only be executed in a browser environment.");
@@ -66,9 +69,7 @@ export async function captureTerritoryShot(
   container.style.pointerEvents = "none";
   document.body.appendChild(container);
 
-  let mapInstance: InstanceType<typeof maplibregl.Map> | null = null;
-
-  const layerMode = options.layerMode ?? "realistic";
+  let mapInstance: { remove(): void } | null = null;
 
   try {
     const map = new maplibregl.Map({
@@ -89,14 +90,14 @@ export async function captureTerritoryShot(
     mapInstance = map;
 
     map.on("load", () => {
-      applyMapLayers(map, layerMode);
+      applyMapLayers(map, layerMode, { show3dBuildings });
     });
 
     onProgress("loading-tiles");
     await waitForMapIdle(map, timeoutMs);
 
     // Ensure layers are configured even if load fired synchronously
-    applyMapLayers(map, layerMode);
+    applyMapLayers(map, layerMode, { show3dBuildings });
 
     onProgress("rendering");
     const canvas = map.getCanvas();

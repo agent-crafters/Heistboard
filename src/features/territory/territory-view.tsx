@@ -60,14 +60,17 @@ export function TerritoryView({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [layerMode, setLayerMode] = useState<MapLayerMode>("realistic");
   const layerModeRef = useRef(layerMode);
+  const [show3dBuildings, setShow3dBuildings] = useState(false);
+  const show3dBuildingsRef = useRef(show3dBuildings);
 
-  // Keep map layers in sync when layerMode changes
+  // Keep map layers in sync when layerMode or show3dBuildings changes
   useEffect(() => {
     layerModeRef.current = layerMode;
+    show3dBuildingsRef.current = show3dBuildings;
     if (mapInstanceRef.current && mapLoaded) {
-      applyMapLayers(mapInstanceRef.current, layerMode);
+      applyMapLayers(mapInstanceRef.current, layerMode, { show3dBuildings });
     }
-  }, [layerMode, mapLoaded]);
+  }, [layerMode, show3dBuildings, mapLoaded]);
 
   // Initialize MapLibre GL JS
   useEffect(() => {
@@ -119,7 +122,9 @@ export function TerritoryView({
         map.on("load", () => {
           if (!active || !map) return;
           setMapLoaded(true);
-          applyMapLayers(map, layerModeRef.current);
+          applyMapLayers(map, layerModeRef.current, {
+            show3dBuildings: show3dBuildingsRef.current,
+          });
         });
 
         const updateCamera = () => {
@@ -280,6 +285,7 @@ export function TerritoryView({
     try {
       const result = await captureTerritoryShot(camera, {
         layerMode,
+        show3dBuildings,
         onProgress: (phase) => setCapturePhase(phase),
       });
       onLockTerritory({
@@ -417,24 +423,46 @@ export function TerritoryView({
 
         {/* Camera Controls & Metrics */}
         <div className="camera-inspector">
-          {/* Layer Style Switcher */}
-          <div className="layer-mode-switcher">
-            <span className="layer-mode-label">Perspective Style:</span>
-            <div className="layer-mode-buttons" role="group" aria-label="Perspective style switcher">
-              <button
-                type="button"
-                className={`layer-mode-btn ${layerMode === "realistic" ? "active" : ""}`}
-                onClick={() => setLayerMode("realistic")}
-              >
-                🛰️ Realistic Aerial 3D
-              </button>
-              <button
-                type="button"
-                className={`layer-mode-btn ${layerMode === "tactical" ? "active" : ""}`}
-                onClick={() => setLayerMode("tactical")}
-              >
-                🗺️ Tactical Vector
-              </button>
+          {/* Layer Style & 3D Building Controls */}
+          <div className="layer-controls-group">
+            <div className="layer-mode-switcher">
+              <span className="layer-mode-label">Map Imagery:</span>
+              <div className="layer-mode-buttons" role="group" aria-label="Map imagery switcher">
+                <button
+                  type="button"
+                  className={`layer-mode-btn ${layerMode === "realistic" ? "active" : ""}`}
+                  onClick={() => setLayerMode("realistic")}
+                >
+                  🛰️ Satellite Aerial
+                </button>
+                <button
+                  type="button"
+                  className={`layer-mode-btn ${layerMode === "tactical" ? "active" : ""}`}
+                  onClick={() => setLayerMode("tactical")}
+                >
+                  🗺️ Tactical Blueprint
+                </button>
+              </div>
+            </div>
+
+            <div className="layer-mode-switcher">
+              <span className="layer-mode-label">3D Building Blocks:</span>
+              <div className="layer-mode-buttons" role="group" aria-label="3D building blocks toggle">
+                <button
+                  type="button"
+                  className={`layer-mode-btn ${!show3dBuildings ? "active" : ""}`}
+                  onClick={() => setShow3dBuildings(false)}
+                >
+                  🚫 Pure Flat (Off)
+                </button>
+                <button
+                  type="button"
+                  className={`layer-mode-btn ${show3dBuildings ? "active" : ""}`}
+                  onClick={() => setShow3dBuildings(true)}
+                >
+                  🏢 3D Elevation (On)
+                </button>
+              </div>
             </div>
           </div>
 

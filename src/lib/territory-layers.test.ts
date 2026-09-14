@@ -54,9 +54,9 @@ describe("applyMapLayers", () => {
     };
   }
 
-  it("configures realistic mode with satellite layer, house extrusions, and sun lighting", () => {
+  it("configures realistic mode with satellite layer and hides 3d buildings when show3dBuildings is false", () => {
     const mockMap = createMockMap(true);
-    applyMapLayers(mockMap, "realistic");
+    applyMapLayers(mockMap, "realistic", { show3dBuildings: false });
 
     expect(mockMap.addSource).toHaveBeenCalledWith(
       "esri-satellite",
@@ -76,7 +76,19 @@ describe("applyMapLayers", () => {
       "visibility",
       "none",
     );
-    // Makes 3D building layer visible and sets universal height expression
+    // Hides 3D building layer when 3D toggle is off
+    expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
+      "building-3d",
+      "visibility",
+      "none",
+    );
+  });
+
+  it("configures realistic mode with 3D buildings enabled when show3dBuildings is true", () => {
+    const mockMap = createMockMap(true);
+    applyMapLayers(mockMap, "realistic", { show3dBuildings: true });
+
+    // Makes 3D building layer visible and sets height/opacity
     expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
       "building-3d",
       "visibility",
@@ -104,9 +116,9 @@ describe("applyMapLayers", () => {
     );
   });
 
-  it("creates custom 3d layer when style lacks building-3d", () => {
+  it("creates custom 3d layer when style lacks building-3d and show3dBuildings is true", () => {
     const mockMap = createMockMap(false);
-    applyMapLayers(mockMap, "realistic");
+    applyMapLayers(mockMap, "realistic", { show3dBuildings: true });
 
     expect(mockMap.addLayer).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -123,10 +135,10 @@ describe("applyMapLayers", () => {
   it("toggles to tactical mode with 0 opacity satellite and tactical styling", () => {
     const mockMap = createMockMap(true);
     // First apply realistic
-    applyMapLayers(mockMap, "realistic");
+    applyMapLayers(mockMap, "realistic", { show3dBuildings: false });
 
-    // Now switch to tactical
-    applyMapLayers(mockMap, "tactical");
+    // Now switch to tactical with 3D on
+    applyMapLayers(mockMap, "tactical", { show3dBuildings: true });
 
     expect(mockMap.setPaintProperty).toHaveBeenCalledWith(
       "heistboard-satellite-layer",

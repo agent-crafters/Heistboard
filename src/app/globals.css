@@ -678,12 +678,22 @@ a:focus-visible {
   border-bottom: 1px solid rgba(240, 234, 220, 0.08);
 }
 
+.layer-controls-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--line);
+}
+
 .layer-mode-label {
   font-size: 0.72rem;
   color: var(--muted);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+  display: block;
 }
 
 .layer-mode-buttons {
