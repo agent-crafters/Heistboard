@@ -14,6 +14,60 @@ export interface ConfigurableMap {
   setLayerZoomRange?(layerId: string, minzoom: number, maxzoom: number): unknown;
   setLight?(light: unknown): unknown;
   setSky?(sky: unknown): unknown;
+  getStyle?(): { layers?: Array<{ id: string; type: string }> };
+}
+
+/**
+ * Configures clean map overlays:
+ * In realistic aerial mode, hides vector road lines, casings, and polygon fills,
+ * keeping only clean text, place names, city names, and points of interest.
+ * In tactical mode, restores all vector lines and fills for the tactical blueprint.
+ */
+export function configureCleanVectorOverlays(
+  map: ConfigurableMap,
+  mode: MapLayerMode,
+): void {
+  const styleLayers = map.getStyle ? map.getStyle()?.layers : undefined;
+  if (styleLayers && styleLayers.length > 0) {
+    for (const layer of styleLayers) {
+      // Don't touch satellite imagery, background, or 3D buildings (handled separately)
+      if (
+        layer.id === "heistboard-satellite-layer" ||
+        layer.id === "heistboard-3d-buildings" ||
+        layer.id === "building-3d" ||
+        layer.id === "natural_earth" ||
+        layer.id === "background"
+      ) {
+        continue;
+      }
+
+      if (mode === "realistic") {
+        // Keep text labels, place names, and POIs (symbol layers)
+        // Hide road directional arrows since road lines are hidden
+        if (layer.type === "symbol" && !layer.id.includes("arrow")) {
+          try {
+            map.setLayoutProperty(layer.id, "visibility", "visible");
+          } catch {
+            // Suppress
+          }
+        } else {
+          // Hide road lines, casings, bridges, tunnels, outlines, and colored fills
+          try {
+            map.setLayoutProperty(layer.id, "visibility", "none");
+          } catch {
+            // Suppress
+          }
+        }
+      } else {
+        // Tactical blueprint: restore all vector lines, fills, and symbols
+        try {
+          map.setLayoutProperty(layer.id, "visibility", "visible");
+        } catch {
+          // Suppress
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -157,7 +211,10 @@ export function applyMapLayers(
     }
   }
 
-  // 3. Configure flat 2D building footprint layer
+  // 3. Configure clean vector overlays (hide road lines, casings, and fills in realistic mode)
+  configureCleanVectorOverlays(map, mode);
+
+  // 4. Configure flat 2D building footprint layer
   if (map.getLayer("building")) {
     try {
       // In realistic satellite mode or when 3D is active, hide flat 2D vector fill

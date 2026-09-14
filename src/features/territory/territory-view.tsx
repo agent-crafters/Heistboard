@@ -282,10 +282,21 @@ export function TerritoryView({
     setCaptureError(null);
     setCapturePhase("initializing");
 
+    const container = mapContainerRef.current;
+    const containerWidth = container?.clientWidth || 1200;
+    const containerHeight = container?.clientHeight || 800;
+
+    // Use full ratio of the map container, scaling to crisp high-DPI output
+    const scale = Math.min(2, Math.max(1, 1600 / containerWidth));
+    const captureWidth = Math.round(containerWidth * scale);
+    const captureHeight = Math.round(containerHeight * scale);
+
     try {
       const result = await captureTerritoryShot(camera, {
         layerMode,
         show3dBuildings,
+        width: captureWidth,
+        height: captureHeight,
         onProgress: (phase) => setCapturePhase(phase),
       });
       onLockTerritory({
@@ -608,7 +619,7 @@ export function TerritoryView({
           >
             {isCapturing
               ? capturePhaseLabel[capturePhase]
-              : "Lock Territory Shot (3:2 Frame)"}
+              : "Lock Territory Shot (Full Ratio)"}
           </button>
 
           <button
@@ -622,7 +633,7 @@ export function TerritoryView({
         </div>
       </div>
 
-      {/* Right 3D Map Column with Tactical 3:2 Framing Reticle */}
+      {/* Right 3D Map Column with Full Ratio Framing Reticle */}
       <div className="territory-map-column">
         <div
           ref={mapContainerRef}
@@ -630,7 +641,7 @@ export function TerritoryView({
           aria-label="Interactive 3D vector map"
         />
 
-        {/* Tactical 3:2 Framing Overlay */}
+        {/* Full Ratio Framing Overlay */}
         <div className="tactical-framing-overlay" aria-hidden="true">
           <div className="framing-reticle">
             <div className="reticle-corner top-left" />
@@ -638,7 +649,7 @@ export function TerritoryView({
             <div className="reticle-corner bottom-left" />
             <div className="reticle-corner bottom-right" />
             <div className="reticle-crosshair" />
-            <div className="reticle-badge">3:2 Map Base Frame (1200 × 800)</div>
+            <div className="reticle-badge">Full Ratio Map Capture</div>
           </div>
         </div>
 

@@ -51,10 +51,20 @@ describe("applyMapLayers", () => {
       setLayerZoomRange: vi.fn(),
       setLight: vi.fn(),
       setSky: vi.fn(),
+      getStyle: vi.fn(() => ({
+        layers: [
+          { id: "road_motorway", type: "line" },
+          { id: "park", type: "fill" },
+          { id: "building", type: "fill" },
+          { id: "building-3d", type: "fill-extrusion" },
+          { id: "label_city", type: "symbol" },
+          { id: "road_one_way_arrow", type: "symbol" },
+        ],
+      })),
     };
   }
 
-  it("configures realistic mode with satellite layer and hides 3d buildings when show3dBuildings is false", () => {
+  it("configures realistic mode with satellite layer, cleans road lines/fills, and keeps place name text", () => {
     const mockMap = createMockMap(true);
     applyMapLayers(mockMap, "realistic", { show3dBuildings: false });
 
@@ -69,6 +79,28 @@ describe("applyMapLayers", () => {
         paint: expect.objectContaining({ "raster-opacity": 1.0 }),
       }),
       "tunnel_motorway_link_casing",
+    );
+    // Hides vector road lines and polygon fills
+    expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
+      "road_motorway",
+      "visibility",
+      "none",
+    );
+    expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
+      "park",
+      "visibility",
+      "none",
+    );
+    expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
+      "road_one_way_arrow",
+      "visibility",
+      "none",
+    );
+    // Preserves text labels and place names
+    expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
+      "label_city",
+      "visibility",
+      "visible",
     );
     // Hides flat 2D footprint layer
     expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
