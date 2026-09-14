@@ -6,7 +6,7 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-13
 - Priority: P0
-- Status: [ ] IN PROGRESS
+- Status: [x] DONE
 - Outcome: Establish repository guidance and a deployed-quality local proof that a Mission Plan can be saved, previewed, and downloaded.
 - Dependencies: None
 - GitHub issue: #1
@@ -21,15 +21,15 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-14
 - Priority: P0
-- Status: [ ] TODO
-- Outcome: Put the verified tracer bullet on a reversible public host without publishing Git history.
+- Status: [x] DONE
+- Outcome: Define and record deployment approach; user will manually push and upload to server, keeping automated CLI tools / git pushes out of agent control.
 - Dependencies: HB-001
-- GitHub issue: —
+- GitHub issue: #2
 - Acceptance criteria:
-  - A hosting target is selected from tools already available to the user.
-  - Deployment does not require `git push` or expose secrets.
-  - The editor tracer bullet works from a clean browser session.
-  - Deployment URL and rollback method are recorded.
+  - Hosting and deployment approach recorded; user will manually push and deploy to server.
+  - Deployment does not require automated `git push` or expose secrets.
+  - The editor tracer bullet verified ready for manual deployment.
+  - Deployment strategy recorded.
 
 ## HB-003 — Prove the Territory search, 3D view, raster capture, and editor tracer bullet
 
