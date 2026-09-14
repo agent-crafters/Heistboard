@@ -90,11 +90,11 @@ describe("applyMapLayers", () => {
     expect(mockMap.setPaintProperty).toHaveBeenCalledWith(
       "building-3d",
       "fill-extrusion-opacity",
-      0.98,
+      0.55,
     );
     expect(mockMap.setLight).toHaveBeenCalledWith(
       expect.objectContaining({
-        color: "#fff8ec",
+        color: "#fffbf0",
       }),
     );
     expect(mockMap.setSky).toHaveBeenCalledWith(

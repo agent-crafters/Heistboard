@@ -17,11 +17,10 @@ export interface ConfigurableMap {
 }
 
 /**
- * Height expression that guarantees every building and residential house
- * is extruded into a 3D block:
+ * Height expression that provides realistic 3D elevation:
  * 1. Uses explicit render_height or height if > 0
- * 2. Or estimates height from levels (levels * 3.2m + 1.5m)
- * 3. Or provides a realistic 8-meter (~2.5 story) default height for unmeasured houses
+ * 2. Or estimates height from levels (levels * 3.0m + 0.8m)
+ * 3. Or provides a natural 3.8-meter (~1-1.5 story) residential scale for houses
  */
 export const BUILDING_HEIGHT_EXPRESSION = [
   "case",
@@ -32,10 +31,10 @@ export const BUILDING_HEIGHT_EXPRESSION = [
     [">", ["coalesce", ["get", "levels"], ["get", "building:levels"], 0], 0],
     [
       "+",
-      ["*", ["coalesce", ["get", "levels"], ["get", "building:levels"]], 3.2],
-      1.5,
+      ["*", ["coalesce", ["get", "levels"], ["get", "building:levels"]], 3.0],
+      0.8,
     ],
-    8,
+    3.8,
   ],
 ];
 
@@ -46,6 +45,11 @@ export const BUILDING_BASE_EXPRESSION = [
   0,
 ];
 
+/**
+ * Translucent architectural glass palette designed to overlay photorealistic satellite imagery:
+ * Allows underlying satellite rooftops, chimneys, textures, and gardens to shine through
+ * while giving authentic 3D vertical depth, wall facets, and sunlit shadow definition.
+ */
 export const REALISTIC_BUILDING_COLORS = [
   "interpolate",
   ["linear"],
@@ -53,18 +57,18 @@ export const REALISTIC_BUILDING_COLORS = [
     "case",
     [">", ["coalesce", ["get", "render_height"], ["get", "height"], 0], 0],
     ["coalesce", ["get", "render_height"], ["get", "height"]],
-    8,
+    3.8,
   ],
   0,
-  "#e3dfd7", // Houses & residential buildings (warm limestone / light architectural beige)
+  "#dce6ef", // Houses & residential buildings (subtle architectural glass mist)
   12,
-  "#d6d2ca", // Low-rise commercial & suburban blocks
+  "#bfd3e3", // Low-rise commercial & suburban blocks
   30,
-  "#c4c0b7", // Mid-rise urban concrete
+  "#9ab8cf", // Mid-rise urban concrete & glass
   60,
-  "#a8b0b8", // Modern steel & glass commercial
+  "#7398b7", // Modern steel & glass commercial
   120,
-  "#7a8e9e", // High-rise reflective glass towers
+  "#466e92", // High-rise reflective glass towers
 ];
 
 export const TACTICAL_BUILDING_COLORS = [
@@ -155,7 +159,9 @@ export function applyMapLayers(map: ConfigurableMap, mode: MapLayerMode): void {
   // 4. Configure 3D Building Extrusions for all houses & buildings
   const buildingColors =
     mode === "realistic" ? REALISTIC_BUILDING_COLORS : TACTICAL_BUILDING_COLORS;
-  const buildingOpacity = mode === "realistic" ? 0.98 : 0.88;
+  // 55% translucent architectural glass in realistic aerial mode lets real satellite
+  // rooftop textures and foliage shine through, eliminating blocky cardboard artifacts.
+  const buildingOpacity = mode === "realistic" ? 0.55 : 0.88;
 
   // Determine active 3D layer
   const hasBase3d = Boolean(map.getLayer("building-3d"));
@@ -238,9 +244,9 @@ export function applyMapLayers(map: ConfigurableMap, mode: MapLayerMode): void {
       if (mode === "realistic") {
         map.setLight({
           anchor: "viewport",
-          color: "#fff8ec",
-          intensity: 0.65,
-          position: [1.2, 215, 35],
+          color: "#fffbf0",
+          intensity: 0.72,
+          position: [1.2, 210, 35],
         });
       } else {
         map.setLight({
