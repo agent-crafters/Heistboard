@@ -22,6 +22,8 @@ import {
   type AnnotatedMapResource,
 } from "@/lib/annotated-map-resource";
 import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/territory-view";
+import { StickerSidebar } from "@/features/mission-editor/sticker-sidebar";
+import { findFabricCanvas, importStickerToCanvas } from "@/lib/sticker-canvas-importer";
 
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
@@ -33,6 +35,42 @@ const MISSION_STEPS = [
   ["03", "Leave one note", "Use Text to add a short courier instruction."],
   ["04", "Save the plan", "Use the editor's Save action when the route reads clearly."],
 ] as const;
+
+async function normalizeSaveResultToPng(
+  result: ImageEditorSaveResult,
+): Promise<ImageEditorSaveResult> {
+  if (
+    /^data:image\/png;base64,/i.test(result.dataUrl) &&
+    result.blob.type.toLowerCase() === "image/png"
+  ) {
+    return result;
+  }
+
+  return new Promise<ImageEditorSaveResult>((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(result);
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL("image/png");
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve({ dataUrl, blob });
+        } else {
+          resolve(result);
+        }
+      }, "image/png");
+    };
+    img.onerror = () => resolve(result);
+    img.src = result.dataUrl;
+  });
+}
 
 const MissionEditor = dynamic(() => loadMissionEditor(), {
   ssr: false,
@@ -55,9 +93,11 @@ export function HeistboardEditorProof() {
     initialEditorWorkflow,
   );
   const [annotatedMap, setAnnotatedMap] = useState<AnnotatedMapResource | null>(null);
+  const [sidebarTab, setSidebarTab] = useState<"brief" | "stickers">("stickers");
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
   const mapBaseBlobUrlRef = useRef<string | null>(null);
+  const editorFrameRef = useRef<HTMLDivElement>(null);
 
   if (resourceOwner.current === null) {
     resourceOwner.current = new AnnotatedMapResourceOwner();
@@ -140,7 +180,8 @@ export function HeistboardEditorProof() {
   const handleSave = useCallback(async (result: ImageEditorSaveResult) => {
     dispatch({ type: "save-started" });
     try {
-      const resource = await resourceOwner.current?.replace(result);
+      const pngPayload = await normalizeSaveResultToPng(result);
+      const resource = await resourceOwner.current?.replace(pngPayload);
       if (!resource) throw new Error("The image resource owner is unavailable.");
       setAnnotatedMap(resource);
       dispatch({ type: "save-succeeded" });
@@ -155,6 +196,30 @@ export function HeistboardEditorProof() {
       });
     }
   }, []);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("application/x-heistboard-sticker")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    const stickerUrl = e.dataTransfer.getData("application/x-heistboard-sticker");
+    if (!stickerUrl) return;
+    e.preventDefault();
+
+    const fabricCanvas = findFabricCanvas(editorFrameRef.current);
+    let position: { x: number; y: number } | undefined;
+    if (fabricCanvas && typeof fabricCanvas.getPointer === "function") {
+      position = fabricCanvas.getPointer(e.nativeEvent);
+    }
+
+    await importStickerToCanvas(stickerUrl, {
+      rootElement: editorFrameRef.current,
+      position,
+    });
+  };
 
   const handleReturnToTerritory = () => {
     if (annotatedMap) {
@@ -216,23 +281,47 @@ export function HeistboardEditorProof() {
       {stage === "mission-plan" && (
         <section className="workspace" aria-labelledby="workspace-title">
           <aside className="briefing">
-            <p className="section-label">Mission brief</p>
-            <h2 id="workspace-title">Package before sunrise</h2>
-            <p>
-              The target area is locked. Trace your delivery route, mark safe locations,
-              and record the primary rendezvous point.
-            </p>
-            <ol className="mission-steps">
-              {MISSION_STEPS.map(([number, title, detail]) => (
-                <li key={number}>
-                  <span>{number}</span>
-                  <div>
-                    <strong>{title}</strong>
-                    <p>{detail}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <div className="briefing-tabs" role="tablist">
+              <button
+                type="button"
+                className={`briefing-tab-btn ${sidebarTab === "stickers" ? "active" : ""}`}
+                onClick={() => setSidebarTab("stickers")}
+              >
+                Tactical Stickers (30)
+              </button>
+              <button
+                type="button"
+                className={`briefing-tab-btn ${sidebarTab === "brief" ? "active" : ""}`}
+                onClick={() => setSidebarTab("brief")}
+              >
+                Mission Brief
+              </button>
+            </div>
+
+            {sidebarTab === "stickers" ? (
+              <StickerSidebar editorContainerRef={editorFrameRef} />
+            ) : (
+              <>
+                <p className="section-label">Mission brief</p>
+                <h2 id="workspace-title">Package before sunrise</h2>
+                <p>
+                  The target area is locked. Trace your delivery route, mark safe locations,
+                  and record the primary rendezvous point.
+                </p>
+                <ol className="mission-steps">
+                  {MISSION_STEPS.map(([number, title, detail]) => (
+                    <li key={number}>
+                      <span>{number}</span>
+                      <div>
+                        <strong>{title}</strong>
+                        <p>{detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+
             <div className="territory-source-tag">
               <small>
                 Map Source:{" "}
@@ -268,7 +357,13 @@ export function HeistboardEditorProof() {
             )}
 
             {editorVisible && (
-              <div className="editor-frame" aria-busy={workflow.phase !== "editing"}>
+              <div
+                ref={editorFrameRef}
+                className="editor-frame"
+                aria-busy={workflow.phase !== "editing"}
+                onDragOver={handleDragOver}
+                onDrop={(e) => void handleDrop(e)}
+              >
                 {workflow.phase === "loading-editor" && (
                   <div className="editor-overlay">
                     <EditorLoading label="Loading React Image Editor…" />
