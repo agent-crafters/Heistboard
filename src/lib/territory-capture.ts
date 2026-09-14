@@ -5,7 +5,10 @@ import {
   STANDARD_MAP_BASE_WIDTH,
   type TerritoryCameraState,
 } from "@/domain/territory";
-import { applyMapLayers } from "./territory-layers";
+import {
+  applyMapLayers,
+  updateTargetLocationMarker,
+} from "./territory-layers";
 
 export type CapturePhase =
   | "initializing"
@@ -21,6 +24,7 @@ export interface TerritoryCaptureOptions {
   timeoutMs?: number;
   layerMode?: MapLayerMode;
   show3dBuildings?: boolean;
+  targetPlace?: { name: string; lon: number; lat: number } | null;
   onProgress?: (phase: CapturePhase) => void;
 }
 
@@ -46,6 +50,7 @@ export async function captureTerritoryShot(
   const onProgress = options.onProgress ?? (() => {});
   const layerMode = options.layerMode ?? "realistic";
   const show3dBuildings = options.show3dBuildings ?? false;
+  const targetPlace = options.targetPlace ?? null;
 
   if (typeof window === "undefined" || typeof document === "undefined") {
     throw new Error("Territory capture can only be executed in a browser environment.");
@@ -91,6 +96,9 @@ export async function captureTerritoryShot(
 
     map.on("load", () => {
       applyMapLayers(map, layerMode, { show3dBuildings });
+      if (targetPlace) {
+        updateTargetLocationMarker(map, targetPlace);
+      }
     });
 
     onProgress("loading-tiles");
@@ -98,6 +106,9 @@ export async function captureTerritoryShot(
 
     // Ensure layers are configured even if load fired synchronously
     applyMapLayers(map, layerMode, { show3dBuildings });
+    if (targetPlace) {
+      updateTargetLocationMarker(map, targetPlace);
+    }
 
     onProgress("rendering");
     const canvas = map.getCanvas();

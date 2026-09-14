@@ -17,10 +17,27 @@ export interface ConfigurableMap {
   getStyle?(): { layers?: Array<{ id: string; type: string }> };
 }
 
+export const MAIN_PLACE_LAYER_PREFIXES = [
+  "label_city",
+  "label_town",
+  "label_village",
+  "label_state",
+  "label_country",
+  "label_other", // key districts, suburbs, and neighborhoods
+  "airport",
+  "water_name_point",
+];
+
+export function isMainPlaceLayer(layerId: string): boolean {
+  return MAIN_PLACE_LAYER_PREFIXES.some((prefix) => layerId.startsWith(prefix));
+}
+
 /**
  * Configures clean map overlays:
- * In realistic aerial mode, hides vector road lines, casings, and polygon fills,
- * keeping only clean text, place names, city names, and points of interest.
+ * In realistic aerial mode:
+ * - Hides all vector road lines, casings, and polygon fills.
+ * - Hides street names (highway-name-*) and minor building/shop names (poi_r*).
+ * - Displays ONLY main place names (cities, towns, villages, key neighborhoods/districts, major landmarks).
  * In tactical mode, restores all vector lines and fills for the tactical blueprint.
  */
 export function configureCleanVectorOverlays(
@@ -30,11 +47,13 @@ export function configureCleanVectorOverlays(
   const styleLayers = map.getStyle ? map.getStyle()?.layers : undefined;
   if (styleLayers && styleLayers.length > 0) {
     for (const layer of styleLayers) {
-      // Don't touch satellite imagery, background, or 3D buildings (handled separately)
+      // Don't touch satellite imagery, background, 3D buildings, or target location marker
       if (
         layer.id === "heistboard-satellite-layer" ||
         layer.id === "heistboard-3d-buildings" ||
         layer.id === "building-3d" ||
+        layer.id === "heistboard-target-point" ||
+        layer.id === "heistboard-target-label" ||
         layer.id === "natural_earth" ||
         layer.id === "background"
       ) {
@@ -42,16 +61,16 @@ export function configureCleanVectorOverlays(
       }
 
       if (mode === "realistic") {
-        // Keep text labels, place names, and POIs (symbol layers)
-        // Hide road directional arrows since road lines are hidden
-        if (layer.type === "symbol" && !layer.id.includes("arrow")) {
+        // Only keep prominent place names (cities, towns, villages, key districts, major landmarks)
+        // Remove street names (highway-name-*), building/shop names (poi_r*), transit stops, and road lines
+        if (layer.type === "symbol" && isMainPlaceLayer(layer.id)) {
           try {
             map.setLayoutProperty(layer.id, "visibility", "visible");
           } catch {
             // Suppress
           }
         } else {
-          // Hide road lines, casings, bridges, tunnels, outlines, and colored fills
+          // Hide street names, building names, road lines, casings, and polygon fills
           try {
             map.setLayoutProperty(layer.id, "visibility", "none");
           } catch {
@@ -66,6 +85,100 @@ export function configureCleanVectorOverlays(
           // Suppress
         }
       }
+    }
+  }
+}
+
+/**
+ * Displays a tactical location marker and label on the map for the user's specific searched place.
+ */
+export function updateTargetLocationMarker(
+  map: ConfigurableMap,
+  place: { name: string; lon: number; lat: number } | null,
+): void {
+  const sourceId = "heistboard-target-location";
+  const pointLayerId = "heistboard-target-point";
+  const labelLayerId = "heistboard-target-label";
+
+  if (!place) {
+    if (map.getLayer(pointLayerId)) {
+      try {
+        map.setLayoutProperty(pointLayerId, "visibility", "none");
+        map.setLayoutProperty(labelLayerId, "visibility", "none");
+      } catch {
+        // Suppress
+      }
+    }
+    return;
+  }
+
+  const featureCollection = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [place.lon, place.lat],
+        },
+        properties: {
+          title: place.name,
+        },
+      },
+    ],
+  };
+
+  const existingSource = map.getSource(sourceId) as
+    | { setData?(data: unknown): void }
+    | undefined;
+
+  if (existingSource && typeof existingSource.setData === "function") {
+    existingSource.setData(featureCollection);
+    try {
+      map.setLayoutProperty(pointLayerId, "visibility", "visible");
+      map.setLayoutProperty(labelLayerId, "visibility", "visible");
+    } catch {
+      // Suppress
+    }
+  } else {
+    try {
+      map.addSource(sourceId, {
+        type: "geojson",
+        data: featureCollection,
+      });
+
+      map.addLayer({
+        id: pointLayerId,
+        type: "circle",
+        source: sourceId,
+        paint: {
+          "circle-radius": 7,
+          "circle-color": "#ef7866",
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#ffffff",
+        },
+      });
+
+      map.addLayer({
+        id: labelLayerId,
+        type: "symbol",
+        source: sourceId,
+        layout: {
+          "text-field": ["get", "title"],
+          "text-size": 13,
+          "text-offset": [0, 1.2],
+          "text-anchor": "top",
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: {
+          "text-color": "#ffffff",
+          "text-halo-color": "#171b1c",
+          "text-halo-width": 2.5,
+        },
+      });
+    } catch (e) {
+      console.warn("Could not add target location marker:", e);
     }
   }
 }

@@ -3,6 +3,8 @@ import {
   applyMapLayers,
   BUILDING_HEIGHT_EXPRESSION,
   type ConfigurableMap,
+  isMainPlaceLayer,
+  updateTargetLocationMarker,
 } from "./territory-layers";
 
 describe("applyMapLayers", () => {
@@ -54,6 +56,8 @@ describe("applyMapLayers", () => {
       getStyle: vi.fn(() => ({
         layers: [
           { id: "road_motorway", type: "line" },
+          { id: "highway-name-major", type: "symbol" },
+          { id: "poi_r1", type: "symbol" },
           { id: "park", type: "fill" },
           { id: "building", type: "fill" },
           { id: "building-3d", type: "fill-extrusion" },
@@ -64,7 +68,16 @@ describe("applyMapLayers", () => {
     };
   }
 
-  it("configures realistic mode with satellite layer, cleans road lines/fills, and keeps place name text", () => {
+  it("identifies main place layers correctly", () => {
+    expect(isMainPlaceLayer("label_city")).toBe(true);
+    expect(isMainPlaceLayer("label_town")).toBe(true);
+    expect(isMainPlaceLayer("label_other")).toBe(true);
+    expect(isMainPlaceLayer("airport")).toBe(true);
+    expect(isMainPlaceLayer("highway-name-major")).toBe(false);
+    expect(isMainPlaceLayer("poi_r1")).toBe(false);
+  });
+
+  it("configures realistic mode with satellite layer, removes street and building names, and keeps main places", () => {
     const mockMap = createMockMap(true);
     applyMapLayers(mockMap, "realistic", { show3dBuildings: false });
 
@@ -91,12 +104,23 @@ describe("applyMapLayers", () => {
       "visibility",
       "none",
     );
+    // Hides street names and building names
+    expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
+      "highway-name-major",
+      "visibility",
+      "none",
+    );
+    expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
+      "poi_r1",
+      "visibility",
+      "none",
+    );
     expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
       "road_one_way_arrow",
       "visibility",
       "none",
     );
-    // Preserves text labels and place names
+    // Preserves prominent main place names
     expect(mockMap.setLayoutProperty).toHaveBeenCalledWith(
       "label_city",
       "visibility",
@@ -185,6 +209,34 @@ describe("applyMapLayers", () => {
     expect(mockMap.setLight).toHaveBeenCalledWith(
       expect.objectContaining({
         intensity: 0.35,
+      }),
+    );
+  });
+
+  it("creates and updates target location marker for a specific searched place", () => {
+    const mockMap = createMockMap(true);
+    updateTargetLocationMarker(mockMap, {
+      name: "India Gate",
+      lon: 77.2295,
+      lat: 28.6129,
+    });
+
+    expect(mockMap.addSource).toHaveBeenCalledWith(
+      "heistboard-target-location",
+      expect.objectContaining({
+        type: "geojson",
+      }),
+    );
+    expect(mockMap.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "heistboard-target-point",
+        type: "circle",
+      }),
+    );
+    expect(mockMap.addLayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "heistboard-target-label",
+        type: "symbol",
       }),
     );
   });

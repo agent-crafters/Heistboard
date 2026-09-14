@@ -20,7 +20,10 @@ import {
   captureTerritoryShot,
   type CapturePhase,
 } from "@/lib/territory-capture";
-import { applyMapLayers } from "@/lib/territory-layers";
+import {
+  applyMapLayers,
+  updateTargetLocationMarker,
+} from "@/lib/territory-layers";
 
 export interface TerritoryLockedResult {
   source: "custom-search" | "sample-fallback";
@@ -62,6 +65,7 @@ export function TerritoryView({
   const layerModeRef = useRef(layerMode);
   const [show3dBuildings, setShow3dBuildings] = useState(false);
   const show3dBuildingsRef = useRef(show3dBuildings);
+  const selectedPlaceRef = useRef(selectedPlace);
 
   // Keep map layers in sync when layerMode or show3dBuildings changes
   useEffect(() => {
@@ -71,6 +75,14 @@ export function TerritoryView({
       applyMapLayers(mapInstanceRef.current, layerMode, { show3dBuildings });
     }
   }, [layerMode, show3dBuildings, mapLoaded]);
+
+  // Keep target location marker in sync with selectedPlace
+  useEffect(() => {
+    selectedPlaceRef.current = selectedPlace;
+    if (mapInstanceRef.current && mapLoaded) {
+      updateTargetLocationMarker(mapInstanceRef.current, selectedPlace);
+    }
+  }, [selectedPlace, mapLoaded]);
 
   // Initialize MapLibre GL JS
   useEffect(() => {
@@ -125,6 +137,9 @@ export function TerritoryView({
           applyMapLayers(map, layerModeRef.current, {
             show3dBuildings: show3dBuildingsRef.current,
           });
+          if (selectedPlaceRef.current) {
+            updateTargetLocationMarker(map, selectedPlaceRef.current);
+          }
         });
 
         const updateCamera = () => {
@@ -295,6 +310,7 @@ export function TerritoryView({
       const result = await captureTerritoryShot(camera, {
         layerMode,
         show3dBuildings,
+        targetPlace: selectedPlace,
         width: captureWidth,
         height: captureHeight,
         onProgress: (phase) => setCapturePhase(phase),
