@@ -11,28 +11,71 @@ export interface ConfigurableMap {
   addLayer(layer: unknown, beforeId?: string): unknown;
   setPaintProperty(layerId: string, name: string, value: unknown): unknown;
   setLayoutProperty(layerId: string, name: string, value: unknown): unknown;
+  setLayerZoomRange?(layerId: string, minzoom: number, maxzoom: number): unknown;
   setLight?(light: unknown): unknown;
   setSky?(sky: unknown): unknown;
 }
 
-const REALISTIC_BUILDING_COLORS = [
-  "interpolate",
-  ["linear"],
-  ["coalesce", ["get", "render_height"], 0],
-  0,
-  "#e3dfd7", // Warm limestone / low residential
-  25,
-  "#cbcfcb", // Architectural concrete
-  60,
-  "#a2abb3", // Commercial steel & glass
-  120,
-  "#748796", // High-rise modern glass
+/**
+ * Height expression that guarantees every building and residential house
+ * is extruded into a 3D block:
+ * 1. Uses explicit render_height or height if > 0
+ * 2. Or estimates height from levels (levels * 3.2m + 1.5m)
+ * 3. Or provides a realistic 8-meter (~2.5 story) default height for unmeasured houses
+ */
+export const BUILDING_HEIGHT_EXPRESSION = [
+  "case",
+  [">", ["coalesce", ["get", "render_height"], ["get", "height"], 0], 0],
+  ["coalesce", ["get", "render_height"], ["get", "height"]],
+  [
+    "case",
+    [">", ["coalesce", ["get", "levels"], ["get", "building:levels"], 0], 0],
+    [
+      "+",
+      ["*", ["coalesce", ["get", "levels"], ["get", "building:levels"]], 3.2],
+      1.5,
+    ],
+    8,
+  ],
 ];
 
-const TACTICAL_BUILDING_COLORS = [
+export const BUILDING_BASE_EXPRESSION = [
+  "coalesce",
+  ["get", "render_min_height"],
+  ["get", "min_height"],
+  0,
+];
+
+export const REALISTIC_BUILDING_COLORS = [
   "interpolate",
   ["linear"],
-  ["coalesce", ["get", "render_height"], 0],
+  [
+    "case",
+    [">", ["coalesce", ["get", "render_height"], ["get", "height"], 0], 0],
+    ["coalesce", ["get", "render_height"], ["get", "height"]],
+    8,
+  ],
+  0,
+  "#e3dfd7", // Houses & residential buildings (warm limestone / light architectural beige)
+  12,
+  "#d6d2ca", // Low-rise commercial & suburban blocks
+  30,
+  "#c4c0b7", // Mid-rise urban concrete
+  60,
+  "#a8b0b8", // Modern steel & glass commercial
+  120,
+  "#7a8e9e", // High-rise reflective glass towers
+];
+
+export const TACTICAL_BUILDING_COLORS = [
+  "interpolate",
+  ["linear"],
+  [
+    "case",
+    [">", ["coalesce", ["get", "render_height"], ["get", "height"], 0], 0],
+    ["coalesce", ["get", "render_height"], ["get", "height"]],
+    8,
+  ],
   0,
   "#252d3a",
   40,
@@ -62,7 +105,7 @@ export function applyMapLayers(map: ConfigurableMap, mode: MapLayerMode): void {
     }
   }
 
-  // 2. Add or toggle satellite layer
+  // 2. Add or toggle satellite layer placed beneath road networks and labels
   const beforeRoadsId = map.getLayer("tunnel_motorway_link_casing")
     ? "tunnel_motorway_link_casing"
     : map.getLayer("road_service_track_casing")
@@ -100,69 +143,96 @@ export function applyMapLayers(map: ConfigurableMap, mode: MapLayerMode): void {
     }
   }
 
-  // 3. Prevent z-fighting with the default style's building-3d layer
-  if (map.getLayer("building-3d")) {
+  // 3. Hide flat 2D building footprint layer to avoid z-fighting with 3D extrusions
+  if (map.getLayer("building")) {
     try {
-      map.setLayoutProperty("building-3d", "visibility", "none");
+      map.setLayoutProperty("building", "visibility", "none");
     } catch {
-      // Ignore if layout property cannot be set
+      // Suppress if not set
     }
   }
 
-  // 4. Add or update heistboard-3d-buildings extrusion layer
+  // 4. Configure 3D Building Extrusions for all houses & buildings
   const buildingColors =
     mode === "realistic" ? REALISTIC_BUILDING_COLORS : TACTICAL_BUILDING_COLORS;
-  const buildingOpacity = mode === "realistic" ? 0.92 : 0.88;
+  const buildingOpacity = mode === "realistic" ? 0.98 : 0.88;
 
-  if (!map.getLayer("heistboard-3d-buildings")) {
+  // Determine active 3D layer
+  const hasBase3d = Boolean(map.getLayer("building-3d"));
+  const hasCustom3d = Boolean(map.getLayer("heistboard-3d-buildings"));
+
+  if (!hasBase3d && !hasCustom3d) {
     const hasOpenMapTiles = Boolean(map.getSource("openmaptiles"));
     if (hasOpenMapTiles) {
+      const beforeLabelsId = map.getLayer("boundary_3")
+        ? "boundary_3"
+        : map.getLayer("waterway_line_label")
+          ? "waterway_line_label"
+          : undefined;
+
       try {
-        map.addLayer({
-          id: "heistboard-3d-buildings",
-          source: "openmaptiles",
-          "source-layer": "building",
-          type: "fill-extrusion",
-          minzoom: 14,
-          paint: {
-            "fill-extrusion-color": buildingColors,
-            "fill-extrusion-height": [
-              "coalesce",
-              ["get", "render_height"],
-              ["get", "height"],
-              15,
-            ],
-            "fill-extrusion-base": [
-              "coalesce",
-              ["get", "render_min_height"],
-              ["get", "min_height"],
-              0,
-            ],
-            "fill-extrusion-opacity": buildingOpacity,
+        map.addLayer(
+          {
+            id: "heistboard-3d-buildings",
+            source: "openmaptiles",
+            "source-layer": "building",
+            type: "fill-extrusion",
+            minzoom: 13,
+            paint: {
+              "fill-extrusion-color": buildingColors,
+              "fill-extrusion-height": BUILDING_HEIGHT_EXPRESSION,
+              "fill-extrusion-base": BUILDING_BASE_EXPRESSION,
+              "fill-extrusion-opacity": buildingOpacity,
+            },
           },
-        });
+          beforeLabelsId,
+        );
       } catch (e) {
         console.warn("Could not inject 3d building extrusion layer:", e);
       }
     }
   } else {
+    // If base building-3d exists, configure it and hide custom layer if both exist
+    const primaryLayerId = hasBase3d ? "building-3d" : "heistboard-3d-buildings";
+    if (hasBase3d && hasCustom3d) {
+      try {
+        map.setLayoutProperty("heistboard-3d-buildings", "visibility", "none");
+      } catch {
+        // Suppress
+      }
+    }
+
     try {
+      map.setLayoutProperty(primaryLayerId, "visibility", "visible");
+      if (typeof map.setLayerZoomRange === "function") {
+        map.setLayerZoomRange(primaryLayerId, 13, 24);
+      }
       map.setPaintProperty(
-        "heistboard-3d-buildings",
+        primaryLayerId,
+        "fill-extrusion-height",
+        BUILDING_HEIGHT_EXPRESSION,
+      );
+      map.setPaintProperty(
+        primaryLayerId,
+        "fill-extrusion-base",
+        BUILDING_BASE_EXPRESSION,
+      );
+      map.setPaintProperty(
+        primaryLayerId,
         "fill-extrusion-color",
         buildingColors,
       );
       map.setPaintProperty(
-        "heistboard-3d-buildings",
+        primaryLayerId,
         "fill-extrusion-opacity",
         buildingOpacity,
       );
     } catch (e) {
-      console.warn("Could not update 3d building paint properties:", e);
+      console.warn("Could not update 3d building properties:", e);
     }
   }
 
-  // 5. Apply realistic sun lighting
+  // 5. Apply realistic directional sun lighting
   if (typeof map.setLight === "function") {
     try {
       if (mode === "realistic") {
