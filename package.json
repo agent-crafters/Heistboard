@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@unlayer/react-image-editor": "latest",
+    "maplibre-gl": "^6.9.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

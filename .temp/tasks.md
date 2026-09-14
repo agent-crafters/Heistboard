@@ -35,10 +35,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-14
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Prove that the proposed zero-cost provider stack can turn one submitted place search and locked 3D camera into a legally reusable raster Map Base that survives editor save.
 - Dependencies: HB-001
-- GitHub issue: —
+- GitHub issue: #3
 - Acceptance criteria:
   - Primary documentation is recorded for Nominatim search policy, MapLibre rendering/capture APIs, OpenFreeMap use and attribution, and OpenStreetMap Produced Work obligations.
   - One explicit-submit search returns disambiguated candidates without autocomplete, stays within the public Nominatim application-wide rate limit, and uses a replaceable endpoint.

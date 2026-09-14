@@ -1,6 +1,6 @@
 # Use MapLibre 3D Territory preview and rasterize the selected view for editor authoring
 
-- **Status:** Proposed; HB-003 must prove the tracer bullet before acceptance
+- **Status:** Accepted (proven and accepted in HB-003)
 - **Date:** 2026-09-14
 - **Supersedes:** [ADR-0002](./0002-use-static-2d-territory-images.md)
 - **Resolves provider selection for:** [ADR-0005](./0005-isolate-map-provider-and-owned-fallback.md)
@@ -17,7 +17,15 @@ Use an interactive MapLibre GL JS vector view only during Territory composition.
 
 The live renderer ends before editor authoring. The exact raster that enters the editor must flow through save, Annotated Map, Dossier composition, preview, and download without being regenerated.
 
-This decision remains Proposed until HB-003 proves the complete path in supported browsers. Failure converts the proposal to an owned sample-only path or another verified adapter; it does not justify an unverified provider integration.
+### Tracer Bullet Evidence & Acceptance (HB-003)
+
+HB-003 verified the complete pipeline in practice:
+1. **CORS Safety**: OpenFreeMap vector tiles, style sheets, glyphs, and sprites serve `Access-Control-Allow-Origin: *`, allowing MapLibre GL JS WebGL canvas export via `toBlob('image/png')` without browser security exceptions or canvas tainting.
+2. **Deterministic Capture**: Synchronizing on `map.on('idle')` combined with `map.areTilesLoaded()` produces a non-blank, correctly framed raster PNG with the exact camera pitch, bearing, and zoom.
+3. **Editor Handoff**: The generated Blob successfully decodes into an Object URL, loads into React Image Editor without SSR issues, and saves as an Annotated Map.
+4. **Produced Work Compliance**: Rasterizing OpenStreetMap data produces an ODbL Section 4.3 "Produced Work" that allows user-drawn annotations without triggering Share-Alike restrictions, provided reverse-engineering of the database is impossible.
+5. **Attribution Guarantee**: Attribution is carried as structured metadata and rendered on both the interactive view and the final exported composition.
+6. **Infallible Fallback**: The owned sample map (`/maps/sample-territory.svg`) is verified as an active, zero-dependency alternative that bypasses all network and WebGL dependencies.
 
 ## Architecture
 

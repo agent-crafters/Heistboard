@@ -10,35 +10,54 @@ import {
   type EditorWorkflowPhase,
 } from "@/domain/editor-workflow";
 import {
+  SAMPLE_MAP_ATTRIBUTION,
+  SAMPLE_MAP_BASE_URL,
+  STANDARD_TERRITORY_ATTRIBUTION,
+  formatAttributionString,
+  type TerritoryAttribution,
+  type TerritoryCameraState,
+} from "@/domain/territory";
+import {
   AnnotatedMapResourceOwner,
   type AnnotatedMapResource,
 } from "@/lib/annotated-map-resource";
+import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/territory-view";
 
-const MAP_BASE_URL = "/maps/sample-territory.svg";
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
+export type HeistStage = "territory" | "mission-plan" | "dossier";
+
 const MISSION_STEPS = [
-  ["01", "Draw the route", "Use Draw to trace a bold path from west to east."],
-  ["02", "Mark two locations", "Use Shapes for the pickup and meeting point."],
-  ["03", "Leave one note", "Use Text to add a short instruction."],
+  ["01", "Draw the route", "Use Draw to trace a bold path across the neighborhood."],
+  ["02", "Mark two locations", "Use Shapes for the pickup point and the getaway."],
+  ["03", "Leave one note", "Use Text to add a short courier instruction."],
   ["04", "Save the plan", "Use the editor's Save action when the route reads clearly."],
 ] as const;
 
-const MissionEditor = dynamic(
-  () => loadMissionEditor(),
-  {
-    ssr: false,
-    loading: () => <EditorLoading label="Loading the authoring tools…" />,
-  },
-);
+const MissionEditor = dynamic(() => loadMissionEditor(), {
+  ssr: false,
+  loading: () => <EditorLoading label="Loading the authoring tools…" />,
+});
 
 export function HeistboardEditorProof() {
+  const [stage, setStage] = useState<HeistStage>("territory");
+  const [mapBaseUrl, setMapBaseUrl] = useState<string>(SAMPLE_MAP_BASE_URL);
+  const [attribution, setAttribution] = useState<TerritoryAttribution>(
+    STANDARD_TERRITORY_ATTRIBUTION,
+  );
+  const [lockedCamera, setLockedCamera] = useState<TerritoryCameraState | undefined>(
+    undefined,
+  );
+  const [isSampleMap, setIsSampleMap] = useState<boolean>(false);
+
   const [workflow, dispatch] = useReducer(
     editorWorkflowReducer,
     initialEditorWorkflow,
   );
   const [annotatedMap, setAnnotatedMap] = useState<AnnotatedMapResource | null>(null);
+
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
+  const mapBaseBlobUrlRef = useRef<string | null>(null);
 
   if (resourceOwner.current === null) {
     resourceOwner.current = new AnnotatedMapResourceOwner();
@@ -46,11 +65,17 @@ export function HeistboardEditorProof() {
 
   useEffect(() => {
     const owner = resourceOwner.current;
-    return () => owner?.dispose();
+    return () => {
+      owner?.dispose();
+      if (mapBaseBlobUrlRef.current) {
+        URL.revokeObjectURL(mapBaseBlobUrlRef.current);
+      }
+    };
   }, []);
 
+  // Check map base when in mission-plan stage and checking-map phase
   useEffect(() => {
-    if (workflow.phase !== "checking-map") return;
+    if (stage !== "mission-plan" || workflow.phase !== "checking-map") return;
 
     let active = true;
     const mapBase = new Image();
@@ -61,24 +86,52 @@ export function HeistboardEditorProof() {
       if (active) {
         dispatch({
           type: "image-failed",
-          message: "The original sample Map Base could not be decoded.",
+          message: "The raster Map Base could not be loaded or decoded.",
         });
       }
     };
-    mapBase.src = `${MAP_BASE_URL}?attempt=${workflow.retryKey}`;
+    mapBase.src = mapBaseUrl;
 
     return () => {
       active = false;
       mapBase.onload = null;
       mapBase.onerror = null;
     };
-  }, [workflow.phase, workflow.retryKey]);
+  }, [stage, workflow.phase, workflow.retryKey, mapBaseUrl]);
 
-  const editorSource = annotatedMap?.editorSource ?? MAP_BASE_URL;
-  const editorVisible =
-    workflow.phase === "loading-editor" ||
-    workflow.phase === "editing" ||
-    workflow.phase === "saving";
+  const handleTerritoryLocked = useCallback((result: TerritoryLockedResult) => {
+    if (mapBaseBlobUrlRef.current) {
+      URL.revokeObjectURL(mapBaseBlobUrlRef.current);
+      mapBaseBlobUrlRef.current = null;
+    }
+
+    if (result.blob) {
+      const blobUrl = URL.createObjectURL(result.blob);
+      mapBaseBlobUrlRef.current = blobUrl;
+      setMapBaseUrl(blobUrl);
+      setIsSampleMap(false);
+    } else {
+      setMapBaseUrl(SAMPLE_MAP_BASE_URL);
+      setIsSampleMap(true);
+    }
+
+    setAttribution(result.attribution);
+    setLockedCamera(result.camera);
+    dispatch({ type: "retry" });
+    setStage("mission-plan");
+  }, []);
+
+  const handleSelectSampleFallback = useCallback(() => {
+    if (mapBaseBlobUrlRef.current) {
+      URL.revokeObjectURL(mapBaseBlobUrlRef.current);
+      mapBaseBlobUrlRef.current = null;
+    }
+    setMapBaseUrl(SAMPLE_MAP_BASE_URL);
+    setAttribution(SAMPLE_MAP_ATTRIBUTION);
+    setIsSampleMap(true);
+    dispatch({ type: "retry" });
+    setStage("mission-plan");
+  }, []);
 
   const handleEditorLoad = useCallback(() => {
     dispatch({ type: "editor-ready" });
@@ -91,6 +144,7 @@ export function HeistboardEditorProof() {
       if (!resource) throw new Error("The image resource owner is unavailable.");
       setAnnotatedMap(resource);
       dispatch({ type: "save-succeeded" });
+      setStage("dossier");
     } catch (error) {
       dispatch({
         type: "save-failed",
@@ -102,15 +156,31 @@ export function HeistboardEditorProof() {
     }
   }, []);
 
+  const handleReturnToTerritory = () => {
+    if (annotatedMap) {
+      const confirmed = window.confirm(
+        "Warning: Changing Territory resets your current Mission Plan. Continue?",
+      );
+      if (!confirmed) return;
+    }
+    setStage("territory");
+  };
+
+  const editorVisible =
+    stage === "mission-plan" &&
+    (workflow.phase === "loading-editor" ||
+      workflow.phase === "editing" ||
+      workflow.phase === "saving");
+
   return (
     <main className="shell">
       <header className="masthead">
         <div>
-          <p className="eyebrow">Case file / HB-001</p>
-          <h1>Mark the last delivery.</h1>
+          <p className="eyebrow">Case file / HB-003 Territory & Mission Proof</p>
+          <h1>Plan the heist. Mark the streets.</h1>
           <p className="lede">
-            A local proof of Heistboard’s core interaction: author a fictional Mission Plan,
-            save the exact result, then preview and download it.
+            From zero-cost 3D place search and locked camera rasterization, to browser-based
+            mission editing and legal dossier export.
           </p>
         </div>
         <div className="status-stamp" aria-label="Fictional scenario">
@@ -120,154 +190,219 @@ export function HeistboardEditorProof() {
         </div>
       </header>
 
-      <section className="workspace" aria-labelledby="workspace-title">
-        <aside className="briefing">
-          <p className="section-label">Mission brief</p>
-          <h2 id="workspace-title">Package before sunrise</h2>
-          <p>
-            The handoff point moved. Read the streets, choose your path, and leave the
-            courier one instruction.
-          </p>
-          <ol className="mission-steps">
-            {MISSION_STEPS.map(([number, title, detail]) => (
-              <li key={number}>
-                <span>{number}</span>
-                <div>
-                  <strong>{title}</strong>
-                  <p>{detail}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <p className="privacy-note">
-            This proof uses an original fictional map. No address, portrait, or map-provider
-            data is requested.
-          </p>
-        </aside>
+      {/* 3-Stage Progress Nav */}
+      <nav className="stage-indicator" aria-label="Operation Stages">
+        <span className={`stage-badge ${stage === "territory" ? "active" : "complete"}`}>
+          01 / Territory
+        </span>
+        <span className={`stage-badge ${stage === "mission-plan" ? "active" : ""}`}>
+          02 / Mission Plan
+        </span>
+        <span className={`stage-badge ${stage === "dossier" ? "active" : ""}`}>
+          03 / Dossier Preview
+        </span>
+      </nav>
 
-        <div className="editor-column">
-          <div className="editor-heading">
-            <div>
-              <p className="section-label">Map Base / Southbank District</p>
-              <h2>Mission Plan editor</h2>
+      {/* Stage 1: Territory Composition */}
+      {stage === "territory" && (
+        <TerritoryView
+          onLockTerritory={handleTerritoryLocked}
+          onSelectSampleFallback={handleSelectSampleFallback}
+          initialCamera={lockedCamera}
+        />
+      )}
+
+      {/* Stage 2: Mission Editor */}
+      {stage === "mission-plan" && (
+        <section className="workspace" aria-labelledby="workspace-title">
+          <aside className="briefing">
+            <p className="section-label">Mission brief</p>
+            <h2 id="workspace-title">Package before sunrise</h2>
+            <p>
+              The target area is locked. Trace your delivery route, mark safe locations,
+              and record the primary rendezvous point.
+            </p>
+            <ol className="mission-steps">
+              {MISSION_STEPS.map(([number, title, detail]) => (
+                <li key={number}>
+                  <span>{number}</span>
+                  <div>
+                    <strong>{title}</strong>
+                    <p>{detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="territory-source-tag">
+              <small>
+                Map Source:{" "}
+                <strong>
+                  {isSampleMap ? "Fictional Sample Map" : "OpenFreeMap 3D Vector Shot"}
+                </strong>
+              </small>
             </div>
-            <span className={`phase phase-${workflow.phase}`} aria-live="polite">
-              {phaseLabel(workflow.phase)}
-            </span>
+            <button
+              type="button"
+              className="action-button tertiary"
+              onClick={handleReturnToTerritory}
+            >
+              ← Change Territory (resets plan)
+            </button>
+          </aside>
+
+          <div className="editor-column">
+            <div className="editor-heading">
+              <div>
+                <p className="section-label">
+                  Map Base / {isSampleMap ? "Southbank District (Sample)" : "3D Territory"}
+                </p>
+                <h2>Mission Plan editor</h2>
+              </div>
+              <span className={`phase phase-${workflow.phase}`} aria-live="polite">
+                {phaseLabel(workflow.phase)}
+              </span>
+            </div>
+
+            {workflow.phase === "checking-map" && (
+              <EditorLoading label="Preparing and validating raster Map Base…" />
+            )}
+
+            {editorVisible && (
+              <div className="editor-frame" aria-busy={workflow.phase !== "editing"}>
+                {workflow.phase === "loading-editor" && (
+                  <div className="editor-overlay">
+                    <EditorLoading label="Loading React Image Editor…" />
+                  </div>
+                )}
+                <MissionEditor
+                  image={annotatedMap?.editorSource ?? mapBaseUrl}
+                  retryKey={workflow.retryKey}
+                  onLoad={handleEditorLoad}
+                  onSave={(result) => void handleSave(result)}
+                  onCancel={() => dispatch({ type: "cancelled" })}
+                  onImageError={() =>
+                    dispatch({
+                      type: "image-failed",
+                      message: "The Map Base could not be loaded into the editor.",
+                    })
+                  }
+                  onEditorError={(error) =>
+                    dispatch({
+                      type: "editor-failed",
+                      message: `React Image Editor could not start: ${error.message}`,
+                    })
+                  }
+                />
+              </div>
+            )}
+
+            {workflow.phase === "saving" && (
+              <p className="inline-status" role="status">
+                Verifying the saved image…
+              </p>
+            )}
+
+            {workflow.phase === "cancelled" && (
+              <RecoveryPanel
+                title="Mission Plan paused"
+                message={workflow.notice ?? "No changes were saved."}
+                actionLabel="Resume editing"
+                onAction={() => dispatch({ type: "edit-again" })}
+              />
+            )}
+
+            {workflow.phase === "failure" && workflow.failure && (
+              <RecoveryPanel
+                title={
+                  workflow.failure.kind === "image"
+                    ? "Map Base unavailable"
+                    : workflow.failure.kind === "editor"
+                      ? "Editor unavailable"
+                      : "Save could not be verified"
+                }
+                message={workflow.failure.message}
+                actionLabel="Try again"
+                onAction={() => dispatch({ type: "retry" })}
+                secondaryAction={{
+                  label: "Use sample map fallback",
+                  onClick: handleSelectSampleFallback,
+                }}
+              />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Stage 3: Dossier Preview */}
+      {stage === "dossier" && annotatedMap && (
+        <section className="preview-panel" aria-labelledby="preview-title">
+          <div className="preview-copy">
+            <div>
+              <p className="section-label">Final Dossier / Annotated Map</p>
+              <h2 id="preview-title">Operation Dossier</h2>
+              <p role="status">
+                Your mission plan is locked and verified. This exact image will be exported.
+              </p>
+            </div>
+            <div className="actions">
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={() => setStage("mission-plan")}
+              >
+                Edit mission again
+              </button>
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={handleReturnToTerritory}
+              >
+                New territory
+              </button>
+              <a
+                className="button button-primary"
+                href={annotatedMap.download.href}
+                download={annotatedMap.download.fileName}
+              >
+                Download Dossier PNG
+              </a>
+            </div>
           </div>
 
-          {workflow.phase === "checking-map" && (
-            <EditorLoading label="Checking the original Map Base…" />
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="annotated-map"
+            src={annotatedMap.previewUrl}
+            alt="The exact Annotated Map saved from the mission editor"
+          />
 
-          {editorVisible && (
-            <div className="editor-frame" aria-busy={workflow.phase !== "editing"}>
-              {workflow.phase === "loading-editor" && (
-                <div className="editor-overlay">
-                  <EditorLoading label="Loading React Image Editor…" />
-                </div>
-              )}
-              <MissionEditor
-                image={editorSource}
-                retryKey={workflow.retryKey}
-                onLoad={handleEditorLoad}
-                onSave={(result) => void handleSave(result)}
-                onCancel={() => dispatch({ type: "cancelled" })}
-                onImageError={() =>
-                  dispatch({
-                    type: "image-failed",
-                    message: "The Map Base could not be loaded into the editor.",
-                  })
-                }
-                onEditorError={(error) =>
-                  dispatch({
-                    type: "editor-failed",
-                    message: `React Image Editor could not start: ${error.message}`,
-                  })
-                }
-              />
+          {/* Legally required attribution line under the Annotated Map */}
+          <div className="dossier-attribution-block">
+            <span>
+              <strong>Map Base Attribution:</strong> {attribution.noticeText} ·{" "}
+              <span>{attribution.printedUrl}</span>
+            </span>
+            <div className="dossier-attribution-links">
+              {attribution.links.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {link.label}
+                </a>
+              ))}
             </div>
-          )}
-
-          {workflow.phase === "saving" && (
-            <p className="inline-status" role="status">
-              Verifying the saved image…
-            </p>
-          )}
-
-          {workflow.phase === "preview" && annotatedMap && (
-            <section className="preview-panel" aria-labelledby="preview-title">
-              <div className="preview-copy">
-                <div>
-                  <p className="section-label">Annotated Map / saved</p>
-                  <h2 id="preview-title">Your exact Mission Plan</h2>
-                  <p role="status">{workflow.notice}</p>
-                </div>
-                <div className="actions">
-                  <button
-                    className="button button-secondary"
-                    type="button"
-                    onClick={() => dispatch({ type: "edit-again" })}
-                  >
-                    Edit again
-                  </button>
-                  <a
-                    className="button button-primary"
-                    href={annotatedMap.download.href}
-                    download={annotatedMap.download.fileName}
-                  >
-                    Download PNG
-                  </a>
-                </div>
-              </div>
-              {/* The same object URL backs this preview and the download above. */}
-              {/* eslint-disable-next-line @next/next/no-img-element -- Blob URLs must bypass optimization so preview and download share the exact saved image. */}
-              <img
-                className="annotated-map"
-                src={annotatedMap.previewUrl}
-                alt="The exact Annotated Map saved from the mission editor"
-              />
-            </section>
-          )}
-
-          {workflow.phase === "cancelled" && (
-            <RecoveryPanel
-              title="Mission Plan paused"
-              message={workflow.notice ?? "No changes were saved."}
-              actionLabel="Resume editing"
-              onAction={() => dispatch({ type: "edit-again" })}
-            />
-          )}
-
-          {workflow.phase === "failure" && workflow.failure && (
-            <RecoveryPanel
-              title={
-                workflow.failure.kind === "image"
-                  ? "Map Base unavailable"
-                  : workflow.failure.kind === "editor"
-                    ? "Editor unavailable"
-                    : "Save could not be verified"
-              }
-              message={workflow.failure.message}
-              actionLabel="Try again"
-              onAction={() => dispatch({ type: "retry" })}
-              secondaryAction={
-                workflow.hasAnnotatedMap
-                  ? {
-                      label: "Return to saved map",
-                      onClick: () => dispatch({ type: "cancelled" }),
-                    }
-                  : undefined
-              }
-            />
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       <footer className="footer-note">
-        <span>Original sample map</span>
+        <span>{formatAttributionString(attribution)}</span>
         <span>No route calculation</span>
-        <span>React Image Editor is the authoring surface</span>
+        <span>Fictional use only</span>
+        <span>React Image Editor authoring</span>
       </footer>
     </main>
   );
