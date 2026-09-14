@@ -1,9 +1,11 @@
 import {
+  type MapLayerMode,
   OPENFREEMAP_LIBERTY_STYLE,
   STANDARD_MAP_BASE_HEIGHT,
   STANDARD_MAP_BASE_WIDTH,
   type TerritoryCameraState,
 } from "@/domain/territory";
+import { applyMapLayers } from "./territory-layers";
 
 export type CapturePhase =
   | "initializing"
@@ -17,6 +19,7 @@ export interface TerritoryCaptureOptions {
   width?: number;
   height?: number;
   timeoutMs?: number;
+  layerMode?: MapLayerMode;
   onProgress?: (phase: CapturePhase) => void;
 }
 
@@ -65,6 +68,8 @@ export async function captureTerritoryShot(
 
   let mapInstance: InstanceType<typeof maplibregl.Map> | null = null;
 
+  const layerMode = options.layerMode ?? "realistic";
+
   try {
     const map = new maplibregl.Map({
       container,
@@ -83,8 +88,15 @@ export async function captureTerritoryShot(
     });
     mapInstance = map;
 
+    map.on("load", () => {
+      applyMapLayers(map, layerMode);
+    });
+
     onProgress("loading-tiles");
     await waitForMapIdle(map, timeoutMs);
+
+    // Ensure layers are configured even if load fired synchronously
+    applyMapLayers(map, layerMode);
 
     onProgress("rendering");
     const canvas = map.getCanvas();

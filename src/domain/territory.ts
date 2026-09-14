@@ -49,6 +49,21 @@ export const DEFAULT_TERRITORY_CAMERA: TerritoryCameraState = {
   bearing: -25,
 };
 
+export type MapLayerMode = "realistic" | "tactical";
+
+export const SATELLITE_TILE_URL =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+
+export const REALISTIC_TERRITORY_ATTRIBUTION: TerritoryAttribution = {
+  noticeText: "Esri World Imagery · OpenFreeMap 3D · Data from OpenStreetMap",
+  printedUrl: "openstreetmap.org/copyright",
+  links: [
+    { label: "Esri", href: "https://www.esri.com" },
+    { label: "OpenFreeMap", href: "https://openfreemap.org" },
+    { label: "OpenStreetMap", href: "https://www.openstreetmap.org/copyright" },
+  ],
+};
+
 export const STANDARD_TERRITORY_ATTRIBUTION: TerritoryAttribution = {
   noticeText: "OpenFreeMap · © OpenMapTiles · Data from OpenStreetMap",
   printedUrl: "openstreetmap.org/copyright",

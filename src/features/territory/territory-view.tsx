@@ -7,8 +7,10 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import {
   DEFAULT_TERRITORY_CAMERA,
   OPENFREEMAP_LIBERTY_STYLE,
+  REALISTIC_TERRITORY_ATTRIBUTION,
   STANDARD_TERRITORY_ATTRIBUTION,
   getCategoryLabel,
+  type MapLayerMode,
   type PlaceCandidate,
   type TerritoryAttribution,
   type TerritoryCameraState,
@@ -18,6 +20,7 @@ import {
   captureTerritoryShot,
   type CapturePhase,
 } from "@/lib/territory-capture";
+import { applyMapLayers } from "@/lib/territory-layers";
 
 export interface TerritoryLockedResult {
   source: "custom-search" | "sample-fallback";
@@ -55,6 +58,16 @@ export function TerritoryView({
   const [webglSupported, setWebglSupported] = useState<boolean>(true);
   const [contextLost, setContextLost] = useState<boolean>(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [layerMode, setLayerMode] = useState<MapLayerMode>("realistic");
+  const layerModeRef = useRef(layerMode);
+
+  // Keep map layers in sync when layerMode changes
+  useEffect(() => {
+    layerModeRef.current = layerMode;
+    if (mapInstanceRef.current && mapLoaded) {
+      applyMapLayers(mapInstanceRef.current, layerMode);
+    }
+  }, [layerMode, mapLoaded]);
 
   // Initialize MapLibre GL JS
   useEffect(() => {
@@ -104,56 +117,9 @@ export function TerritoryView({
         });
 
         map.on("load", () => {
-          if (!active) return;
+          if (!active || !map) return;
           setMapLoaded(true);
-
-          // Add stylized 3D building extrusions if building data exists
-          try {
-            const style = map?.getStyle();
-            if (style && map && !map.getLayer("heistboard-3d-buildings")) {
-              const hasOpenMapTiles = Boolean(map.getSource("openmaptiles"));
-              if (hasOpenMapTiles) {
-                if (map.getLayer("building-3d")) {
-                  map.setLayoutProperty("building-3d", "visibility", "none");
-                }
-                map.addLayer({
-                  id: "heistboard-3d-buildings",
-                  source: "openmaptiles",
-                  "source-layer": "building",
-                  type: "fill-extrusion",
-                  minzoom: 14,
-                  paint: {
-                    "fill-extrusion-color": [
-                      "interpolate",
-                      ["linear"],
-                      ["coalesce", ["get", "render_height"], 0],
-                      0,
-                      "#252d3a",
-                      40,
-                      "#374558",
-                      90,
-                      "#ef7866",
-                    ],
-                    "fill-extrusion-height": [
-                      "coalesce",
-                      ["get", "render_height"],
-                      ["get", "height"],
-                      15,
-                    ],
-                    "fill-extrusion-base": [
-                      "coalesce",
-                      ["get", "render_min_height"],
-                      ["get", "min_height"],
-                      0,
-                    ],
-                    "fill-extrusion-opacity": 0.88,
-                  },
-                });
-              }
-            }
-          } catch (e) {
-            console.warn("Could not inject 3d building extrusion layer:", e);
-          }
+          applyMapLayers(map, layerModeRef.current);
         });
 
         const updateCamera = () => {
@@ -301,6 +267,11 @@ export function TerritoryView({
     }
   };
 
+  const activeAttribution =
+    layerMode === "realistic"
+      ? REALISTIC_TERRITORY_ATTRIBUTION
+      : STANDARD_TERRITORY_ATTRIBUTION;
+
   const handleLockTerritory = async () => {
     setIsCapturing(true);
     setCaptureError(null);
@@ -308,13 +279,14 @@ export function TerritoryView({
 
     try {
       const result = await captureTerritoryShot(camera, {
+        layerMode,
         onProgress: (phase) => setCapturePhase(phase),
       });
       onLockTerritory({
         source: "custom-search",
         blob: result.blob,
         camera: result.camera,
-        attribution: STANDARD_TERRITORY_ATTRIBUTION,
+        attribution: activeAttribution,
       });
     } catch (err) {
       setCaptureError(
@@ -445,6 +417,27 @@ export function TerritoryView({
 
         {/* Camera Controls & Metrics */}
         <div className="camera-inspector">
+          {/* Layer Style Switcher */}
+          <div className="layer-mode-switcher">
+            <span className="layer-mode-label">Perspective Style:</span>
+            <div className="layer-mode-buttons" role="group" aria-label="Perspective style switcher">
+              <button
+                type="button"
+                className={`layer-mode-btn ${layerMode === "realistic" ? "active" : ""}`}
+                onClick={() => setLayerMode("realistic")}
+              >
+                🛰️ Realistic Aerial 3D
+              </button>
+              <button
+                type="button"
+                className={`layer-mode-btn ${layerMode === "tactical" ? "active" : ""}`}
+                onClick={() => setLayerMode("tactical")}
+              >
+                🗺️ Tactical Vector
+              </button>
+            </div>
+          </div>
+
           <div className="camera-metrics">
             <span title="Longitude, Latitude">
               <strong>Center:</strong> {camera.center[0]}, {camera.center[1]}
@@ -623,13 +616,13 @@ export function TerritoryView({
 
         {/* Attribution Overlay */}
         <div className="map-attribution-overlay" aria-label="Map Data Attribution">
-          <span>{STANDARD_TERRITORY_ATTRIBUTION.noticeText} · </span>
+          <span>{activeAttribution.noticeText} · </span>
           <a
-            href="https://www.openstreetmap.org/copyright"
+            href={`https://${activeAttribution.printedUrl}`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            {STANDARD_TERRITORY_ATTRIBUTION.printedUrl}
+            {activeAttribution.printedUrl}
           </a>
         </div>
       </div>

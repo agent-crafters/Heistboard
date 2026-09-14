@@ -669,6 +669,59 @@ a:focus-visible {
   border-radius: 6px;
 }
 
+/* Layer Style Switcher */
+.layer-mode-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(240, 234, 220, 0.08);
+}
+
+.layer-mode-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.layer-mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.layer-mode-btn {
+  padding: 0.5rem 0.65rem;
+  background: rgba(240, 234, 220, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.layer-mode-btn:hover {
+  background: rgba(240, 234, 220, 0.12);
+  border-color: rgba(240, 234, 220, 0.3);
+}
+
+.layer-mode-btn.active {
+  background: rgba(82, 196, 172, 0.18);
+  border-color: #52c4ac;
+  color: #a7f3d0;
+  font-weight: 600;
+  box-shadow: 0 0 8px rgba(82, 196, 172, 0.2);
+}
+
 .camera-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
