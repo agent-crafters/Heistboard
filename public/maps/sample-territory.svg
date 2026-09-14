@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Southbank District fictional sample map</title>
+  <desc id="desc">An original stylized map with streets, blocks, a canal, a park, and fictional place labels.</desc>
+  <defs>
+    <pattern id="paper" width="32" height="32" patternUnits="userSpaceOnUse">
+      <rect width="32" height="32" fill="#dcd4bf"/>
+      <path d="M0 8h32M7 0v32" stroke="#746f64" stroke-opacity=".045" stroke-width="1"/>
+    </pattern>
+    <pattern id="park-dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <rect width="28" height="28" fill="#a9b69c"/>
+      <circle cx="7" cy="8" r="2" fill="#61765f" opacity=".38"/>
+      <circle cx="22" cy="20" r="2.5" fill="#61765f" opacity=".28"/>
+    </pattern>
+    <filter id="roughen">
+      <feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="8" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
+      <feComponentTransfer in="mono" result="grain"><feFuncA type="table" tableValues="0 .045"/></feComponentTransfer>
+      <feBlend in="SourceGraphic" in2="grain" mode="multiply"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#paper)"/>
+  <path d="M1070-60C970 165 1115 245 1010 430c-92 162-23 315-128 474-50 76-104 125-162 162h940V-60Z" fill="#5f9293"/>
+  <path d="M1082-30c-88 214 55 299-49 479-90 156-13 298-121 466-45 70-88 112-137 145" fill="none" stroke="#efe7d0" stroke-opacity=".72" stroke-width="18"/>
+
+  <path d="M0 270 1064 98" fill="none" stroke="#fbf4e2" stroke-width="34"/>
+  <path d="M0 270 1064 98" fill="none" stroke="#6f6c63" stroke-dasharray="3 21" stroke-linecap="round" stroke-width="3"/>
+  <path d="m76 915 978-681" fill="none" stroke="#f7efdc" stroke-width="40"/>
+  <path d="m76 915 978-681" fill="none" stroke="#6f6c63" stroke-dasharray="4 24" stroke-linecap="round" stroke-width="3"/>
+  <path d="M320 0 642 1000" fill="none" stroke="#f7efdc" stroke-width="36"/>
+  <path d="M320 0 642 1000" fill="none" stroke="#6f6c63" stroke-dasharray="4 23" stroke-linecap="round" stroke-width="3"/>
+  <path d="M22 690 970 548" fill="none" stroke="#f7efdc" stroke-width="30"/>
+  <path d="M22 690 970 548" fill="none" stroke="#6f6c63" stroke-dasharray="4 20" stroke-linecap="round" stroke-width="3"/>
+
+  <g fill="#c3b9a3" stroke="#817b6e" stroke-width="3">
+    <path d="m64 327 187-30 38 120-183 33Z"/>
+    <path d="m306 284 172-28 39 116-174 31Z"/>
+    <path d="m520 247 198-32 34 109-196 36Z"/>
+    <path d="m765 204 206-34-45 118-128 22Z"/>
+    <path d="m126 482 180-31 47 150-191 31Z"/>
+    <path d="m360 435 176-31 46 148-176 31Z"/>
+    <path d="m771 350 151-30-69 172-138 24Z"/>
+    <path d="m160 715 192-31 54 169-190 36Z"/>
+    <path d="m420 664 176-29 59 180-178 32Z"/>
+    <path d="m689 617 164-27-78 198-31 10Z"/>
+  </g>
+
+  <path d="m583 395 150-27 50 154-156 27Z" fill="url(#park-dots)" stroke="#60715c" stroke-width="4"/>
+  <path d="M1136 75h344v205h-344zM1097 340h410v168h-410zM1016 603h491v253h-491z" fill="#517f80" stroke="#315e60" stroke-width="4"/>
+  <g stroke="#d3c6aa" stroke-width="6" opacity=".72">
+    <path d="M1190 75v205M1271 75v205M1362 75v205"/>
+    <path d="M1175 340v168M1270 340v168M1385 340v168"/>
+    <path d="M1110 603v253M1235 603v253M1370 603v253"/>
+  </g>
+
+  <g fill="#2e3533" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">
+    <text x="80" y="120" font-size="27" font-weight="700">SOUTHBANK DISTRICT</text>
+    <text x="80" y="153" font-size="15" opacity=".66">ORIGINAL FICTIONAL MAP · SECTOR 07</text>
+    <text x="585" y="460" font-size="19" font-weight="700" transform="rotate(-10 585 460)">PALM COURT</text>
+    <text x="203" y="561" font-size="17" font-weight="700" transform="rotate(-9 203 561)">LANTERN MARKET</text>
+    <text x="405" y="762" font-size="16" font-weight="700" transform="rotate(-10 405 762)">MERCURY ROW</text>
+    <text x="830" y="178" font-size="15" font-weight="700" transform="rotate(-9 830 178)">NORTHLINE</text>
+    <text x="1080" y="930" fill="#e8e0cb" font-size="16" font-weight="700">TIDELINE CANAL</text>
+  </g>
+
+  <g fill="none" stroke="#36413e" stroke-width="5">
+    <path d="m113 376 129-22M367 331l102-18M554 297l137-23M173 539l123-21M411 493l116-20M209 787l139-24M470 743l111-20"/>
+  </g>
+
+  <g transform="translate(1410 875)">
+    <circle r="62" fill="#e7dfcb" stroke="#2e3533" stroke-width="4"/>
+    <path d="M0-42 13 0 0 42-13 0Z" fill="#ef7866" stroke="#2e3533" stroke-width="3"/>
+    <text x="0" y="-72" text-anchor="middle" fill="#2e3533" font-family="Arial" font-size="17" font-weight="700">N</text>
+  </g>
+
+  <g transform="translate(86 936)" fill="#2e3533" font-family="Arial, Helvetica, sans-serif">
+    <rect x="0" y="-24" width="250" height="6" fill="#2e3533"/>
+    <path d="M0-32v22M125-32v22M250-32v22" stroke="#2e3533" stroke-width="4"/>
+    <text x="0" y="8" font-size="14">0</text>
+    <text x="112" y="8" font-size="14">0.5</text>
+    <text x="231" y="8" font-size="14">1 KM</text>
+  </g>
+
+  <rect x="18" y="18" width="1564" height="964" fill="none" stroke="#2f3533" stroke-width="5" opacity=".75"/>
+  <rect width="1600" height="1000" fill="transparent" filter="url(#roughen)" pointer-events="none"/>
+</svg>

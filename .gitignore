@@ -1,0 +1,19 @@
+# Dependencies and build output
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# Local configuration and generated artifacts
+.env*
+!.env.example
+*.log
+*.tsbuildinfo
+*.png
+downloads/
+
+# Disposable task working files; the ledger is intentionally versioned.
+.temp/*
+!.temp/tasks.md
