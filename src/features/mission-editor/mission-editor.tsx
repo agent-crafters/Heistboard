@@ -78,27 +78,28 @@ export function MissionEditor({
   const containerRef = useRef<HTMLDivElement>(null);
   const originalImageRef = useRef<HTMLImageElement | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
-  const [showIdentityDrawer, setShowIdentityDrawer] = useState(false);
+  const [isIdentityOpen, setIsIdentityOpen] = useState(false);
   const [isGtaFontsOpen, setIsGtaFontsOpen] = useState(false);
 
-  // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts below Shapes
+  // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts & Identity below Shapes
   useEffect(() => {
     ensureFontsLoaded();
     const disconnectNativeMenu = setupNativeFontMenuObserver(containerRef.current);
 
-    const attachGtaFontsButton = () => {
+    const attachCustomToolButtons = () => {
       if (!containerRef.current) return;
       const shapesBtn = containerRef.current.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-shapes"]',
       );
       if (!shapesBtn || !shapesBtn.parentElement) return;
 
-      const existingBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+      // 1. Inject GTA Fonts button after Shapes
+      let gtaBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-gta-fonts"]',
       );
 
-      if (!existingBtn) {
-        const gtaBtn = document.createElement("button");
+      if (!gtaBtn) {
+        gtaBtn = document.createElement("button");
         gtaBtn.type = "button";
         gtaBtn.setAttribute("data-testid", "native-tool-gta-fonts");
         gtaBtn.className =
@@ -115,30 +116,64 @@ export function MissionEditor({
           e.preventDefault();
           e.stopPropagation();
           setIsGtaFontsOpen((prev) => !prev);
+          setIsIdentityOpen(false);
+          setShowDrawer(false);
         };
 
         shapesBtn.after(gtaBtn);
       }
 
-      // Close GTA Fonts panel when Draw, Text, or Shapes is clicked
+      // 2. Inject Operative Identity button right below GTA Fonts
+      const existingIdentityBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+        'button[data-testid="native-tool-operative-identity"]',
+      );
+
+      if (!existingIdentityBtn && gtaBtn) {
+        const identityBtn = document.createElement("button");
+        identityBtn.type = "button";
+        identityBtn.setAttribute("data-testid", "native-tool-operative-identity");
+        identityBtn.className =
+          "native-tool-operative-identity-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
+        identityBtn.title = "Establish Your Operative Identity (GTA VI)";
+        identityBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f72585" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" fill="rgba(247,37,133,0.3)" />
+          </svg>
+          <span class="truncate max-w-full" style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em; color: #f72585; line-height: 1.1;">Identity</span>
+        `;
+
+        identityBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsIdentityOpen((prev) => !prev);
+          setIsGtaFontsOpen(false);
+          setShowDrawer(false);
+        };
+
+        gtaBtn.after(identityBtn);
+      }
+
+      // Close custom panels when Draw, Text, or Shapes is clicked
       const nativeToolBtns = shapesBtn.parentElement.querySelectorAll<HTMLButtonElement>(
         'button[data-testid="native-tool-draw"], button[data-testid="native-tool-text"], button[data-testid="native-tool-shapes"]',
       );
 
       nativeToolBtns.forEach((btn) => {
-        if (!btn.getAttribute("data-gta-listener")) {
-          btn.setAttribute("data-gta-listener", "true");
+        if (!btn.getAttribute("data-custom-tool-listener")) {
+          btn.setAttribute("data-custom-tool-listener", "true");
           btn.addEventListener("click", () => {
             setIsGtaFontsOpen(false);
+            setIsIdentityOpen(false);
           });
         }
       });
     };
 
-    attachGtaFontsButton();
+    attachCustomToolButtons();
 
     const observer = new MutationObserver(() => {
-      attachGtaFontsButton();
+      attachCustomToolButtons();
     });
 
     if (containerRef.current) {
@@ -151,7 +186,7 @@ export function MissionEditor({
     };
   }, []);
 
-  // Synchronize active state styling on the injected GTA Fonts tool button
+  // Synchronize active state styling on the injected GTA Fonts and Identity buttons
   useEffect(() => {
     if (!containerRef.current) return;
     const gtaBtn = containerRef.current.querySelector<HTMLButtonElement>(
@@ -164,7 +199,18 @@ export function MissionEditor({
         gtaBtn.classList.remove("active");
       }
     }
-  }, [isGtaFontsOpen]);
+
+    const identityBtn = containerRef.current.querySelector<HTMLButtonElement>(
+      'button[data-testid="native-tool-operative-identity"]',
+    );
+    if (identityBtn) {
+      if (isIdentityOpen) {
+        identityBtn.classList.add("active");
+      } else {
+        identityBtn.classList.remove("active");
+      }
+    }
+  }, [isGtaFontsOpen, isIdentityOpen]);
 
   const bgConfigRef = useRef(bgConfig);
   bgConfigRef.current = bgConfig;
@@ -247,7 +293,7 @@ export function MissionEditor({
           className={`editor-toolbar-btn ${showDrawer ? "active" : ""}`}
           onClick={() => {
             setShowDrawer((prev) => !prev);
-            setShowIdentityDrawer(false);
+            setIsIdentityOpen(false);
           }}
           title="Open Background Layer & GTA VI Styles Controls"
         >
@@ -262,15 +308,16 @@ export function MissionEditor({
 
         <button
           type="button"
-          className={`editor-toolbar-btn ${showIdentityDrawer ? "active" : ""}`}
+          className={`editor-toolbar-btn ${isIdentityOpen ? "active" : ""}`}
           onClick={() => {
-            setShowIdentityDrawer((prev) => !prev);
+            setIsIdentityOpen((prev) => !prev);
+            setIsGtaFontsOpen(false);
             setShowDrawer(false);
           }}
-          title="Open GTA VI Operative ID Badge Controls"
+          title="Establish Your Operative Identity (GTA VI)"
         >
           <span className="btn-icon">👤</span>
-          <span className="btn-label">Operative ID Badge (GTA VI)</span>
+          <span className="btn-label">Operative Identity (GTA VI)</span>
           <span className="btn-badge">
             {identityOptions?.alias || "CIPHER"} · {identityOptions?.wantedStars ?? 5}★
           </span>
@@ -302,22 +349,24 @@ export function MissionEditor({
         </div>
       )}
 
-      {/* In-Editor Operative Identity Badge Drawer */}
-      {showIdentityDrawer && (
-        <div className="editor-bg-drawer-overlay">
-          <div className="editor-bg-drawer-backdrop" onClick={() => setShowIdentityDrawer(false)} />
-          <div className="editor-bg-drawer-content">
-            <div className="editor-bg-drawer-header">
-              <span className="drawer-title">Operative Identity Badge (GTA VI)</span>
-              <button
-                type="button"
-                className="drawer-close-btn"
-                onClick={() => setShowIdentityDrawer(false)}
-                title="Close controls"
-              >
-                ✕
-              </button>
+      {/* In-Editor Operative Identity Panel (Opened right from below GTA Fonts tool) */}
+      {isIdentityOpen && (
+        <div className="editor-identity-panel-overlay" aria-label="Operative Identity Tool Panel">
+          <div className="editor-identity-panel-header">
+            <div className="flex items-center gap-2">
+              <span className="panel-badge">★ GTA VI RECORD</span>
+              <span className="panel-title">Operative Identity</span>
             </div>
+            <button
+              type="button"
+              className="panel-close-btn"
+              onClick={() => setIsIdentityOpen(false)}
+              title="Close Operative Identity panel"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="editor-identity-panel-scroll">
             <IdentityControls
               initialOptions={identityOptions}
               identityState={identityState}
