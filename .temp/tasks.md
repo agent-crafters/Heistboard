@@ -69,10 +69,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-16
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Create a usable Identity with or without a personal portrait.
 - Dependencies: HB-001
-- GitHub issue: —
+- GitHub issue: #5
 - Acceptance criteria:
   - User enters a bounded alias.
   - Optional portrait upload supports validated image types and size limits.

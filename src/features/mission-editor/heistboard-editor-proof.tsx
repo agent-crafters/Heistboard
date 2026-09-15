@@ -22,12 +22,24 @@ import {
   type AnnotatedMapResource,
 } from "@/lib/annotated-map-resource";
 import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/territory-view";
+import { IdentityView } from "@/features/identity/identity-view";
+import {
+  type IdentityState,
+  DEFAULT_IDENTITY_STATE,
+  getSilhouetteArchetype,
+} from "@/domain/identity";
 import { StickerSidebar } from "@/features/mission-editor/sticker-sidebar";
+import { BgLayerControls } from "@/features/mission-editor/bg-layer-controls";
+import {
+  type BgLayerConfig,
+  DEFAULT_BG_LAYER_CONFIG,
+  applyBgLayerToFabricCanvas,
+} from "@/lib/bg-layer-processor";
 import { findFabricCanvas, importStickerToCanvas } from "@/lib/sticker-canvas-importer";
 
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
-export type HeistStage = "territory" | "mission-plan" | "dossier";
+export type HeistStage = "territory" | "identity" | "mission-plan" | "dossier";
 
 const MISSION_STEPS = [
   ["01", "Draw the route", "Use Draw to trace a bold path across the neighborhood."],
@@ -93,11 +105,29 @@ export function HeistboardEditorProof() {
     initialEditorWorkflow,
   );
   const [annotatedMap, setAnnotatedMap] = useState<AnnotatedMapResource | null>(null);
-  const [sidebarTab, setSidebarTab] = useState<"brief" | "stickers">("stickers");
+  const [identity, setIdentity] = useState<IdentityState>(DEFAULT_IDENTITY_STATE);
+  const [bgLayerConfig, setBgLayerConfig] = useState<BgLayerConfig>(DEFAULT_BG_LAYER_CONFIG);
+  const [sidebarTab, setSidebarTab] = useState<"brief" | "stickers" | "bg-layer">("stickers");
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
   const mapBaseBlobUrlRef = useRef<string | null>(null);
   const editorFrameRef = useRef<HTMLDivElement>(null);
+
+  const handleBgLayerChange = useCallback(
+    (newConfig: BgLayerConfig) => {
+      setBgLayerConfig(newConfig);
+      const fabricCanvas = findFabricCanvas(editorFrameRef.current);
+      if (fabricCanvas) {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          applyBgLayerToFabricCanvas(fabricCanvas, newConfig, img);
+        };
+        img.src = annotatedMap?.editorSource ?? mapBaseUrl;
+      }
+    },
+    [annotatedMap?.editorSource, mapBaseUrl],
+  );
 
   if (resourceOwner.current === null) {
     resourceOwner.current = new AnnotatedMapResourceOwner();
@@ -158,7 +188,7 @@ export function HeistboardEditorProof() {
     setAttribution(result.attribution);
     setLockedCamera(result.camera);
     dispatch({ type: "retry" });
-    setStage("mission-plan");
+    setStage("identity");
   }, []);
 
   const handleSelectSampleFallback = useCallback(() => {
@@ -170,7 +200,16 @@ export function HeistboardEditorProof() {
     setAttribution(SAMPLE_MAP_ATTRIBUTION);
     setIsSampleMap(true);
     dispatch({ type: "retry" });
+    setStage("identity");
+  }, []);
+
+  const handleConfirmIdentity = useCallback((newIdentity: IdentityState) => {
+    setIdentity(newIdentity);
     setStage("mission-plan");
+  }, []);
+
+  const handleReturnToTerritoryFromIdentity = useCallback(() => {
+    setStage("territory");
   }, []);
 
   const handleEditorLoad = useCallback(() => {
@@ -255,16 +294,23 @@ export function HeistboardEditorProof() {
         </div>
       </header>
 
-      {/* 3-Stage Progress Nav */}
+      {/* 4-Stage Progress Nav */}
       <nav className="stage-indicator" aria-label="Operation Stages">
         <span className={`stage-badge ${stage === "territory" ? "active" : "complete"}`}>
           01 / Territory
         </span>
-        <span className={`stage-badge ${stage === "mission-plan" ? "active" : ""}`}>
-          02 / Mission Plan
+        <span
+          className={`stage-badge ${stage === "identity" ? "active" : stage === "mission-plan" || stage === "dossier" ? "complete" : ""}`}
+        >
+          02 / Identity
+        </span>
+        <span
+          className={`stage-badge ${stage === "mission-plan" ? "active" : stage === "dossier" ? "complete" : ""}`}
+        >
+          03 / Mission Plan
         </span>
         <span className={`stage-badge ${stage === "dossier" ? "active" : ""}`}>
-          03 / Dossier Preview
+          04 / Dossier Preview
         </span>
       </nav>
 
@@ -277,7 +323,16 @@ export function HeistboardEditorProof() {
         />
       )}
 
-      {/* Stage 2: Mission Editor */}
+      {/* Stage 2: Operative Identity */}
+      {stage === "identity" && (
+        <IdentityView
+          initialState={identity}
+          onConfirmIdentity={handleConfirmIdentity}
+          onReturnToTerritory={handleReturnToTerritoryFromIdentity}
+        />
+      )}
+
+      {/* Stage 3: Mission Editor */}
       {stage === "mission-plan" && (
         <section className="workspace" aria-labelledby="workspace-title">
           <aside className="briefing">
@@ -291,6 +346,13 @@ export function HeistboardEditorProof() {
               </button>
               <button
                 type="button"
+                className={`briefing-tab-btn ${sidebarTab === "bg-layer" ? "active" : ""}`}
+                onClick={() => setSidebarTab("bg-layer")}
+              >
+                BG &amp; Styles
+              </button>
+              <button
+                type="button"
                 className={`briefing-tab-btn ${sidebarTab === "brief" ? "active" : ""}`}
                 onClick={() => setSidebarTab("brief")}
               >
@@ -298,7 +360,12 @@ export function HeistboardEditorProof() {
               </button>
             </div>
 
-            {sidebarTab === "stickers" ? (
+            {sidebarTab === "bg-layer" ? (
+              <BgLayerControls
+                config={bgLayerConfig}
+                onChange={handleBgLayerChange}
+              />
+            ) : sidebarTab === "stickers" ? (
               <StickerSidebar editorContainerRef={editorFrameRef} />
             ) : (
               <>
@@ -308,6 +375,38 @@ export function HeistboardEditorProof() {
                   The target area is locked. Trace your delivery route, mark safe locations,
                   and record the primary rendezvous point.
                 </p>
+
+                {/* Operative Callsign & Identity Badge in Briefing */}
+                <div className="brief-operative-card">
+                  <div className="brief-operative-avatar">
+                    {identity.portraitSource === "custom" && identity.portraitUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={identity.portraitUrl} alt={identity.alias} />
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="brief-operative-meta">
+                    <span className="brief-operative-tag">OPERATIVE / CALLSIGN</span>
+                    <strong className="brief-operative-alias">{identity.alias}</strong>
+                    <small className="brief-operative-role">
+                      {identity.portraitSource === "silhouette"
+                        ? getSilhouetteArchetype(identity.silhouetteId).role
+                        : "Field Agent"}
+                    </small>
+                  </div>
+                  <button
+                    type="button"
+                    className="brief-edit-identity-btn"
+                    onClick={() => setStage("identity")}
+                    title="Change operative identity or portrait"
+                  >
+                    Edit
+                  </button>
+                </div>
+
                 <ol className="mission-steps">
                   {MISSION_STEPS.map(([number, title, detail]) => (
                     <li key={number}>
@@ -387,6 +486,8 @@ export function HeistboardEditorProof() {
                       message: `React Image Editor could not start: ${error.message}`,
                     })
                   }
+                  bgConfig={bgLayerConfig}
+                  onBgConfigChange={handleBgLayerChange}
                 />
               </div>
             )}
@@ -428,7 +529,7 @@ export function HeistboardEditorProof() {
         </section>
       )}
 
-      {/* Stage 3: Dossier Preview */}
+      {/* Stage 4: Dossier Preview */}
       {stage === "dossier" && annotatedMap && (
         <section className="preview-panel" aria-labelledby="preview-title">
           <div className="preview-copy">
@@ -439,6 +540,30 @@ export function HeistboardEditorProof() {
                 Your mission plan is locked and verified. This exact image will be exported.
               </p>
             </div>
+
+            {/* Operative Identity Strip in Dossier */}
+            <div className="dossier-operative-strip">
+              <div className="dossier-operative-avatar">
+                {identity.portraitSource === "custom" && identity.portraitUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={identity.portraitUrl} alt={identity.alias} />
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
+                  </svg>
+                )}
+              </div>
+              <div className="dossier-operative-info">
+                <span className="operative-tag">ASSIGNED OPERATIVE</span>
+                <strong className="operative-callsign">{identity.alias}</strong>
+                <span className="operative-archetype">
+                  {identity.portraitSource === "silhouette"
+                    ? `${getSilhouetteArchetype(identity.silhouetteId).name} (${getSilhouetteArchetype(identity.silhouetteId).role})`
+                    : `Field Agent · Filter: ${identity.portraitFilter.toUpperCase()}`}
+                </span>
+              </div>
+            </div>
+
             <div className="actions">
               <button
                 className="button button-secondary"
@@ -446,6 +571,13 @@ export function HeistboardEditorProof() {
                 onClick={() => setStage("mission-plan")}
               >
                 Edit mission again
+              </button>
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={() => setStage("identity")}
+              >
+                Edit identity
               </button>
               <button
                 className="button button-secondary"
