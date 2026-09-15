@@ -25,6 +25,7 @@ import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/
 import {
   type IdentityState,
   DEFAULT_IDENTITY_STATE,
+  getSilhouetteArchetype,
 } from "@/domain/identity";
 import {
   type GtaBadgeOptions,
