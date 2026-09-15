@@ -328,7 +328,7 @@ function drawFallbackSilhouette(
 }
 
 /**
- * STYLE 1: "Vice Sunset VIP" (Direct inspiration from Image 1: GTA VI Voucher & Sunset Collectible)
+ * STYLE 1: "Vice Sunset VIP" — shows Name, Bounty, Role only.
  */
 function renderViceSunsetStyle(
   ctx: CanvasRenderingContext2D,
@@ -337,26 +337,23 @@ function renderViceSunsetStyle(
   merged: GtaBadgeOptions,
   portraitImg: HTMLImageElement | null,
 ): void {
-  // 1. Rounded Card Body
+  // 1. Rounded Card Body — Sunset Sky Gradient
   drawRoundedRect(ctx, 4, 4, width - 8, height - 8, 24);
-
-  // Sunset Sky Gradient
   const skyGrad = ctx.createLinearGradient(0, 0, 0, height - 50);
-  skyGrad.addColorStop(0.0, "#1b0736"); // Twilight purple
-  skyGrad.addColorStop(0.35, "#831843"); // Magenta dusk
-  skyGrad.addColorStop(0.7, "#ea580c"); // Neon sunset orange
-  skyGrad.addColorStop(0.95, "#facc15"); // Golden horizon
+  skyGrad.addColorStop(0.0, "#1b0736");
+  skyGrad.addColorStop(0.35, "#831843");
+  skyGrad.addColorStop(0.7, "#ea580c");
+  skyGrad.addColorStop(0.95, "#facc15");
   ctx.fillStyle = skyGrad;
   ctx.fill();
 
-  // Subtle Dual Neon Card Border
   ctx.save();
   ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.restore();
 
-  // 2. Sunset Glow & Sun Disc on Horizon
+  // 2. Sunset Glow
   ctx.save();
   const sunGrad = ctx.createRadialGradient(width * 0.62, height - 70, 10, width * 0.62, height - 70, 180);
   sunGrad.addColorStop(0, "rgba(255, 250, 220, 0.6)");
@@ -366,63 +363,50 @@ function renderViceSunsetStyle(
   ctx.fillRect(0, 0, width, height - 50);
   ctx.restore();
 
-  // 3. Palm Tree Silhouettes Rising from Bottom
+  // 3. Palm Trees & Skyline
   drawPalmTreeSilhouette(ctx, 28, height - 50, 1.15, 0.15);
   drawPalmTreeSilhouette(ctx, width - 40, height - 50, 1.25, -0.2);
   drawPalmTreeSilhouette(ctx, width - 110, height - 50, 0.9, -0.1);
-
-  // 4. Distant City Skyline Silhouettes
   ctx.save();
   ctx.fillStyle = "rgba(18, 5, 30, 0.85)";
   const buildings = [
-    [width * 0.28, 60, 35],
-    [width * 0.35, 85, 45],
-    [width * 0.43, 110, 30],
-    [width * 0.52, 95, 40],
-    [width * 0.61, 125, 55],
-    [width * 0.72, 75, 35],
+    [width * 0.28, 60, 35], [width * 0.35, 85, 45], [width * 0.43, 110, 30],
+    [width * 0.52, 95, 40], [width * 0.61, 125, 55], [width * 0.72, 75, 35],
     [width * 0.79, 90, 42],
   ];
-  buildings.forEach(([bx, bh, bw]) => {
-    ctx.fillRect(bx, height - 50 - bh, bw, bh);
-  });
+  buildings.forEach(([bx, bh, bw]) => ctx.fillRect(bx, height - 50 - bh, bw, bh));
   ctx.restore();
 
-  // 5. Giant Roman Numeral "VI" in the Center (Signature GTA VI Watermark)
+  // 4. Giant "VI" Watermark
   ctx.save();
   ctx.font = '900 190px "Arial Black", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   const viX = width * 0.58;
   const viY = height * 0.44;
-
-  // "VI" Tropical Neon Gradient
   const viGrad = ctx.createLinearGradient(viX - 100, viY - 80, viX + 100, viY + 80);
-  viGrad.addColorStop(0, "rgba(56, 189, 248, 0.85)"); // Sky Cyan
-  viGrad.addColorStop(0.5, "rgba(236, 72, 153, 0.9)"); // Hot Pink
-  viGrad.addColorStop(1, "rgba(245, 158, 11, 0.85)"); // Gold
+  viGrad.addColorStop(0, "rgba(56, 189, 248, 0.85)");
+  viGrad.addColorStop(0.5, "rgba(236, 72, 153, 0.9)");
+  viGrad.addColorStop(1, "rgba(245, 158, 11, 0.85)");
   ctx.fillStyle = viGrad;
   ctx.fillText("VI", viX, viY);
-
   ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
   ctx.lineWidth = 3;
   ctx.strokeText("VI", viX, viY);
   ctx.restore();
 
-  // 6. Top Left [↓] Download Icon & Top Right R★ Badge
+  // 5. Icons
   drawVoucherDownloadIcon(ctx, 24, 22, 38);
   drawRockstarBadge(ctx, width - 62, 22, 38);
 
-  // 7. Left Operative Mugshot / Avatar Frame
+  // 6. Avatar Frame
   const avatarX = 26;
   const avatarY = 74;
-  const avatarSize = 135;
-
+  const avatarSize = 130;
   ctx.save();
   drawRoundedRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 14);
   ctx.fillStyle = "#0c0414";
   ctx.fill();
-
   if (portraitImg) {
     ctx.save();
     drawRoundedRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 14);
@@ -432,71 +416,58 @@ function renderViceSunsetStyle(
   } else {
     drawFallbackSilhouette(ctx, avatarX, avatarY, avatarSize, merged.silhouetteId);
   }
-
-  // Neon Avatar Border
   drawRoundedRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 14);
   ctx.strokeStyle = "#ff007f";
   ctx.lineWidth = 2.5;
   ctx.stroke();
-
-  // Status Tag
-  ctx.fillStyle = "#ff007f";
-  ctx.fillRect(avatarX, avatarY + avatarSize - 20, avatarSize, 20);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = '900 9px "SFMono-Regular", Consolas, monospace';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("WANTED // HEIST CREW", avatarX + avatarSize / 2, avatarY + avatarSize - 10);
   ctx.restore();
 
-  // 8. Callsign in Pricedown Font (The iconic GTA Title font)
+  // 7. ── Three fields: Name · Role · Bounty ──
   const metaX = avatarX + avatarSize + 22;
+  const topY = avatarY + 10;
   ctx.save();
   ctx.textAlign = "left";
+
+  // Label
+  ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+  ctx.font = '700 9px "SFMono-Regular", Consolas, monospace';
   ctx.textBaseline = "top";
+  ctx.fillText("NAME", metaX, topY);
 
-  ctx.fillStyle = "#ffffff";
-  ctx.font = '800 11px "SFMono-Regular", Consolas, monospace';
-  ctx.letterSpacing = "0.08em";
-  ctx.fillText("OPERATIVE CALLSIGN", metaX, 74);
-
-  ctx.font = 'bold 44px "Pricedown", "Impact", "Arial Black", sans-serif';
-  ctx.letterSpacing = "0.04em";
-  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  // Name in Pricedown
+  ctx.font = 'bold 46px "Pricedown", "Impact", "Arial Black", sans-serif';
+  ctx.shadowColor = "rgba(0,0,0,0.9)";
   ctx.shadowBlur = 12;
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(merged.alias.toUpperCase(), metaX, 94);
-
+  ctx.fillText(merged.alias.toUpperCase(), metaX, topY + 14);
   ctx.shadowBlur = 0;
   ctx.strokeStyle = "#111827";
-  ctx.lineWidth = 3.5;
-  ctx.strokeText(merged.alias.toUpperCase(), metaX, 94);
+  ctx.lineWidth = 3;
+  ctx.strokeText(merged.alias.toUpperCase(), metaX, topY + 14);
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(merged.alias.toUpperCase(), metaX, 94);
+  ctx.fillText(merged.alias.toUpperCase(), metaX, topY + 14);
 
-  // Role
-  ctx.font = '800 12px "SFMono-Regular", Consolas, monospace';
+  // Role / Category
+  ctx.font = '700 11.5px "SFMono-Regular", Consolas, monospace';
   ctx.fillStyle = "#ffd000";
-  ctx.fillText(merged.role.toUpperCase(), metaX, 146);
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(merged.role.toUpperCase(), metaX, topY + 72);
+  ctx.shadowBlur = 0;
 
-  // Stat Pills
-  const pillY = 172;
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctx.fillRect(metaX, pillY, 130, 24);
+  // Bounty pill
+  const pillY = topY + 92;
+  drawRoundedRect(ctx, metaX, pillY, 260, 28, 6);
+  ctx.fillStyle = "rgba(0,0,0,0.65)";
+  ctx.fill();
   ctx.strokeStyle = "#facc15";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(metaX, pillY, 130, 24);
-  ctx.fillStyle = "#facc15";
-  ctx.font = '800 10px "SFMono-Regular", monospace';
-  ctx.fillText(`BOUNTY: ${merged.bounty ?? "$1,250,000"}`, metaX + 8, pillY + 6);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 
-  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctx.fillRect(metaX + 140, pillY, 110, 24);
-  ctx.strokeStyle = "#ec4899";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(metaX + 140, pillY, 110, 24);
-  ctx.fillStyle = "#ec4899";
-  ctx.fillText(`CUT: ${merged.crewCut ?? "40%"}`, metaX + 148, pillY + 6);
+  ctx.fillStyle = "#ffd000";
+  ctx.font = '800 12px "SFMono-Regular", Consolas, monospace';
+  ctx.textBaseline = "middle";
+  ctx.fillText(`BOUNTY: ${merged.bounty ?? "$1,250,000"}`, metaX + 12, pillY + 14);
   ctx.restore();
 
   // 9. Bottom Carbon Strip: "No Disc - Download Code : XXXXX" (Direct from Image 1)
@@ -529,7 +500,7 @@ function renderViceSunsetStyle(
 }
 
 /**
- * STYLE 2: "Syndicate Redline" (Direct inspiration from Image 2: Glossy Crimson Spider-Man Dossier)
+ * STYLE 2: "Syndicate Redline" — shows Name, Bounty, Role only.
  */
 function renderGlossyNoirStyle(
   ctx: CanvasRenderingContext2D,
@@ -538,18 +509,18 @@ function renderGlossyNoirStyle(
   merged: GtaBadgeOptions,
   portraitImg: HTMLImageElement | null,
 ): void {
-  // 1. Deep Blood-Red Textured Noir Card
+  // 1. Deep Blood-Red Card
   drawRoundedRect(ctx, 4, 4, width - 8, height - 8, 22);
   const redGrad = ctx.createLinearGradient(0, 0, width, height);
-  redGrad.addColorStop(0.0, "#6b0b0b"); // Blood red
-  redGrad.addColorStop(0.5, "#450a0a"); // Dark crimson
-  redGrad.addColorStop(1.0, "#1f0303"); // Noir charcoal
+  redGrad.addColorStop(0.0, "#6b0b0b");
+  redGrad.addColorStop(0.5, "#450a0a");
+  redGrad.addColorStop(1.0, "#1f0303");
   ctx.fillStyle = redGrad;
   ctx.fill();
 
-  // Fine Grunge & Speckle Flecks
+  // Grunge speckles
   ctx.save();
-  ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
   for (let i = 0; i < 40; i++) {
     const gx = 20 + ((i * 37) % (width - 40));
     const gy = 20 + ((i * 29) % (height - 40));
@@ -557,7 +528,7 @@ function renderGlossyNoirStyle(
   }
   ctx.restore();
 
-  // 2. The Signature Curved Specular Acrylic Glare (Direct from Image 2)
+  // 2. Specular Acrylic Glare
   ctx.save();
   ctx.beginPath();
   ctx.moveTo(width * 0.45, 4);
@@ -565,32 +536,30 @@ function renderGlossyNoirStyle(
   ctx.lineTo(width - 4, 4);
   ctx.closePath();
   const glareGrad = ctx.createLinearGradient(width * 0.5, 4, width, height * 0.5);
-  glareGrad.addColorStop(0, "rgba(255, 255, 255, 0.22)");
-  glareGrad.addColorStop(0.6, "rgba(255, 255, 255, 0.06)");
-  glareGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+  glareGrad.addColorStop(0, "rgba(255,255,255,0.22)");
+  glareGrad.addColorStop(0.6, "rgba(255,255,255,0.06)");
+  glareGrad.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = glareGrad;
   ctx.fill();
   ctx.restore();
 
-  // Metallic Chrome Rim
+  // Chrome rim
   ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+  ctx.strokeStyle = "rgba(255,255,255,0.55)";
   ctx.lineWidth = 2;
   drawRoundedRect(ctx, 4, 4, width - 8, height - 8, 22);
   ctx.stroke();
   ctx.restore();
 
-  // 3. Left Side Dramatic Bust Profile Frame
+  // 3. Portrait Frame (left side)
   const portX = 24;
   const portY = 24;
   const portW = 230;
   const portH = height - 48;
-
   ctx.save();
   drawRoundedRect(ctx, portX, portY, portW, portH, 18);
   ctx.fillStyle = "#1a0404";
   ctx.fill();
-
   if (portraitImg) {
     ctx.save();
     drawRoundedRect(ctx, portX, portY, portW, portH, 18);
@@ -600,87 +569,63 @@ function renderGlossyNoirStyle(
   } else {
     drawFallbackSilhouette(ctx, portX + 15, portY + 25, portW - 30, merged.silhouetteId);
   }
-
-  // Dark Vignette around avatar
   drawRoundedRect(ctx, portX, portY, portW, portH, 18);
-  ctx.strokeStyle = "rgba(239, 68, 68, 0.4)";
+  ctx.strokeStyle = "rgba(239,68,68,0.4)";
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.restore();
 
-  // 4. Right Side Structured Dossier Content
+  // 4. ── Three fields: Name · Role · Bounty ──
   const contentX = portX + portW + 28;
-
+  const midY = height / 2;
   ctx.save();
   ctx.textAlign = "left";
-  ctx.textBaseline = "top";
 
-  // Marvel-style Mini Brand Header Box
+  // HEIST brand tab
   ctx.fillStyle = "#ef4444";
-  ctx.fillRect(contentX, 32, 60, 16);
+  ctx.fillRect(contentX, 32, 56, 16);
   ctx.fillStyle = "#ffffff";
-  ctx.font = '900 8.5px "SFMono-Regular", Consolas, monospace';
+  ctx.font = '900 8px "SFMono-Regular", Consolas, monospace';
   ctx.textAlign = "center";
-  ctx.fillText("HEIST", contentX + 30, 36);
+  ctx.textBaseline = "middle";
+  ctx.fillText("HEIST", contentX + 28, 40);
 
-  // Big Bold Condensed Header Title
+  // Name
   ctx.textAlign = "left";
+  ctx.textBaseline = "top";
   ctx.font = '900 42px "Arial Narrow", "Impact", sans-serif';
-  ctx.letterSpacing = "0.06em";
   ctx.fillStyle = "#ffffff";
   ctx.fillText(merged.alias.toUpperCase(), contentX, 54);
 
-  // Clean Horizontal Divider Rule (Matching Image 2)
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+  // Divider
+  ctx.strokeStyle = "rgba(255,255,255,0.25)";
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(contentX, 108);
   ctx.lineTo(width - 32, 108);
   ctx.stroke();
 
-  // Structured Metadata Lines
-  const rows = [
-    ["SERIAL / ID", `VC-2026-${merged.alias.toUpperCase()}-OP`],
-    ["CLEARANCE", `${"★".repeat(Math.max(1, Math.min(5, merged.wantedStars ?? 5)))} // S-TIER WANTED`],
-    ["BOUNTY", merged.bounty ?? "$1,250,000"],
-    ["PROFILE / ROLE", merged.role.toUpperCase()],
-  ];
-
-  let rowY = 120;
-  rows.forEach(([label, val]) => {
-    ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
-    ctx.font = '700 9.5px "SFMono-Regular", monospace';
-    ctx.fillText(label, contentX, rowY);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = '800 12px "SFMono-Regular", Consolas, monospace';
-    ctx.fillText(val, contentX + 115, rowY - 1);
-
-    rowY += 26;
-  });
-
-  // Second Divider Rule
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
-  ctx.beginPath();
-  ctx.moveTo(contentX, rowY + 6);
-  ctx.lineTo(width - 32, rowY + 6);
-  ctx.stroke();
-
-  // Cut Pill & Bottom Right Stamp "PH0E // HEIST-2026"
-  ctx.fillStyle = "#ef4444";
-  ctx.font = '800 11px "SFMono-Regular", Consolas, monospace';
-  ctx.fillText(`CREW CUT: ${merged.crewCut ?? "40%"}`, contentX, rowY + 16);
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+  // Role label + value
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
   ctx.font = '700 9px "SFMono-Regular", monospace';
-  ctx.textAlign = "right";
-  ctx.fillText("LEONIDA DOC // PH0E", width - 32, rowY + 16);
+  ctx.fillText("ROLE", contentX, midY - 32);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = '800 12px "SFMono-Regular", Consolas, monospace';
+  ctx.fillText(merged.role.toUpperCase(), contentX, midY - 16);
+
+  // Bounty label + value
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.font = '700 9px "SFMono-Regular", monospace';
+  ctx.fillText("BOUNTY", contentX, midY + 12);
+  ctx.fillStyle = "#ef4444";
+  ctx.font = '800 18px "SFMono-Regular", Consolas, monospace';
+  ctx.fillText(merged.bounty ?? "$1,250,000", contentX, midY + 28);
 
   ctx.restore();
 }
 
 /**
- * STYLE 3: "Cyber Neon HUD" (Direct inspiration from Image 3: Edge-Lit Holographic Acrylic Card)
+ * STYLE 3: "Cyber Neon HUD" — shows Name, Bounty, Role only.
  */
 function renderCyberHudStyle(
   ctx: CanvasRenderingContext2D,
@@ -692,7 +637,7 @@ function renderCyberHudStyle(
   const cardW = width;
   const cardH = height;
 
-  // 1. Translucent Dark Acrylic Glass
+  // 1. Dark Acrylic Glass base
   drawRoundedRect(ctx, 6, 6, cardW - 12, cardH - 12, 22);
   ctx.fillStyle = "rgba(10, 14, 18, 0.94)";
   ctx.fill();
@@ -709,7 +654,7 @@ function renderCyberHudStyle(
   }
   ctx.restore();
 
-  // 2. Double-Stroke Edge-Lit Glowing Neon Amber Border (Matching Image 3)
+  // 2. Glowing Neon Amber Border
   ctx.save();
   ctx.shadowColor = "rgba(255, 102, 0, 0.85)";
   ctx.shadowBlur = 18;
@@ -717,8 +662,6 @@ function renderCyberHudStyle(
   ctx.lineWidth = 3;
   drawRoundedRect(ctx, 8, 8, cardW - 16, cardH - 16, 20);
   ctx.stroke();
-
-  // Inner Thin Bevel Line
   ctx.shadowBlur = 0;
   ctx.strokeStyle = "rgba(255, 170, 0, 0.4)";
   ctx.lineWidth = 1;
@@ -726,13 +669,12 @@ function renderCyberHudStyle(
   ctx.stroke();
   ctx.restore();
 
-  // 3. Illuminated Circular Avatar Reticle (Matching Image 3)
+  // 3. Circular Avatar Reticle
   const cx = cardW / 2;
-  const cy = 110;
-  const ringR = 64;
+  const cy = 100;
+  const ringR = 60;
 
   ctx.save();
-  // Glowing Outer Neon Ring
   ctx.shadowColor = "#ff6600";
   ctx.shadowBlur = 14;
   ctx.strokeStyle = "#ff6600";
@@ -741,7 +683,6 @@ function renderCyberHudStyle(
   ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Circular Clip for Avatar
   ctx.shadowBlur = 0;
   ctx.save();
   ctx.beginPath();
@@ -749,7 +690,6 @@ function renderCyberHudStyle(
   ctx.clip();
   ctx.fillStyle = "#06090e";
   ctx.fill();
-
   if (portraitImg) {
     ctx.drawImage(portraitImg, cx - ringR, cy - ringR, ringR * 2, ringR * 2);
   } else {
@@ -757,7 +697,7 @@ function renderCyberHudStyle(
   }
   ctx.restore();
 
-  // Reticle crosshair ticks
+  // Crosshair ticks
   ctx.strokeStyle = "#ffa500";
   ctx.lineWidth = 2;
   const tickLen = 6;
@@ -769,72 +709,49 @@ function renderCyberHudStyle(
   });
   ctx.restore();
 
-  // 4. Centered Callsign & Bio Subtitle
+  // 4. ── Three fields: Name · Role · Bounty ──
   ctx.save();
   ctx.textAlign = "center";
 
-  // Callsign in clean futuristic bold uppercase
-  ctx.font = '900 32px "Arial Black", sans-serif';
-  ctx.letterSpacing = "0.06em";
+  // Name
+  ctx.font = '900 30px "Arial Black", sans-serif';
   ctx.fillStyle = "#ffffff";
   ctx.shadowColor = "rgba(255, 102, 0, 0.6)";
   ctx.shadowBlur = 10;
-  ctx.fillText(merged.alias.toUpperCase(), cx, 206);
-
+  ctx.textBaseline = "top";
+  ctx.fillText(merged.alias.toUpperCase(), cx, cy + ringR + 18);
   ctx.shadowBlur = 0;
-  ctx.font = '700 11px "SFMono-Regular", Consolas, monospace';
-  ctx.fillStyle = "rgba(255, 170, 0, 0.9)";
-  ctx.fillText(merged.role.toUpperCase(), cx, 228);
 
-  // Glowing Divider Line
-  ctx.strokeStyle = "rgba(255, 102, 0, 0.5)";
+  // Divider
+  ctx.strokeStyle = "rgba(255, 102, 0, 0.45)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(32, 246);
-  ctx.lineTo(cardW - 32, 246);
+  ctx.moveTo(32, cy + ringR + 60);
+  ctx.lineTo(cardW - 32, cy + ringR + 60);
   ctx.stroke();
 
-  // 5. Contact / Intel Rows (Matching Image 3 details)
-  ctx.textAlign = "left";
-  ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-  ctx.font = '700 11.5px "SFMono-Regular", Consolas, monospace';
+  // Role
+  ctx.font = '700 11px "SFMono-Regular", Consolas, monospace';
+  ctx.fillStyle = "rgba(255, 170, 0, 0.9)";
+  ctx.fillText(merged.role.toUpperCase(), cx, cy + ringR + 70);
 
-  const rowStartY = 268;
-  ctx.fillText(`● CALL: @${merged.alias.toLowerCase()}`, 36, rowStartY);
-  ctx.fillText(`● BOUNTY: ${merged.bounty ?? "$1,250,000"}`, 36, rowStartY + 24);
-  ctx.fillText(`● CUT: ${merged.crewCut ?? "40%"}`, 36, rowStartY + 48);
-
-  // Second Glowing Divider Line
-  ctx.strokeStyle = "rgba(255, 102, 0, 0.5)";
+  // Divider
+  ctx.strokeStyle = "rgba(255, 102, 0, 0.3)";
   ctx.beginPath();
-  ctx.moveTo(32, rowStartY + 70);
-  ctx.lineTo(cardW - 32, rowStartY + 70);
+  ctx.moveTo(32, cy + ringR + 100);
+  ctx.lineTo(cardW - 32, cy + ringR + 100);
   ctx.stroke();
 
-  // 6. Tactical Glowing QR Code Matrix at Bottom (Matching Image 3)
-  const qrSize = 58;
-  const qrX = cx - qrSize / 2;
-  const qrY = rowStartY + 84;
-
-  ctx.strokeStyle = "rgba(255, 102, 0, 0.75)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(qrX, qrY, qrSize, qrSize);
-
-  // Finder corners
+  // Bounty
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.font = '600 9px "SFMono-Regular", Consolas, monospace';
+  ctx.fillText("BOUNTY", cx, cy + ringR + 108);
   ctx.fillStyle = "#ff6600";
-  ctx.fillRect(qrX + 4, qrY + 4, 14, 14);
-  ctx.fillRect(qrX + qrSize - 18, qrY + 4, 14, 14);
-  ctx.fillRect(qrX + 4, qrY + qrSize - 18, 14, 14);
-  // Micro data dots
-  ctx.fillRect(qrX + 22, qrY + 22, 6, 6);
-  ctx.fillRect(qrX + 32, qrY + 16, 5, 5);
-  ctx.fillRect(qrX + 18, qrY + 36, 7, 5);
-  ctx.fillRect(qrX + 36, qrY + 34, 8, 8);
-
-  ctx.textAlign = "center";
-  ctx.font = '600 8.5px "SFMono-Regular", Consolas, monospace';
-  ctx.fillStyle = "rgba(255, 170, 0, 0.6)";
-  ctx.fillText("VC-2026-CIPHER // ENCRYPTED", cx, qrY + qrSize + 14);
+  ctx.shadowColor = "rgba(255,102,0,0.5)";
+  ctx.shadowBlur = 8;
+  ctx.font = '800 22px "SFMono-Regular", Consolas, monospace';
+  ctx.fillText(merged.bounty ?? "$1,250,000", cx, cy + ringR + 124);
+  ctx.shadowBlur = 0;
 
   ctx.restore();
 }
@@ -891,13 +808,27 @@ export async function renderGtaIdentityBadgeToCanvas(
 export const FABRIC_IDENTITY_BADGE_TAG = "__heistboardGtaIdentityBadge";
 
 /**
+ * Checks whether an identity badge already exists on the Fabric canvas.
+ */
+export function hasBadgeOnFabricCanvas(
+  fabricCanvas: FabricCanvasLike | null | undefined,
+): boolean {
+  if (!fabricCanvas) return false;
+  const objects = fabricCanvas.getObjects();
+  return objects.some(
+    (obj) => (obj as unknown as Record<string, unknown>)[FABRIC_IDENTITY_BADGE_TAG] === true,
+  );
+}
+
+/**
  * Places or live-updates the GTA VI Heist Record Identity Badge on the Fabric canvas.
  * Can be called multiple times without creating duplicate badges.
+ * If an existing badge is on the canvas and pinCorner is not specified, it updates in place.
  */
 export async function placeOrUpdateBadgeOnFabricCanvas(
   fabricCanvas: FabricCanvasLike | null | undefined,
   options: GtaBadgeOptions,
-  pinCorner: "top-left" | "top-right" | "bottom-left" | "bottom-right" = "top-left",
+  pinCorner?: "top-left" | "top-right" | "bottom-left" | "bottom-right",
 ): Promise<boolean> {
   if (!fabricCanvas) return false;
 
@@ -929,21 +860,47 @@ export async function placeOrUpdateBadgeOnFabricCanvas(
 
           // Scale: badge width should be ~28% of canvas width
           const targetWidth = Math.min(canvasW * 0.3, 380);
-          const scale = targetWidth / badgeCanvas.width;
+          const defaultScale = targetWidth / badgeCanvas.width;
 
-          let left = 24 + (targetWidth / 2);
-          let top = 24 + ((badgeCanvas.height * scale) / 2);
+          let left = 24 + targetWidth / 2;
+          let top = 24 + (badgeCanvas.height * defaultScale) / 2;
+          let scale = defaultScale;
 
-          if (existingBadgeIndex > 0) {
+          if (existingBadgeIndex >= 0) {
             const existing = objects[existingBadgeIndex]!;
             left = existing.left ?? left;
             top = existing.top ?? top;
-            // Remove old instance
+            if (typeof existing.scaleX === "number" && existing.scaleX > 0) {
+              scale = existing.scaleX;
+            }
+
+            // Only reposition to a corner if user explicitly clicked a corner button
+            if (pinCorner === "top-right") {
+              left = canvasW - 24 - targetWidth / 2;
+              top = 24 + (badgeCanvas.height * scale) / 2;
+            } else if (pinCorner === "bottom-left") {
+              left = 24 + targetWidth / 2;
+              top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
+            } else if (pinCorner === "bottom-right") {
+              left = canvasW - 24 - targetWidth / 2;
+              top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
+            } else if (pinCorner === "top-left") {
+              left = 24 + targetWidth / 2;
+              top = 24 + (badgeCanvas.height * scale) / 2;
+            }
+
+            // Remove old instance before placing the freshly rendered replacement
             (fabricCanvas as unknown as { remove?(o: FabricObjectLike): void }).remove?.(existing);
-          } else if (pinCorner === "top-right") {
-            left = canvasW - 24 - (targetWidth / 2);
-          } else if (pinCorner === "bottom-left") {
-            top = canvasH - 24 - ((badgeCanvas.height * scale) / 2);
+          } else {
+            const corner = pinCorner ?? "top-left";
+            if (corner === "top-right") {
+              left = canvasW - 24 - targetWidth / 2;
+            } else if (corner === "bottom-left") {
+              top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
+            } else if (corner === "bottom-right") {
+              left = canvasW - 24 - targetWidth / 2;
+              top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
+            }
           }
 
           const badgeObject = new ImageClass(img, {

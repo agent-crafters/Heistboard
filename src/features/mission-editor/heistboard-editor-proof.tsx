@@ -130,10 +130,10 @@ export function HeistboardEditorProof() {
         img.onload = () => {
           applyBgLayerToFabricCanvas(fabricCanvas, newConfig, img);
         };
-        img.src = annotatedMap?.editorSource ?? mapBaseUrl;
+        img.src = mapBaseUrl;
       }
     },
-    [annotatedMap?.editorSource, mapBaseUrl],
+    [mapBaseUrl],
   );
 
   if (resourceOwner.current === null) {
@@ -269,10 +269,22 @@ export function HeistboardEditorProof() {
   };
 
   const editorVisible =
-    stage === "mission-plan" &&
+    stage !== "territory" &&
     (workflow.phase === "loading-editor" ||
       workflow.phase === "editing" ||
-      workflow.phase === "saving");
+      workflow.phase === "saving" ||
+      workflow.phase === "preview");
+
+  // Re-calculate Fabric canvas offset when returning to mission-plan so mouse events work immediately
+  useEffect(() => {
+    if (stage === "mission-plan") {
+      const canvas = findFabricCanvas(editorFrameRef.current);
+      if (canvas) {
+        canvas.calcOffset?.();
+        canvas.requestRenderAll?.();
+      }
+    }
+  }, [stage]);
 
   return (
     <main className="shell">
@@ -316,9 +328,13 @@ export function HeistboardEditorProof() {
         />
       )}
 
-      {/* Stage 2: Mission Editor */}
-      {stage === "mission-plan" && (
-        <section className="workspace" aria-labelledby="workspace-title">
+      {/* Stage 2: Mission Editor (preserved in DOM across preview to maintain active Fabric objects) */}
+      {stage !== "territory" && (
+        <section
+          className="workspace"
+          aria-labelledby="workspace-title"
+          style={{ display: stage === "mission-plan" ? undefined : "none" }}
+        >
           <aside className="briefing">
             <p className="section-label">Mission brief</p>
             <h2 id="workspace-title">Package before sunrise</h2>
@@ -418,7 +434,7 @@ export function HeistboardEditorProof() {
                   </div>
                 )}
                 <MissionEditor
-                  image={annotatedMap?.editorSource ?? mapBaseUrl}
+                  image={mapBaseUrl}
                   retryKey={workflow.retryKey}
                   onLoad={handleEditorLoad}
                   onSave={(result) => void handleSave(result)}

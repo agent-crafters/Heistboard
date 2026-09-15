@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_GTA_BADGE_OPTIONS,
+  FABRIC_IDENTITY_BADGE_TAG,
+  hasBadgeOnFabricCanvas,
   placeOrUpdateBadgeOnFabricCanvas,
   renderGtaIdentityBadgeToCanvas,
 } from "./gta-identity-badge";
@@ -141,6 +143,63 @@ describe("GTA VI Identity Badge Renderer", () => {
       expect(placed).toBe(true);
       expect(mockCanvasInstance.add).toHaveBeenCalled();
       expect(mockCanvasInstance.requestRenderAll).toHaveBeenCalled();
+    } finally {
+      globalThis.Image = OriginalImage;
+    }
+  });
+
+  it("detects existing badge on canvas and preserves position when updating in-place", async () => {
+    class MockFabricImage {
+      left = 250;
+      top = 180;
+      scaleX = 0.5;
+      scale = vi.fn();
+      setCoords = vi.fn();
+      constructor(public el: unknown, public opts: unknown) {}
+    }
+
+    const existingBadge = {
+      constructor: MockFabricImage,
+      left: 250,
+      top: 180,
+      scaleX: 0.5,
+      scale: vi.fn(),
+      setCoords: vi.fn(),
+      [FABRIC_IDENTITY_BADGE_TAG]: true,
+    };
+
+    const removeFn = vi.fn();
+    const mockCanvasInstance: FabricCanvasLike & { remove: typeof removeFn } = {
+      getWidth: () => 1200,
+      getHeight: () => 800,
+      getObjects: () => [existingBadge as unknown as FabricObjectLike],
+      add: vi.fn(),
+      remove: removeFn,
+      setActiveObject: vi.fn(),
+      requestRenderAll: vi.fn(),
+      fire: vi.fn(),
+    };
+
+    expect(hasBadgeOnFabricCanvas(mockCanvasInstance)).toBe(true);
+
+    const OriginalImage = globalThis.Image;
+    globalThis.Image = class {
+      onload: (() => void) | null = null;
+      src = "";
+      constructor() {
+        setTimeout(() => this.onload?.(), 10);
+      }
+    } as unknown as typeof Image;
+
+    try {
+      const updated = await placeOrUpdateBadgeOnFabricCanvas(
+        mockCanvasInstance,
+        { ...DEFAULT_GTA_BADGE_OPTIONS, alias: "LUCIA", bounty: "$2,000,000" },
+      );
+
+      expect(updated).toBe(true);
+      expect(removeFn).toHaveBeenCalledWith(existingBadge);
+      expect(mockCanvasInstance.add).toHaveBeenCalled();
     } finally {
       globalThis.Image = OriginalImage;
     }

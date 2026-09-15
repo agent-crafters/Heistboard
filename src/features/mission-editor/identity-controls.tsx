@@ -8,6 +8,7 @@ import {
   BADGE_STYLES,
   DEFAULT_GTA_BADGE_OPTIONS,
   FABRIC_IDENTITY_BADGE_TAG,
+  hasBadgeOnFabricCanvas,
   placeOrUpdateBadgeOnFabricCanvas,
   renderGtaIdentityBadgeToCanvas,
 } from "@/lib/gta-identity-badge";
@@ -114,6 +115,7 @@ export function IdentityControls({
   const [previewDataUrl, setPreviewDataUrl] = useState<string>("");
   const [isUpdatingCanvas, setIsUpdatingCanvas] = useState(false);
   const [placedStatus, setPlacedStatus] = useState<string | null>(null);
+  const [isBadgeOnCanvas, setIsBadgeOnCanvas] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDraggingRef = useRef(false);
@@ -136,6 +138,52 @@ export function IdentityControls({
   };
 
   const aliasValidation = validateAlias(alias);
+
+  // Check whether an identity badge is currently on the Fabric canvas
+  const checkCanvasForBadge = useCallback(() => {
+    const canvas =
+      findFabricCanvas(editorContainerRef?.current) ??
+      (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike })
+        .__heistboardFabricCanvas;
+    if (!canvas) return;
+    const onCanvas = hasBadgeOnFabricCanvas(canvas);
+    setIsBadgeOnCanvas(onCanvas);
+  }, [editorContainerRef]);
+
+  useEffect(() => {
+    checkCanvasForBadge();
+    const interval = setInterval(checkCanvasForBadge, 600);
+    return () => clearInterval(interval);
+  }, [checkCanvasForBadge]);
+
+  // When an existing badge is already on canvas, live-sync changes immediately to the canvas!
+  useEffect(() => {
+    if (!isBadgeOnCanvas) return;
+
+    const timer = setTimeout(async () => {
+      const canvas =
+        findFabricCanvas(editorContainerRef?.current) ??
+        (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike })
+          .__heistboardFabricCanvas;
+      if (canvas && hasBadgeOnFabricCanvas(canvas)) {
+        await placeOrUpdateBadgeOnFabricCanvas(canvas, currentBadgeOptions);
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [
+    isBadgeOnCanvas,
+    alias,
+    role,
+    silhouetteId,
+    activePortraitUrl,
+    theme,
+    badgeStyle,
+    wantedStars,
+    bounty,
+    crewCut,
+    editorContainerRef,
+  ]);
 
   // Reprocess uploaded photo when zoom, offset, or filter changes
   useEffect(() => {
@@ -213,7 +261,7 @@ export function IdentityControls({
   ]);
 
   const handlePlaceOnCanvas = useCallback(
-    async (corner: "top-left" | "top-right" | "bottom-left" = "top-left") => {
+    async (corner?: "top-left" | "top-right" | "bottom-left") => {
       const canvas =
         findFabricCanvas(editorContainerRef?.current) ??
         (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike })
@@ -234,7 +282,12 @@ export function IdentityControls({
       setIsUpdatingCanvas(false);
 
       if (success) {
-        setPlacedStatus(`✓ Badge pinned to ${corner.replace("-", " ")} on map canvas!`);
+        setIsBadgeOnCanvas(true);
+        if (corner) {
+          setPlacedStatus(`✓ Badge pinned to ${corner.replace("-", " ")} on map canvas!`);
+        } else {
+          setPlacedStatus("✓ Existing badge updated on map canvas!");
+        }
       } else {
         setPlacedStatus("⚠️ Could not place badge on canvas.");
       }
@@ -262,6 +315,7 @@ export function IdentityControls({
     if (existing) {
       (canvas as unknown as { remove?(o: FabricObjectLike): void }).remove?.(existing);
       canvas.requestRenderAll();
+      setIsBadgeOnCanvas(false);
       setPlacedStatus("✓ Removed badge from canvas.");
       setTimeout(() => setPlacedStatus(null), 3000);
     }
@@ -393,14 +447,35 @@ export function IdentityControls({
 
       {/* Quick Canvas Actions Strip */}
       <div className="gta-badge-actions-strip">
+        {/* Badge presence status pill */}
+        <div className="flex items-center justify-between px-0.5 py-0.5">
+          {isBadgeOnCanvas ? (
+            <span className="gta-on-canvas-badge">
+              ✓ Active on Canvas — Editing Existing Badge
+            </span>
+          ) : (
+            <span className="text-[11px] text-gray-400 font-mono">
+              Not placed on canvas yet
+            </span>
+          )}
+        </div>
+
         <button
           type="button"
-          className="action-button primary gta-pin-btn"
-          onClick={() => void handlePlaceOnCanvas("top-left")}
+          className={`action-button primary gta-pin-btn ${isBadgeOnCanvas ? "active-update" : ""}`}
+          onClick={() => void handlePlaceOnCanvas(isBadgeOnCanvas ? undefined : "top-left")}
           disabled={isUpdatingCanvas}
-          title="Place or update live badge on the map canvas"
+          title={
+            isBadgeOnCanvas
+              ? "Update the existing badge on map canvas"
+              : "Place badge on the map canvas"
+          }
         >
-          {isUpdatingCanvas ? "Updating…" : "⚡ Pin to Top-Left on Canvas"}
+          {isUpdatingCanvas
+            ? "Updating…"
+            : isBadgeOnCanvas
+              ? "✓ Update Existing Badge on Canvas"
+              : "⚡ Add Badge to Canvas (Top-Left)"}
         </button>
 
         <div className="flex gap-1.5">
@@ -408,7 +483,7 @@ export function IdentityControls({
             type="button"
             className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("top-right")}
-            title="Place at Top-Right"
+            title="Place or move to Top-Right"
           >
             Top-Right
           </button>
@@ -416,7 +491,7 @@ export function IdentityControls({
             type="button"
             className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("bottom-left")}
-            title="Place at Bottom-Left"
+            title="Place or move to Bottom-Left"
           >
             Bottom-Left
           </button>

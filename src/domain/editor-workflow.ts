@@ -107,7 +107,7 @@ export function editorWorkflowReducer(
     case "edit-again":
       return {
         ...state,
-        phase: "loading-editor",
+        phase: "editing",
         failure: null,
         notice: null,
       };

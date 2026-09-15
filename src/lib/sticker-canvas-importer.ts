@@ -6,6 +6,8 @@ export type FabricImageConstructor = new (
 export interface FabricObjectLike {
   left?: number;
   top?: number;
+  scaleX?: number;
+  scaleY?: number;
   originX?: string;
   originY?: string;
   selectable?: boolean;
@@ -25,6 +27,7 @@ export interface FabricCanvasLike {
   add(obj: FabricObjectLike): void;
   setActiveObject(obj: FabricObjectLike): void;
   requestRenderAll(): void;
+  calcOffset?(): void;
   fire?(eventName: string, options?: Record<string, unknown>): void;
   getPointer?(event: MouseEvent | DragEvent): { x: number; y: number };
 }
