@@ -84,78 +84,25 @@ export function MissionEditor({
   const [isGtaFontsOpen, setIsGtaFontsOpen] = useState(false);
   const [isStickersOpen, setIsStickersOpen] = useState(false);
   const [isBgStylesOpen, setIsBgStylesOpen] = useState(false);
-  const [panelAnchor, setPanelAnchor] = useState<{
-    tool: CustomEditorTool;
-    style: React.CSSProperties;
-  } | null>(null);
-
-  const updateAnchor = (tool: CustomEditorTool, btn: HTMLElement | null) => {
-    if (!btn || !containerRef.current) return;
-    const btnRect = btn.getBoundingClientRect();
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const relTop = btnRect.top - containerRect.top;
-    const relBottom = containerRect.bottom - btnRect.bottom;
-
-    if (relTop > containerRect.height / 2) {
-      const bottomVal = Math.max(8, Math.round(relBottom - 20));
-      setPanelAnchor({
-        tool,
-        style: {
-          right: "76px",
-          left: "auto",
-          bottom: `${bottomVal}px`,
-          top: "auto",
-        },
-      });
-    } else {
-      const topVal = Math.max(8, Math.round(relTop - 20));
-      setPanelAnchor({
-        tool,
-        style: {
-          right: "76px",
-          left: "auto",
-          top: `${topVal}px`,
-          bottom: "auto",
-        },
-      });
-    }
-  };
-
   // Handle programmatic tool open requests (e.g. clicking "Edit" in mission briefing)
   useEffect(() => {
     if (!requestedTool) return;
     if (requestedTool === "identity") {
-      const btn = containerRef.current?.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-operative-identity"]',
-      );
-      if (btn) updateAnchor("identity", btn);
       setIsIdentityOpen(true);
       setIsGtaFontsOpen(false);
       setIsStickersOpen(false);
       setIsBgStylesOpen(false);
     } else if (requestedTool === "stickers") {
-      const btn = containerRef.current?.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-tactical-stickers"]',
-      );
-      if (btn) updateAnchor("stickers", btn);
       setIsStickersOpen(true);
       setIsIdentityOpen(false);
       setIsGtaFontsOpen(false);
       setIsBgStylesOpen(false);
     } else if (requestedTool === "bg-styles") {
-      const btn = containerRef.current?.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-bg-styles"]',
-      );
-      if (btn) updateAnchor("bg-styles", btn);
       setIsBgStylesOpen(true);
       setIsIdentityOpen(false);
       setIsGtaFontsOpen(false);
       setIsStickersOpen(false);
     } else if (requestedTool === "gta-fonts") {
-      const btn = containerRef.current?.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-gta-fonts"]',
-      );
-      if (btn) updateAnchor("gta-fonts", btn);
       setIsGtaFontsOpen(true);
       setIsIdentityOpen(false);
       setIsStickersOpen(false);
@@ -198,7 +145,7 @@ export function MissionEditor({
         gtaBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
-          updateAnchor("gta-fonts", gtaBtn);
+          disableCanvasDrawing();
           setIsGtaFontsOpen((prev) => !prev);
           setIsIdentityOpen(false);
           setIsStickersOpen(false);
@@ -231,7 +178,7 @@ export function MissionEditor({
         identityBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
-          updateAnchor("identity", identityBtn);
+          disableCanvasDrawing();
           setIsIdentityOpen((prev) => !prev);
           setIsGtaFontsOpen(false);
           setIsStickersOpen(false);
@@ -268,7 +215,7 @@ export function MissionEditor({
         stickersBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
-          updateAnchor("stickers", stickersBtn);
+          disableCanvasDrawing();
           setIsStickersOpen((prev) => !prev);
           setIsIdentityOpen(false);
           setIsGtaFontsOpen(false);
@@ -302,7 +249,7 @@ export function MissionEditor({
         bgStylesBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
-          updateAnchor("bg-styles", bgStylesBtn);
+          disableCanvasDrawing();
           setIsBgStylesOpen((prev) => !prev);
           setIsIdentityOpen(false);
           setIsGtaFontsOpen(false);
@@ -311,6 +258,25 @@ export function MissionEditor({
 
         stickersBtn.after(bgStylesBtn);
       }
+
+      // Keep native tool rail width updated for seamless drawer docking
+      const railEl = shapesBtn.parentElement;
+      if (railEl && containerRef.current) {
+        const railRect = railEl.getBoundingClientRect();
+        if (railRect.width > 0) {
+          containerRef.current.style.setProperty(
+            "--native-tool-rail-width",
+            `${Math.round(railRect.width)}px`,
+          );
+        }
+      }
+
+      const disableCanvasDrawing = () => {
+        const canvas = findFabricCanvas(containerRef.current);
+        if (canvas && (canvas as unknown as { isDrawingMode?: boolean }).isDrawingMode) {
+          (canvas as unknown as { isDrawingMode: boolean }).isDrawingMode = false;
+        }
+      };
 
       // Close custom panels when Draw, Text, or Shapes is clicked
       const nativeToolBtns = shapesBtn.parentElement.querySelectorAll<HTMLButtonElement>(
@@ -443,7 +409,6 @@ export function MissionEditor({
       {isGtaFontsOpen && (
         <div
           className="editor-gta-fonts-panel-overlay"
-          style={panelAnchor?.tool === "gta-fonts" ? panelAnchor.style : undefined}
           aria-label="GTA Fonts Tool Panel"
         >
           <div className="editor-gta-fonts-panel-header">
@@ -470,7 +435,6 @@ export function MissionEditor({
       {isIdentityOpen && (
         <div
           className="editor-identity-panel-overlay"
-          style={panelAnchor?.tool === "identity" ? panelAnchor.style : undefined}
           aria-label="Operative Identity Tool Panel"
         >
           <div className="editor-identity-panel-header">
@@ -504,7 +468,6 @@ export function MissionEditor({
       {isStickersOpen && (
         <div
           className="editor-stickers-panel-overlay"
-          style={panelAnchor?.tool === "stickers" ? panelAnchor.style : undefined}
           aria-label="Tactical Stickers Tool Panel"
         >
           <div className="editor-stickers-panel-header">
@@ -531,7 +494,6 @@ export function MissionEditor({
       {isBgStylesOpen && (
         <div
           className="editor-bg-styles-panel-overlay"
-          style={panelAnchor?.tool === "bg-styles" ? panelAnchor.style : undefined}
           aria-label="Background Layer & GTA VI Styles Tool Panel"
         >
           <div className="editor-bg-styles-panel-header">
