@@ -382,7 +382,7 @@ function renderViceSunsetStyle(
   ctx.font = '900 190px "Arial Black", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  const viX = width * 0.58;
+  const viX = width * 0.74;
   const viY = height * 0.44;
   const viGrad = ctx.createLinearGradient(viX - 100, viY - 80, viX + 100, viY + 80);
   viGrad.addColorStop(0, "rgba(56, 189, 248, 0.85)");
@@ -439,20 +439,20 @@ function renderViceSunsetStyle(
   ctx.shadowColor = "rgba(0,0,0,0.9)";
   ctx.shadowBlur = 12;
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(merged.alias.toUpperCase(), metaX, topY + 14);
+  ctx.fillText(merged.alias.toUpperCase(), metaX, topY + 14, 260);
   ctx.shadowBlur = 0;
   ctx.strokeStyle = "#111827";
   ctx.lineWidth = 3;
-  ctx.strokeText(merged.alias.toUpperCase(), metaX, topY + 14);
+  ctx.strokeText(merged.alias.toUpperCase(), metaX, topY + 14, 260);
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(merged.alias.toUpperCase(), metaX, topY + 14);
+  ctx.fillText(merged.alias.toUpperCase(), metaX, topY + 14, 260);
 
   // Role / Category
   ctx.font = '700 11.5px "SFMono-Regular", Consolas, monospace';
   ctx.fillStyle = "#ffd000";
   ctx.shadowColor = "rgba(0,0,0,0.5)";
   ctx.shadowBlur = 4;
-  ctx.fillText(merged.role.toUpperCase(), metaX, topY + 72);
+  ctx.fillText(merged.role.toUpperCase(), metaX, topY + 72, 260);
   ctx.shadowBlur = 0;
 
   // Bounty pill
