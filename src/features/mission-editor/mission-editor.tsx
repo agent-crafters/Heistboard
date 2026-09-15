@@ -17,10 +17,7 @@ import { BgLayerControls } from "./bg-layer-controls";
 import { TypographySidebar } from "./typography-sidebar";
 import { IdentityControls } from "./identity-controls";
 import { StickerSidebar } from "./sticker-sidebar";
-import {
-  type GtaBadgeOptions,
-  placeOrUpdateBadgeOnFabricCanvas,
-} from "@/lib/gta-identity-badge";
+import { type GtaBadgeOptions } from "@/lib/gta-identity-badge";
 import { type IdentityState } from "@/domain/identity";
 
 const MISSION_TOOL_OPTIONS: ImageEditorOptions = {
@@ -367,9 +364,6 @@ export function MissionEditor({
       (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike }).__heistboardFabricCanvas = canvas;
       if (originalImageRef.current) {
         applyBgLayerToFabricCanvas(canvas, bgConfig, originalImageRef.current);
-      }
-      if (identityOptions) {
-        void placeOrUpdateBadgeOnFabricCanvas(canvas, identityOptions, "top-left");
       }
     }
     onLoad(editor);
