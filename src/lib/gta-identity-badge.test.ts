@@ -20,6 +20,9 @@ describe("GTA VI Identity Badge Renderer", () => {
       moveTo: vi.fn(),
       lineTo: vi.fn(),
       arc: vi.fn(),
+      arcTo: vi.fn(),
+      quadraticCurveTo: vi.fn(),
+      clip: vi.fn(),
       fill: vi.fn(),
       stroke: vi.fn(),
       strokeRect: vi.fn(),
@@ -41,6 +44,9 @@ describe("GTA VI Identity Badge Renderer", () => {
       font: "",
       shadowColor: "",
       shadowBlur: 0,
+      letterSpacing: "",
+      textAlign: "",
+      textBaseline: "",
     };
 
     mockCanvas = {
@@ -66,7 +72,7 @@ describe("GTA VI Identity Badge Renderer", () => {
     globalThis.document = originalDocument;
   });
 
-  it("renders a 760x300 high-DPI canvas with chamfered corners and GTA VI styling", async () => {
+  it("renders a 760x380 canvas with chamfered corners and GTA VI styling", async () => {
     const canvas = await renderGtaIdentityBadgeToCanvas({
       alias: "LUCIA",
       role: "WHEELMAN · S-TIER",
@@ -75,7 +81,7 @@ describe("GTA VI Identity Badge Renderer", () => {
     });
 
     expect(canvas.width).toBe(760);
-    expect(canvas.height).toBe(300);
+    expect(canvas.height).toBe(380);
     expect(mockCtx.createLinearGradient).toHaveBeenCalled();
     expect(mockCtx.fillText).toHaveBeenCalled();
   });

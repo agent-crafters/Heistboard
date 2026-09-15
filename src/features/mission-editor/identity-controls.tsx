@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import {
   type GtaBadgeOptions,
   type GtaBadgeTheme,
+  type GtaBadgeStyle,
+  BADGE_STYLES,
   DEFAULT_GTA_BADGE_OPTIONS,
   FABRIC_IDENTITY_BADGE_TAG,
   placeOrUpdateBadgeOnFabricCanvas,
@@ -95,6 +97,9 @@ export function IdentityControls({
   const [theme, setTheme] = useState<GtaBadgeTheme>(
     initialOptions.theme ?? DEFAULT_GTA_BADGE_OPTIONS.theme ?? "vice-neon",
   );
+  const [badgeStyle, setBadgeStyle] = useState<GtaBadgeStyle>(
+    initialOptions.badgeStyle ?? DEFAULT_GTA_BADGE_OPTIONS.badgeStyle ?? "vice-sunset",
+  );
   const [wantedStars, setWantedStars] = useState(
     initialOptions.wantedStars ?? DEFAULT_GTA_BADGE_OPTIONS.wantedStars ?? 5,
   );
@@ -124,6 +129,7 @@ export function IdentityControls({
     silhouetteId,
     portraitUrl: activePortraitUrl,
     theme,
+    badgeStyle,
     wantedStars,
     bounty,
     crewCut,
@@ -198,6 +204,7 @@ export function IdentityControls({
     silhouetteId,
     activePortraitUrl,
     theme,
+    badgeStyle,
     wantedStars,
     bounty,
     crewCut,
@@ -333,6 +340,41 @@ export function IdentityControls({
           Configure your street callsign, select a silhouette archetype or upload a photo,
           and customize your live tactical badge on the map canvas.
         </p>
+      </div>
+
+      {/* Badge Style Selector — shown prominently before the preview */}
+      <div className="badge-style-selector-section">
+        <div className="badge-style-section-header">
+          <span className="badge-style-label">🎨 Badge Style</span>
+          <span className="badge-style-current">{BADGE_STYLES.find(s => s.id === badgeStyle)?.name}</span>
+        </div>
+        <div className="badge-style-cards">
+          {BADGE_STYLES.map((style) => {
+            const isActive = badgeStyle === style.id;
+            return (
+              <button
+                key={style.id}
+                type="button"
+                className={`badge-style-card ${isActive ? "active" : ""}`}
+                onClick={() => setBadgeStyle(style.id)}
+                title={style.description}
+                aria-pressed={isActive}
+              >
+                <div
+                  className="badge-style-card-preview"
+                  style={{ background: style.previewGradient }}
+                >
+                  <span className="badge-style-card-accent" style={{ color: style.accent }}>VI</span>
+                </div>
+                <div className="badge-style-card-info">
+                  <strong className="badge-style-card-name">{style.name}</strong>
+                  <small className="badge-style-card-tag">{style.tagline}</small>
+                </div>
+                {isActive && <span className="badge-style-active-dot" aria-hidden="true">✦</span>}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Live Badge Preview Box */}
