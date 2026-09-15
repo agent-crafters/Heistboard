@@ -28,6 +28,10 @@ import {
   DEFAULT_IDENTITY_STATE,
   getSilhouetteArchetype,
 } from "@/domain/identity";
+import {
+  type GtaBadgeOptions,
+  DEFAULT_GTA_BADGE_OPTIONS,
+} from "@/lib/gta-identity-badge";
 import { StickerSidebar } from "@/features/mission-editor/sticker-sidebar";
 import { BgLayerControls } from "@/features/mission-editor/bg-layer-controls";
 import {
@@ -106,6 +110,11 @@ export function HeistboardEditorProof() {
   );
   const [annotatedMap, setAnnotatedMap] = useState<AnnotatedMapResource | null>(null);
   const [identity, setIdentity] = useState<IdentityState>(DEFAULT_IDENTITY_STATE);
+  const [gtaBadgeOptions, setGtaBadgeOptions] = useState<GtaBadgeOptions>({
+    ...DEFAULT_GTA_BADGE_OPTIONS,
+    alias: DEFAULT_IDENTITY_STATE.alias,
+    silhouetteId: DEFAULT_IDENTITY_STATE.silhouetteId,
+  });
   const [bgLayerConfig, setBgLayerConfig] = useState<BgLayerConfig>(DEFAULT_BG_LAYER_CONFIG);
   const [sidebarTab, setSidebarTab] = useState<"brief" | "stickers" | "bg-layer">("stickers");
 
@@ -205,6 +214,12 @@ export function HeistboardEditorProof() {
 
   const handleConfirmIdentity = useCallback((newIdentity: IdentityState) => {
     setIdentity(newIdentity);
+    setGtaBadgeOptions((prev) => ({
+      ...prev,
+      alias: newIdentity.alias,
+      silhouetteId: newIdentity.silhouetteId,
+      portraitUrl: newIdentity.portraitUrl,
+    }));
     setStage("mission-plan");
   }, []);
 
@@ -488,6 +503,8 @@ export function HeistboardEditorProof() {
                   }
                   bgConfig={bgLayerConfig}
                   onBgConfigChange={handleBgLayerChange}
+                  identityOptions={gtaBadgeOptions}
+                  onIdentityChange={setGtaBadgeOptions}
                 />
               </div>
             )}
@@ -575,44 +592,56 @@ export function HeistboardEditorProof() {
 
           {/* Map Viewport with Left Corner Identity Badge */}
           <div className="dossier-map-viewport">
-            {/* Tactical Left Corner Operative Badge */}
-            <div className="dossier-corner-identity-card" aria-label="Operative Identity Dossier Badge">
+            {/* Tactical Left Corner GTA VI Operative Badge */}
+            <div
+              className={`dossier-corner-identity-card gta-theme-${gtaBadgeOptions.theme ?? "vice-neon"}`}
+              aria-label="GTA VI Operative Identity Dossier Badge"
+            >
               <div className="corner-identity-header">
-                <span className="corner-stamp-confidential">CONFIDENTIAL // EYES ONLY</span>
-                <span className="corner-stamp-clearance">LVL 4</span>
+                <span className="corner-stamp-confidential">★ VICE CITY // HEIST RECORD</span>
+                <span className="corner-stamp-clearance">
+                  {"★ ".repeat(gtaBadgeOptions.wantedStars ?? 5).trim()}
+                </span>
               </div>
 
               <div className="corner-identity-content">
                 <div className="corner-avatar-frame">
-                  {identity.portraitSource === "custom" && identity.portraitUrl ? (
+                  {/* Mugshot height lines overlay */}
+                  <div className="corner-mugshot-lines" aria-hidden="true" />
+                  {gtaBadgeOptions.portraitUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={identity.portraitUrl}
-                      alt={identity.alias}
+                      src={gtaBadgeOptions.portraitUrl}
+                      alt={gtaBadgeOptions.alias}
                       className="corner-avatar-img"
                     />
                   ) : (
                     <div className="corner-silhouette-avatar">
                       <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
+                        <path d={getSilhouetteArchetype(gtaBadgeOptions.silhouetteId ?? "infiltrator").svgPath} />
                       </svg>
                     </div>
                   )}
                   <div className="corner-avatar-reticle" />
                   <span className="corner-avatar-pulse-dot" title="Active Operative Status" />
+                  <span className="corner-avatar-status-tag">WANTED</span>
                 </div>
 
                 <div className="corner-identity-details">
                   <span className="corner-label">OPERATIVE CALLSIGN</span>
-                  <strong className="corner-callsign">{identity.alias}</strong>
+                  <strong className="corner-callsign gta-pricedown-title">{gtaBadgeOptions.alias}</strong>
                   <span className="corner-archetype">
-                    {identity.portraitSource === "silhouette"
-                      ? `${getSilhouetteArchetype(identity.silhouetteId).name} · ${getSilhouetteArchetype(identity.silhouetteId).role}`
-                      : `Field Agent · ${identity.portraitFilter.toUpperCase()}`}
+                    {gtaBadgeOptions.role}
                   </span>
+
+                  <div className="corner-stats-strip">
+                    <span className="corner-stat-pill pill-gold">{gtaBadgeOptions.bounty ?? "$1,250,000"}</span>
+                    <span className="corner-stat-pill pill-pink">CUT: {gtaBadgeOptions.crewCut ?? "40%"}</span>
+                  </div>
+
                   <div className="corner-barcode-wrap">
                     <span className="corner-barcode-lines" aria-hidden="true" />
-                    <span className="corner-barcode-id">HB-2026-OP</span>
+                    <span className="corner-barcode-id">VC-2026-OP</span>
                   </div>
                 </div>
               </div>

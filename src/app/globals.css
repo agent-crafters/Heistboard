@@ -3422,24 +3422,48 @@ a:focus-visible {
   top: 18px;
   left: 18px;
   z-index: 20;
-  background: rgba(10, 18, 20, 0.88);
+  background: rgba(10, 18, 22, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 208, 0, 0.45);
+  border: 1.5px solid rgba(247, 37, 133, 0.6);
   border-radius: 8px;
   padding: 0.85rem 1.05rem;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 208, 0, 0.18);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(247, 37, 133, 0.25);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  max-width: 330px;
+  max-width: 350px;
 }
 
 .dossier-corner-identity-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 208, 0, 0.75);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 208, 0, 0.3);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.9), 0 0 32px rgba(247, 37, 133, 0.4);
+}
+
+/* GTA VI Themes for Dossier Corner Badge */
+.dossier-corner-identity-card.gta-theme-vice-neon {
+  border-color: #f72585;
+  background: rgba(13, 10, 26, 0.92);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(247, 37, 133, 0.35), inset 0 0 15px rgba(0, 245, 212, 0.12);
+}
+
+.dossier-corner-identity-card.gta-theme-sunset-gold {
+  border-color: #ffd000;
+  background: rgba(22, 14, 8, 0.92);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 208, 0, 0.35), inset 0 0 15px rgba(255, 107, 53, 0.12);
+}
+
+.dossier-corner-identity-card.gta-theme-miami-cyan {
+  border-color: #00f5d4;
+  background: rgba(8, 20, 24, 0.92);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 245, 212, 0.35), inset 0 0 15px rgba(157, 78, 221, 0.12);
+}
+
+.dossier-corner-identity-card.gta-theme-vice-noir {
+  border-color: #e0e0e0;
+  background: rgba(14, 14, 16, 0.94);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 255, 255, 0.2), inset 0 0 15px rgba(255, 208, 0, 0.1);
 }
 
 .corner-identity-header {
@@ -3447,7 +3471,7 @@ a:focus-visible {
   justify-content: space-between;
   align-items: center;
   gap: 0.65rem;
-  border-bottom: 1px solid rgba(255, 208, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   padding-bottom: 0.4rem;
 }
 
@@ -3462,14 +3486,15 @@ a:focus-visible {
 
 .corner-stamp-clearance {
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 800;
-  color: #ff4d8d;
-  background: rgba(247, 37, 133, 0.18);
-  border: 1px solid rgba(247, 37, 133, 0.45);
-  padding: 0.12rem 0.4rem;
+  color: #ffd000;
+  background: rgba(255, 208, 0, 0.15);
+  border: 1px solid rgba(255, 208, 0, 0.45);
+  padding: 0.12rem 0.45rem;
   border-radius: 3px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px rgba(255, 208, 0, 0.6);
 }
 
 .corner-identity-content {
@@ -3480,8 +3505,8 @@ a:focus-visible {
 
 .corner-avatar-frame {
   position: relative;
-  width: 62px;
-  height: 62px;
+  width: 66px;
+  height: 66px;
   flex-shrink: 0;
   border-radius: 6px;
   overflow: hidden;
@@ -3491,6 +3516,20 @@ a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.corner-mugshot-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 6px,
+    rgba(255, 255, 255, 0.14) 6px,
+    rgba(255, 255, 255, 0.14) 7px
+  );
 }
 
 .corner-avatar-img {
@@ -3510,8 +3549,8 @@ a:focus-visible {
 }
 
 .corner-silhouette-avatar svg {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
 }
 
 .corner-avatar-reticle {
@@ -3520,6 +3559,7 @@ a:focus-visible {
   border: 1px dashed rgba(0, 245, 212, 0.45);
   pointer-events: none;
   border-radius: 4px;
+  z-index: 3;
 }
 
 .corner-avatar-pulse-dot {
@@ -3532,6 +3572,24 @@ a:focus-visible {
   border-radius: 50%;
   box-shadow: 0 0 10px #00f5d4;
   animation: pulseCornerDot 2s infinite ease-in-out;
+  z-index: 4;
+}
+
+.corner-avatar-status-tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(90deg, #f72585, #7209b7);
+  color: #ffffff;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.5rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 1px 0;
+  z-index: 4;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes pulseCornerDot {
@@ -3555,7 +3613,7 @@ a:focus-visible {
 .corner-label {
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 0.58rem;
-  color: #7b847a;
+  color: #8fa093;
   letter-spacing: 0.06em;
 }
 
@@ -3571,6 +3629,16 @@ a:focus-visible {
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
 }
 
+.gta-pricedown-title {
+  font-family: "Pricedown", Impact, sans-serif !important;
+  font-size: 1.6rem !important;
+  letter-spacing: 0.05em !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 12px rgba(247, 37, 133, 0.3) !important;
+  line-height: 1.05;
+  margin: 0.1rem 0;
+}
+
 .corner-archetype {
   font-size: 0.72rem;
   color: #00f5d4;
@@ -3580,11 +3648,39 @@ a:focus-visible {
   text-overflow: ellipsis;
 }
 
+.corner-stats-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.corner-stat-pill {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+  font-weight: 800;
+  padding: 0.12rem 0.4rem;
+  border-radius: 3px;
+  letter-spacing: 0.03em;
+}
+
+.pill-gold {
+  background: rgba(255, 208, 0, 0.16);
+  border: 1px solid rgba(255, 208, 0, 0.5);
+  color: #ffd000;
+}
+
+.pill-pink {
+  background: rgba(247, 37, 133, 0.16);
+  border: 1px solid rgba(247, 37, 133, 0.5);
+  color: #ff559f;
+}
+
 .corner-barcode-wrap {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
 .corner-barcode-lines {
@@ -3612,6 +3708,305 @@ a:focus-visible {
   letter-spacing: 0.05em;
 }
 
+/* ==========================================================================
+   GTA VI Operative ID Badge In-Editor Controls Panel
+   ========================================================================== */
+
+.identity-controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: #f0eadc;
+}
+
+.identity-controls-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(240, 234, 220, 0.1);
+}
+
+.gta-neon-badge {
+  background: linear-gradient(135deg, #f72585, #7209b7);
+  color: #ffffff;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(247, 37, 133, 0.4);
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.gta-controls-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
+
+.gta-subtitle {
+  font-size: 0.68rem;
+  color: #9ba39a;
+  line-height: 1.35;
+}
+
+.gta-badge-live-preview-box {
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #080d0e;
+  border: 1px solid rgba(247, 37, 133, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.gta-badge-preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+.badge-loading-placeholder {
+  padding: 1.25rem;
+  font-size: 0.72rem;
+  color: #888;
+}
+
+.gta-badge-actions-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.gta-pin-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #f72585, #b5179e) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  padding: 0.5rem 0.8rem !important;
+  border-radius: 5px !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 0 12px rgba(247, 37, 133, 0.35);
+  text-align: center;
+}
+
+.gta-pin-btn:hover:not(:disabled) {
+  box-shadow: 0 0 18px rgba(247, 37, 133, 0.6);
+  transform: translateY(-1px);
+}
+
+.gta-pin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gta-sub-pin-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(240, 234, 220, 0.18) !important;
+  color: #c4cdc3 !important;
+  font-size: 0.68rem !important;
+  padding: 0.3rem 0.5rem !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.gta-sub-pin-btn:hover {
+  background: rgba(0, 245, 212, 0.15) !important;
+  border-color: #00f5d4 !important;
+  color: #00f5d4 !important;
+}
+
+.gta-remove-btn {
+  background: rgba(255, 60, 60, 0.12) !important;
+  border: 1px solid rgba(255, 60, 60, 0.3) !important;
+  color: #ff6b6b !important;
+  padding: 0.3rem 0.6rem !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+  font-size: 0.72rem !important;
+  transition: all 0.15s ease;
+}
+
+.gta-remove-btn:hover {
+  background: rgba(255, 60, 60, 0.25) !important;
+  border-color: #ff4d4d !important;
+}
+
+.gta-placed-toast {
+  background: rgba(0, 245, 212, 0.15);
+  border: 1px solid #00f5d4;
+  color: #00f5d4;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.gta-fields-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.gta-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.gta-field-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #b1b8af;
+}
+
+.gta-rand-btn {
+  background: transparent;
+  border: none;
+  color: #ffd000;
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.gta-rand-btn:hover {
+  text-decoration: underline;
+}
+
+.gta-text-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(240, 234, 220, 0.15);
+  color: #ffffff;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.gta-text-input:focus {
+  border-color: #f72585;
+}
+
+.gta-pricedown-text {
+  font-family: "Pricedown", Impact, sans-serif !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+.gta-select-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(240, 234, 220, 0.15);
+  color: #ffffff;
+  padding: 0.38rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  outline: none;
+}
+
+.gta-select-input:focus {
+  border-color: #f72585;
+}
+
+.gta-stars-picker {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.gta-star-btn {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(240, 234, 220, 0.15);
+  color: #555;
+  font-size: 1.1rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.gta-star-btn.filled {
+  color: #ffd000;
+  text-shadow: 0 0 8px rgba(255, 208, 0, 0.6);
+  border-color: rgba(255, 208, 0, 0.4);
+  background: rgba(255, 208, 0, 0.1);
+}
+
+.gta-themes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.gta-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(240, 234, 220, 0.1);
+  border-radius: 5px;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gta-theme-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gta-theme-btn.selected {
+  border-color: #00f5d4;
+  background: rgba(0, 245, 212, 0.12);
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.25);
+}
+
+.theme-color-swatch {
+  display: flex;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.theme-color-swatch span {
+  flex: 1;
+  height: 100%;
+}
+
+.theme-btn-name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.gta-dual-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
 @media (max-width: 640px) {
   .dossier-corner-identity-card {
     top: 8px;
@@ -3620,10 +4015,14 @@ a:focus-visible {
     max-width: calc(100% - 16px);
   }
   .corner-avatar-frame {
-    width: 46px;
-    height: 46px;
+    width: 48px;
+    height: 48px;
   }
   .corner-callsign {
     font-size: 1.05rem;
   }
+  .gta-pricedown-title {
+    font-size: 1.3rem !important;
+  }
 }
+

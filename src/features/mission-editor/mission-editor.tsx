@@ -16,6 +16,11 @@ import { findFabricCanvas, type FabricCanvasLike } from "@/lib/sticker-canvas-im
 import { ensureFontsLoaded, setupNativeFontMenuObserver } from "@/lib/gta-fonts";
 import { BgLayerControls } from "./bg-layer-controls";
 import { TypographySidebar } from "./typography-sidebar";
+import { IdentityControls } from "./identity-controls";
+import {
+  type GtaBadgeOptions,
+  placeOrUpdateBadgeOnFabricCanvas,
+} from "@/lib/gta-identity-badge";
 
 const MISSION_TOOL_OPTIONS: ImageEditorOptions = {
   theme: "dark",
@@ -48,6 +53,8 @@ interface MissionEditorProps {
   onEditorError: (error: Error) => void;
   bgConfig?: BgLayerConfig;
   onBgConfigChange?: (config: BgLayerConfig) => void;
+  identityOptions?: GtaBadgeOptions;
+  onIdentityChange?: (options: GtaBadgeOptions) => void;
 }
 
 export function MissionEditor({
@@ -60,10 +67,13 @@ export function MissionEditor({
   onEditorError,
   bgConfig = DEFAULT_BG_LAYER_CONFIG,
   onBgConfigChange,
+  identityOptions,
+  onIdentityChange,
 }: MissionEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const originalImageRef = useRef<HTMLImageElement | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
+  const [showIdentityDrawer, setShowIdentityDrawer] = useState(false);
   const [isGtaFontsOpen, setIsGtaFontsOpen] = useState(false);
 
   // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts below Shapes
@@ -151,6 +161,9 @@ export function MissionEditor({
     }
   }, [isGtaFontsOpen]);
 
+  const bgConfigRef = useRef(bgConfig);
+  bgConfigRef.current = bgConfig;
+
   // Cache clean original raster image
   useEffect(() => {
     let active = true;
@@ -161,16 +174,17 @@ export function MissionEditor({
       originalImageRef.current = img;
 
       // Apply initial background layer config if non-default
+      const currentConfig = bgConfigRef.current;
       const isCustomized =
-        bgConfig.style !== "none" ||
-        bgConfig.blurEnabled ||
-        bgConfig.gradientEnabled ||
-        bgConfig.opacity < 1;
+        currentConfig.style !== "none" ||
+        currentConfig.blurEnabled ||
+        currentConfig.gradientEnabled ||
+        currentConfig.opacity < 1;
 
       if (isCustomized) {
         const canvas = findFabricCanvas(containerRef.current);
         if (canvas) {
-          applyBgLayerToFabricCanvas(canvas, bgConfig, img);
+          applyBgLayerToFabricCanvas(canvas, currentConfig, img);
         }
       }
     };
@@ -198,6 +212,9 @@ export function MissionEditor({
       if (originalImageRef.current) {
         applyBgLayerToFabricCanvas(canvas, bgConfig, originalImageRef.current);
       }
+      if (identityOptions) {
+        void placeOrUpdateBadgeOnFabricCanvas(canvas, identityOptions, "top-left");
+      }
     }
     onLoad(editor);
   };
@@ -219,11 +236,14 @@ export function MissionEditor({
   return (
     <div ref={containerRef} className="mission-editor-wrapper">
       {/* In-Editor Floating GTA VI Toolbar */}
-      <div className="editor-floating-toolbar" role="toolbar" aria-label="Editor background controls">
+      <div className="editor-floating-toolbar" role="toolbar" aria-label="Editor background and identity controls">
         <button
           type="button"
           className={`editor-toolbar-btn ${showDrawer ? "active" : ""}`}
-          onClick={() => setShowDrawer((prev) => !prev)}
+          onClick={() => {
+            setShowDrawer((prev) => !prev);
+            setShowIdentityDrawer(false);
+          }}
           title="Open Background Layer & GTA VI Styles Controls"
         >
           <span className="btn-icon">🎨</span>
@@ -232,6 +252,22 @@ export function MissionEditor({
             {activeStyleDef.name}
             {bgConfig.blurEnabled && ` · Blur ${bgConfig.blurRadius}px`}
             {bgConfig.gradientEnabled && " · Gradient On"}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`editor-toolbar-btn ${showIdentityDrawer ? "active" : ""}`}
+          onClick={() => {
+            setShowIdentityDrawer((prev) => !prev);
+            setShowDrawer(false);
+          }}
+          title="Open GTA VI Operative ID Badge Controls"
+        >
+          <span className="btn-icon">👤</span>
+          <span className="btn-label">Operative ID Badge (GTA VI)</span>
+          <span className="btn-badge">
+            {identityOptions?.alias || "CIPHER"} · {identityOptions?.wantedStars ?? 5}★
           </span>
         </button>
       </div>
@@ -255,6 +291,32 @@ export function MissionEditor({
             <BgLayerControls
               config={bgConfig}
               onChange={handleConfigChange}
+              compact
+            />
+          </div>
+        </div>
+      )}
+
+      {/* In-Editor Operative Identity Badge Drawer */}
+      {showIdentityDrawer && (
+        <div className="editor-bg-drawer-overlay">
+          <div className="editor-bg-drawer-backdrop" onClick={() => setShowIdentityDrawer(false)} />
+          <div className="editor-bg-drawer-content">
+            <div className="editor-bg-drawer-header">
+              <span className="drawer-title">Operative Identity Badge (GTA VI)</span>
+              <button
+                type="button"
+                className="drawer-close-btn"
+                onClick={() => setShowIdentityDrawer(false)}
+                title="Close controls"
+              >
+                ✕
+              </button>
+            </div>
+            <IdentityControls
+              initialOptions={identityOptions}
+              editorContainerRef={containerRef}
+              onChange={onIdentityChange}
               compact
             />
           </div>
