@@ -3403,3 +3403,227 @@ a:focus-visible {
   color: #b5beb3;
 }
 
+/* ==========================================================================
+   Dossier Preview: Tactical Left Corner Identity Badge
+   ========================================================================== */
+
+.dossier-map-viewport {
+  position: relative;
+  width: 100%;
+  border: 1px solid rgba(240, 234, 220, 0.22);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 245, 212, 0.05);
+  background: #0a1214;
+}
+
+.dossier-corner-identity-card {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 20;
+  background: rgba(10, 18, 20, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 208, 0, 0.45);
+  border-radius: 8px;
+  padding: 0.85rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 208, 0, 0.18);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 330px;
+}
+
+.dossier-corner-identity-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 208, 0, 0.75);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 208, 0, 0.3);
+}
+
+.corner-identity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.65rem;
+  border-bottom: 1px solid rgba(255, 208, 0, 0.25);
+  padding-bottom: 0.4rem;
+}
+
+.corner-stamp-confidential {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffd000;
+  text-transform: uppercase;
+}
+
+.corner-stamp-clearance {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #ff4d8d;
+  background: rgba(247, 37, 133, 0.18);
+  border: 1px solid rgba(247, 37, 133, 0.45);
+  padding: 0.12rem 0.4rem;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+.corner-identity-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.corner-avatar-frame {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #0a2228;
+  border: 1.5px solid rgba(255, 208, 0, 0.55);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.corner-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.corner-silhouette-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f0eadc;
+  background: radial-gradient(circle at center, #1b3d45, #0a2228);
+}
+
+.corner-silhouette-avatar svg {
+  width: 38px;
+  height: 38px;
+}
+
+.corner-avatar-reticle {
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(0, 245, 212, 0.45);
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+.corner-avatar-pulse-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: #00f5d4;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00f5d4;
+  animation: pulseCornerDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseCornerDot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+
+.corner-identity-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.corner-label {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+  color: #7b847a;
+  letter-spacing: 0.06em;
+}
+
+.corner-callsign {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+}
+
+.corner-archetype {
+  font-size: 0.72rem;
+  color: #00f5d4;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.corner-barcode-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.corner-barcode-lines {
+  display: inline-block;
+  width: 48px;
+  height: 10px;
+  background: repeating-linear-gradient(
+    90deg,
+    #ffffff,
+    #ffffff 2px,
+    transparent 2px,
+    transparent 4px,
+    #ffffff 4px,
+    #ffffff 5px,
+    transparent 5px,
+    transparent 7px
+  );
+  opacity: 0.75;
+}
+
+.corner-barcode-id {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.58rem;
+  color: #8fa093;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 640px) {
+  .dossier-corner-identity-card {
+    top: 8px;
+    left: 8px;
+    padding: 0.6rem 0.75rem;
+    max-width: calc(100% - 16px);
+  }
+  .corner-avatar-frame {
+    width: 46px;
+    height: 46px;
+  }
+  .corner-callsign {
+    font-size: 1.05rem;
+  }
+}

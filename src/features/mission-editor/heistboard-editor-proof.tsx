@@ -541,30 +541,7 @@ export function HeistboardEditorProof() {
               </p>
             </div>
 
-            {/* Operative Identity Strip in Dossier */}
-            <div className="dossier-operative-strip">
-              <div className="dossier-operative-avatar">
-                {identity.portraitSource === "custom" && identity.portraitUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={identity.portraitUrl} alt={identity.alias} />
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
-                  </svg>
-                )}
-              </div>
-              <div className="dossier-operative-info">
-                <span className="operative-tag">ASSIGNED OPERATIVE</span>
-                <strong className="operative-callsign">{identity.alias}</strong>
-                <span className="operative-archetype">
-                  {identity.portraitSource === "silhouette"
-                    ? `${getSilhouetteArchetype(identity.silhouetteId).name} (${getSilhouetteArchetype(identity.silhouetteId).role})`
-                    : `Field Agent · Filter: ${identity.portraitFilter.toUpperCase()}`}
-                </span>
-              </div>
-            </div>
-
-            <div className="actions">
+          <div className="actions">
               <button
                 className="button button-secondary"
                 type="button"
@@ -596,12 +573,58 @@ export function HeistboardEditorProof() {
             </div>
           </div>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className="annotated-map"
-            src={annotatedMap.previewUrl}
-            alt="The exact Annotated Map saved from the mission editor"
-          />
+          {/* Map Viewport with Left Corner Identity Badge */}
+          <div className="dossier-map-viewport">
+            {/* Tactical Left Corner Operative Badge */}
+            <div className="dossier-corner-identity-card" aria-label="Operative Identity Dossier Badge">
+              <div className="corner-identity-header">
+                <span className="corner-stamp-confidential">CONFIDENTIAL // EYES ONLY</span>
+                <span className="corner-stamp-clearance">LVL 4</span>
+              </div>
+
+              <div className="corner-identity-content">
+                <div className="corner-avatar-frame">
+                  {identity.portraitSource === "custom" && identity.portraitUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={identity.portraitUrl}
+                      alt={identity.alias}
+                      className="corner-avatar-img"
+                    />
+                  ) : (
+                    <div className="corner-silhouette-avatar">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="corner-avatar-reticle" />
+                  <span className="corner-avatar-pulse-dot" title="Active Operative Status" />
+                </div>
+
+                <div className="corner-identity-details">
+                  <span className="corner-label">OPERATIVE CALLSIGN</span>
+                  <strong className="corner-callsign">{identity.alias}</strong>
+                  <span className="corner-archetype">
+                    {identity.portraitSource === "silhouette"
+                      ? `${getSilhouetteArchetype(identity.silhouetteId).name} · ${getSilhouetteArchetype(identity.silhouetteId).role}`
+                      : `Field Agent · ${identity.portraitFilter.toUpperCase()}`}
+                  </span>
+                  <div className="corner-barcode-wrap">
+                    <span className="corner-barcode-lines" aria-hidden="true" />
+                    <span className="corner-barcode-id">HB-2026-OP</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="annotated-map"
+              src={annotatedMap.previewUrl}
+              alt="The exact Annotated Map saved from the mission editor"
+            />
+          </div>
 
           {/* Legally required attribution line under the Annotated Map */}
           <div className="dossier-attribution-block">
