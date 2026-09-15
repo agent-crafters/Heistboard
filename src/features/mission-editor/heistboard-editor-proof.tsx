@@ -22,7 +22,7 @@ import {
   type AnnotatedMapResource,
 } from "@/lib/annotated-map-resource";
 import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/territory-view";
-import { IdentityView } from "@/features/identity/identity-view";
+import { IdentityControls } from "@/features/mission-editor/identity-controls";
 import {
   type IdentityState,
   DEFAULT_IDENTITY_STATE,
@@ -116,7 +116,7 @@ export function HeistboardEditorProof() {
     silhouetteId: DEFAULT_IDENTITY_STATE.silhouetteId,
   });
   const [bgLayerConfig, setBgLayerConfig] = useState<BgLayerConfig>(DEFAULT_BG_LAYER_CONFIG);
-  const [sidebarTab, setSidebarTab] = useState<"brief" | "stickers" | "bg-layer">("stickers");
+  const [sidebarTab, setSidebarTab] = useState<"identity" | "stickers" | "bg-layer" | "brief">("identity");
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
   const mapBaseBlobUrlRef = useRef<string | null>(null);
@@ -197,7 +197,8 @@ export function HeistboardEditorProof() {
     setAttribution(result.attribution);
     setLockedCamera(result.camera);
     dispatch({ type: "retry" });
-    setStage("identity");
+    setStage("mission-plan");
+    setSidebarTab("identity");
   }, []);
 
   const handleSelectSampleFallback = useCallback(() => {
@@ -209,22 +210,8 @@ export function HeistboardEditorProof() {
     setAttribution(SAMPLE_MAP_ATTRIBUTION);
     setIsSampleMap(true);
     dispatch({ type: "retry" });
-    setStage("identity");
-  }, []);
-
-  const handleConfirmIdentity = useCallback((newIdentity: IdentityState) => {
-    setIdentity(newIdentity);
-    setGtaBadgeOptions((prev) => ({
-      ...prev,
-      alias: newIdentity.alias,
-      silhouetteId: newIdentity.silhouetteId,
-      portraitUrl: newIdentity.portraitUrl,
-    }));
     setStage("mission-plan");
-  }, []);
-
-  const handleReturnToTerritoryFromIdentity = useCallback(() => {
-    setStage("territory");
+    setSidebarTab("identity");
   }, []);
 
   const handleEditorLoad = useCallback(() => {
@@ -309,23 +296,18 @@ export function HeistboardEditorProof() {
         </div>
       </header>
 
-      {/* 4-Stage Progress Nav */}
+      {/* 3-Stage Progress Nav */}
       <nav className="stage-indicator" aria-label="Operation Stages">
         <span className={`stage-badge ${stage === "territory" ? "active" : "complete"}`}>
           01 / Territory
         </span>
         <span
-          className={`stage-badge ${stage === "identity" ? "active" : stage === "mission-plan" || stage === "dossier" ? "complete" : ""}`}
-        >
-          02 / Identity
-        </span>
-        <span
           className={`stage-badge ${stage === "mission-plan" ? "active" : stage === "dossier" ? "complete" : ""}`}
         >
-          03 / Mission Plan
+          02 / Mission Plan &amp; Identity
         </span>
         <span className={`stage-badge ${stage === "dossier" ? "active" : ""}`}>
-          04 / Dossier Preview
+          03 / Dossier Preview
         </span>
       </nav>
 
@@ -338,20 +320,18 @@ export function HeistboardEditorProof() {
         />
       )}
 
-      {/* Stage 2: Operative Identity */}
-      {stage === "identity" && (
-        <IdentityView
-          initialState={identity}
-          onConfirmIdentity={handleConfirmIdentity}
-          onReturnToTerritory={handleReturnToTerritoryFromIdentity}
-        />
-      )}
-
-      {/* Stage 3: Mission Editor */}
+      {/* Stage 2: Mission Editor */}
       {stage === "mission-plan" && (
         <section className="workspace" aria-labelledby="workspace-title">
           <aside className="briefing">
             <div className="briefing-tabs" role="tablist">
+              <button
+                type="button"
+                className={`briefing-tab-btn ${sidebarTab === "identity" ? "active" : ""}`}
+                onClick={() => setSidebarTab("identity")}
+              >
+                Operative Identity
+              </button>
               <button
                 type="button"
                 className={`briefing-tab-btn ${sidebarTab === "stickers" ? "active" : ""}`}
@@ -375,7 +355,15 @@ export function HeistboardEditorProof() {
               </button>
             </div>
 
-            {sidebarTab === "bg-layer" ? (
+            {sidebarTab === "identity" ? (
+              <IdentityControls
+                initialOptions={gtaBadgeOptions}
+                identityState={identity}
+                onIdentityStateChange={setIdentity}
+                editorContainerRef={editorFrameRef}
+                onChange={setGtaBadgeOptions}
+              />
+            ) : sidebarTab === "bg-layer" ? (
               <BgLayerControls
                 config={bgLayerConfig}
                 onChange={handleBgLayerChange}
@@ -415,7 +403,7 @@ export function HeistboardEditorProof() {
                   <button
                     type="button"
                     className="brief-edit-identity-btn"
-                    onClick={() => setStage("identity")}
+                    onClick={() => setSidebarTab("identity")}
                     title="Change operative identity or portrait"
                   >
                     Edit
@@ -505,6 +493,8 @@ export function HeistboardEditorProof() {
                   onBgConfigChange={handleBgLayerChange}
                   identityOptions={gtaBadgeOptions}
                   onIdentityChange={setGtaBadgeOptions}
+                  identityState={identity}
+                  onIdentityStateChange={setIdentity}
                 />
               </div>
             )}
@@ -569,7 +559,10 @@ export function HeistboardEditorProof() {
               <button
                 className="button button-secondary"
                 type="button"
-                onClick={() => setStage("identity")}
+                onClick={() => {
+                  setStage("mission-plan");
+                  setSidebarTab("identity");
+                }}
               >
                 Edit identity
               </button>

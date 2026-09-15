@@ -3741,6 +3741,14 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
+.identity-panel-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0.15rem 0 0;
+  letter-spacing: -0.01em;
+}
+
 .gta-controls-title {
   font-size: 0.88rem;
   font-weight: 700;
@@ -3752,6 +3760,67 @@ a:focus-visible {
   font-size: 0.68rem;
   color: #9ba39a;
   line-height: 1.35;
+}
+
+.silhouette-grid.compact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.silhouette-grid.compact .silhouette-card {
+  padding: 0.4rem 0.5rem;
+}
+
+.silhouette-grid.compact .silhouette-avatar-frame {
+  width: 36px;
+  height: 36px;
+}
+
+.silhouette-grid.compact .silhouette-name {
+  font-size: 0.72rem;
+}
+
+.silhouette-grid.compact .silhouette-role-badge {
+  font-size: 0.55rem;
+}
+
+.photo-upload-area.compact .upload-dropzone {
+  padding: 1.25rem 1rem;
+}
+
+.photo-upload-area.compact .dropzone-icon {
+  font-size: 1.4rem;
+}
+
+.photo-upload-area.compact .dropzone-title {
+  font-size: 0.82rem;
+}
+
+.photo-upload-area.compact .dropzone-sub {
+  font-size: 0.68rem;
+}
+
+.photo-upload-area.compact .crop-sliders-row {
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+.photo-upload-area.compact .filter-chips {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.photo-upload-area.compact .filter-chip {
+  padding: 0.35rem 0.45rem;
+}
+
+.photo-upload-area.compact .chip-name {
+  font-size: 0.68rem;
+}
+
+.photo-upload-area.compact .chip-tag {
+  font-size: 0.55rem;
 }
 
 .gta-badge-live-preview-box {
