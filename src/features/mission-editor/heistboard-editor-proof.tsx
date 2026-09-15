@@ -500,7 +500,10 @@ export function HeistboardEditorProof() {
               <button
                 className="button button-secondary"
                 type="button"
-                onClick={() => setStage("mission-plan")}
+                onClick={() => {
+                  dispatch({ type: "edit-again" });
+                  setStage("mission-plan");
+                }}
               >
                 Edit mission again
               </button>
@@ -508,6 +511,7 @@ export function HeistboardEditorProof() {
                 className="button button-secondary"
                 type="button"
                 onClick={() => {
+                  dispatch({ type: "edit-again" });
                   setStage("mission-plan");
                   setRequestedEditorTool("identity");
                 }}
