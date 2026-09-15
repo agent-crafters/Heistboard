@@ -10,13 +10,13 @@ import {
   DEFAULT_BG_LAYER_CONFIG,
   type BgLayerConfig,
   applyBgLayerToFabricCanvas,
-  getGtaStyleDefinition,
 } from "@/lib/bg-layer-processor";
 import { findFabricCanvas, type FabricCanvasLike } from "@/lib/sticker-canvas-importer";
 import { ensureFontsLoaded, setupNativeFontMenuObserver } from "@/lib/gta-fonts";
 import { BgLayerControls } from "./bg-layer-controls";
 import { TypographySidebar } from "./typography-sidebar";
 import { IdentityControls } from "./identity-controls";
+import { StickerSidebar } from "./sticker-sidebar";
 import {
   type GtaBadgeOptions,
   placeOrUpdateBadgeOnFabricCanvas,
@@ -44,6 +44,8 @@ const MISSION_TOOL_OPTIONS: ImageEditorOptions = {
   },
 };
 
+export type CustomEditorTool = "identity" | "stickers" | "bg-styles" | "gta-fonts";
+
 interface MissionEditorProps {
   image: string;
   retryKey: number;
@@ -58,6 +60,8 @@ interface MissionEditorProps {
   onIdentityChange?: (options: GtaBadgeOptions) => void;
   identityState?: IdentityState;
   onIdentityStateChange?: (state: IdentityState) => void;
+  requestedTool?: CustomEditorTool | null;
+  onToolHandled?: () => void;
 }
 
 export function MissionEditor({
@@ -74,14 +78,44 @@ export function MissionEditor({
   onIdentityChange,
   identityState,
   onIdentityStateChange,
+  requestedTool,
+  onToolHandled,
 }: MissionEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const originalImageRef = useRef<HTMLImageElement | null>(null);
-  const [showDrawer, setShowDrawer] = useState(false);
   const [isIdentityOpen, setIsIdentityOpen] = useState(false);
   const [isGtaFontsOpen, setIsGtaFontsOpen] = useState(false);
+  const [isStickersOpen, setIsStickersOpen] = useState(false);
+  const [isBgStylesOpen, setIsBgStylesOpen] = useState(false);
 
-  // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts & Identity below Shapes
+  // Handle programmatic tool open requests (e.g. clicking "Edit" in mission briefing)
+  useEffect(() => {
+    if (!requestedTool) return;
+    if (requestedTool === "identity") {
+      setIsIdentityOpen(true);
+      setIsGtaFontsOpen(false);
+      setIsStickersOpen(false);
+      setIsBgStylesOpen(false);
+    } else if (requestedTool === "stickers") {
+      setIsStickersOpen(true);
+      setIsIdentityOpen(false);
+      setIsGtaFontsOpen(false);
+      setIsBgStylesOpen(false);
+    } else if (requestedTool === "bg-styles") {
+      setIsBgStylesOpen(true);
+      setIsIdentityOpen(false);
+      setIsGtaFontsOpen(false);
+      setIsStickersOpen(false);
+    } else if (requestedTool === "gta-fonts") {
+      setIsGtaFontsOpen(true);
+      setIsIdentityOpen(false);
+      setIsStickersOpen(false);
+      setIsBgStylesOpen(false);
+    }
+    onToolHandled?.();
+  }, [requestedTool, onToolHandled]);
+
+  // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts, Identity, Stickers, and BG Styles
   useEffect(() => {
     ensureFontsLoaded();
     const disconnectNativeMenu = setupNativeFontMenuObserver(containerRef.current);
@@ -117,19 +151,20 @@ export function MissionEditor({
           e.stopPropagation();
           setIsGtaFontsOpen((prev) => !prev);
           setIsIdentityOpen(false);
-          setShowDrawer(false);
+          setIsStickersOpen(false);
+          setIsBgStylesOpen(false);
         };
 
         shapesBtn.after(gtaBtn);
       }
 
       // 2. Inject Operative Identity button right below GTA Fonts
-      const existingIdentityBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+      let identityBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-operative-identity"]',
       );
 
-      if (!existingIdentityBtn && gtaBtn) {
-        const identityBtn = document.createElement("button");
+      if (!identityBtn && gtaBtn) {
+        identityBtn = document.createElement("button");
         identityBtn.type = "button";
         identityBtn.setAttribute("data-testid", "native-tool-operative-identity");
         identityBtn.className =
@@ -148,10 +183,80 @@ export function MissionEditor({
           e.stopPropagation();
           setIsIdentityOpen((prev) => !prev);
           setIsGtaFontsOpen(false);
-          setShowDrawer(false);
+          setIsStickersOpen(false);
+          setIsBgStylesOpen(false);
         };
 
         gtaBtn.after(identityBtn);
+      }
+
+      // 3. Inject Tactical Stickers button right below Identity
+      let stickersBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+        'button[data-testid="native-tool-tactical-stickers"]',
+      );
+
+      if (!stickersBtn && identityBtn) {
+        stickersBtn = document.createElement("button");
+        stickersBtn.type = "button";
+        stickersBtn.setAttribute("data-testid", "native-tool-tactical-stickers");
+        stickersBtn.className =
+          "native-tool-tactical-stickers-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
+        stickersBtn.title = "Tactical Stickers (30 Heist Markers)";
+        stickersBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" fill="rgba(0, 240, 255, 0.25)"/>
+            <circle cx="12" cy="12" r="3" fill="#00f0ff"/>
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="6" y2="12"/>
+            <line x1="18" y1="12" x2="22" y2="12"/>
+          </svg>
+          <span class="truncate max-w-full" style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em; color: #00f0ff; line-height: 1.1;">Stickers</span>
+        `;
+
+        stickersBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsStickersOpen((prev) => !prev);
+          setIsIdentityOpen(false);
+          setIsGtaFontsOpen(false);
+          setIsBgStylesOpen(false);
+        };
+
+        identityBtn.after(stickersBtn);
+      }
+
+      // 4. Inject BG Layer & Styles button right below Stickers
+      let bgStylesBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+        'button[data-testid="native-tool-bg-styles"]',
+      );
+
+      if (!bgStylesBtn && stickersBtn) {
+        bgStylesBtn = document.createElement("button");
+        bgStylesBtn.type = "button";
+        bgStylesBtn.setAttribute("data-testid", "native-tool-bg-styles");
+        bgStylesBtn.className =
+          "native-tool-bg-styles-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
+        bgStylesBtn.title = "Background Layer & GTA VI Styles";
+        bgStylesBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff8000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2" fill="rgba(255, 128, 0, 0.25)"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+          <span class="truncate max-w-full" style="font-size: 9px; font-weight: 700; letter-spacing: 0.02em; color: #ff8000; line-height: 1.1;">BG Styles</span>
+        `;
+
+        bgStylesBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsBgStylesOpen((prev) => !prev);
+          setIsIdentityOpen(false);
+          setIsGtaFontsOpen(false);
+          setIsStickersOpen(false);
+        };
+
+        stickersBtn.after(bgStylesBtn);
       }
 
       // Close custom panels when Draw, Text, or Shapes is clicked
@@ -165,6 +270,8 @@ export function MissionEditor({
           btn.addEventListener("click", () => {
             setIsGtaFontsOpen(false);
             setIsIdentityOpen(false);
+            setIsStickersOpen(false);
+            setIsBgStylesOpen(false);
           });
         }
       });
@@ -186,31 +293,29 @@ export function MissionEditor({
     };
   }, []);
 
-  // Synchronize active state styling on the injected GTA Fonts and Identity buttons
+  // Synchronize active state styling on the injected custom tool buttons
   useEffect(() => {
     if (!containerRef.current) return;
-    const gtaBtn = containerRef.current.querySelector<HTMLButtonElement>(
-      'button[data-testid="native-tool-gta-fonts"]',
-    );
-    if (gtaBtn) {
-      if (isGtaFontsOpen) {
-        gtaBtn.classList.add("active");
-      } else {
-        gtaBtn.classList.remove("active");
-      }
-    }
+    const tools = [
+      { id: "native-tool-gta-fonts", active: isGtaFontsOpen },
+      { id: "native-tool-operative-identity", active: isIdentityOpen },
+      { id: "native-tool-tactical-stickers", active: isStickersOpen },
+      { id: "native-tool-bg-styles", active: isBgStylesOpen },
+    ];
 
-    const identityBtn = containerRef.current.querySelector<HTMLButtonElement>(
-      'button[data-testid="native-tool-operative-identity"]',
-    );
-    if (identityBtn) {
-      if (isIdentityOpen) {
-        identityBtn.classList.add("active");
-      } else {
-        identityBtn.classList.remove("active");
+    for (const { id, active } of tools) {
+      const btn = containerRef.current.querySelector<HTMLButtonElement>(
+        `button[data-testid="${id}"]`,
+      );
+      if (btn) {
+        if (active) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
       }
     }
-  }, [isGtaFontsOpen, isIdentityOpen]);
+  }, [isGtaFontsOpen, isIdentityOpen, isStickersOpen, isBgStylesOpen]);
 
   const bgConfigRef = useRef(bgConfig);
   bgConfigRef.current = bgConfig;
@@ -282,69 +387,27 @@ export function MissionEditor({
     }
   };
 
-  const activeStyleDef = getGtaStyleDefinition(bgConfig.style);
-
   return (
     <div ref={containerRef} className="mission-editor-wrapper">
-      {/* In-Editor Floating GTA VI Toolbar */}
-      <div className="editor-floating-toolbar" role="toolbar" aria-label="Editor background and identity controls">
-        <button
-          type="button"
-          className={`editor-toolbar-btn ${showDrawer ? "active" : ""}`}
-          onClick={() => {
-            setShowDrawer((prev) => !prev);
-            setIsIdentityOpen(false);
-          }}
-          title="Open Background Layer & GTA VI Styles Controls"
-        >
-          <span className="btn-icon">🎨</span>
-          <span className="btn-label">BG Layer &amp; GTA VI Styles</span>
-          <span className="btn-badge">
-            {activeStyleDef.name}
-            {bgConfig.blurEnabled && ` · Blur ${bgConfig.blurRadius}px`}
-            {bgConfig.gradientEnabled && " · Gradient On"}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={`editor-toolbar-btn ${isIdentityOpen ? "active" : ""}`}
-          onClick={() => {
-            setIsIdentityOpen((prev) => !prev);
-            setIsGtaFontsOpen(false);
-            setShowDrawer(false);
-          }}
-          title="Establish Your Operative Identity (GTA VI)"
-        >
-          <span className="btn-icon">👤</span>
-          <span className="btn-label">Operative Identity (GTA VI)</span>
-          <span className="btn-badge">
-            {identityOptions?.alias || "CIPHER"} · {identityOptions?.wantedStars ?? 5}★
-          </span>
-        </button>
-      </div>
-
-      {/* In-Editor Background Layer Drawer / Popover */}
-      {showDrawer && (
-        <div className="editor-bg-drawer-overlay">
-          <div className="editor-bg-drawer-backdrop" onClick={() => setShowDrawer(false)} />
-          <div className="editor-bg-drawer-content">
-            <div className="editor-bg-drawer-header">
-              <span className="drawer-title">Background Layer &amp; GTA VI Styles</span>
-              <button
-                type="button"
-                className="drawer-close-btn"
-                onClick={() => setShowDrawer(false)}
-                title="Close controls"
-              >
-                ✕
-              </button>
+      {/* In-Editor GTA Fonts Panel (Opened right from below Shapes tool) */}
+      {isGtaFontsOpen && (
+        <div className="editor-gta-fonts-panel-overlay" aria-label="GTA Fonts Tool Panel">
+          <div className="editor-gta-fonts-panel-header">
+            <div className="flex items-center gap-2">
+              <span className="panel-badge">★ ROCKSTAR</span>
+              <span className="panel-title">GTA Fonts &amp; Typography</span>
             </div>
-            <BgLayerControls
-              config={bgConfig}
-              onChange={handleConfigChange}
-              compact
-            />
+            <button
+              type="button"
+              className="panel-close-btn"
+              onClick={() => setIsGtaFontsOpen(false)}
+              title="Close GTA Fonts panel"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="editor-gta-fonts-panel-scroll">
+            <TypographySidebar editorContainerRef={containerRef} compact />
           </div>
         </div>
       )}
@@ -379,25 +442,52 @@ export function MissionEditor({
         </div>
       )}
 
-      {/* In-Editor GTA Fonts Panel (Opened right from below Shapes tool) */}
-      {isGtaFontsOpen && (
-        <div className="editor-gta-fonts-panel-overlay" aria-label="GTA Fonts Tool Panel">
-          <div className="editor-gta-fonts-panel-header">
+      {/* In-Editor Tactical Stickers Panel (Opened right from below Identity tool) */}
+      {isStickersOpen && (
+        <div className="editor-stickers-panel-overlay" aria-label="Tactical Stickers Tool Panel">
+          <div className="editor-stickers-panel-header">
             <div className="flex items-center gap-2">
-              <span className="panel-badge">★ ROCKSTAR</span>
-              <span className="panel-title">GTA Fonts &amp; Typography</span>
+              <span className="panel-badge">★ 30 STICKERS</span>
+              <span className="panel-title">Tactical Stickers</span>
             </div>
             <button
               type="button"
               className="panel-close-btn"
-              onClick={() => setIsGtaFontsOpen(false)}
-              title="Close GTA Fonts panel"
+              onClick={() => setIsStickersOpen(false)}
+              title="Close Tactical Stickers panel"
             >
               ✕
             </button>
           </div>
-          <div className="editor-gta-fonts-panel-scroll">
-            <TypographySidebar editorContainerRef={containerRef} compact />
+          <div className="editor-stickers-panel-scroll">
+            <StickerSidebar editorContainerRef={containerRef} />
+          </div>
+        </div>
+      )}
+
+      {/* In-Editor BG Layer & GTA VI Styles Panel (Opened right from below Stickers tool) */}
+      {isBgStylesOpen && (
+        <div className="editor-bg-styles-panel-overlay" aria-label="Background Layer & GTA VI Styles Tool Panel">
+          <div className="editor-bg-styles-panel-header">
+            <div className="flex items-center gap-2">
+              <span className="panel-badge">★ GTA VI STYLES</span>
+              <span className="panel-title">BG Layer &amp; Styles</span>
+            </div>
+            <button
+              type="button"
+              className="panel-close-btn"
+              onClick={() => setIsBgStylesOpen(false)}
+              title="Close Background Layer & Styles panel"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="editor-bg-styles-panel-scroll">
+            <BgLayerControls
+              config={bgConfig}
+              onChange={handleConfigChange}
+              compact
+            />
           </div>
         </div>
       )}

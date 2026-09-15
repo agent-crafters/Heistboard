@@ -22,7 +22,6 @@ import {
   type AnnotatedMapResource,
 } from "@/lib/annotated-map-resource";
 import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/territory-view";
-import { IdentityControls } from "@/features/mission-editor/identity-controls";
 import {
   type IdentityState,
   DEFAULT_IDENTITY_STATE,
@@ -32,14 +31,13 @@ import {
   type GtaBadgeOptions,
   DEFAULT_GTA_BADGE_OPTIONS,
 } from "@/lib/gta-identity-badge";
-import { StickerSidebar } from "@/features/mission-editor/sticker-sidebar";
-import { BgLayerControls } from "@/features/mission-editor/bg-layer-controls";
 import {
   type BgLayerConfig,
   DEFAULT_BG_LAYER_CONFIG,
   applyBgLayerToFabricCanvas,
 } from "@/lib/bg-layer-processor";
 import { findFabricCanvas, importStickerToCanvas } from "@/lib/sticker-canvas-importer";
+import type { CustomEditorTool } from "./mission-editor";
 
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
@@ -116,7 +114,7 @@ export function HeistboardEditorProof() {
     silhouetteId: DEFAULT_IDENTITY_STATE.silhouetteId,
   });
   const [bgLayerConfig, setBgLayerConfig] = useState<BgLayerConfig>(DEFAULT_BG_LAYER_CONFIG);
-  const [sidebarTab, setSidebarTab] = useState<"identity" | "stickers" | "bg-layer" | "brief">("identity");
+  const [requestedEditorTool, setRequestedEditorTool] = useState<CustomEditorTool | null>(null);
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
   const mapBaseBlobUrlRef = useRef<string | null>(null);
@@ -198,7 +196,6 @@ export function HeistboardEditorProof() {
     setLockedCamera(result.camera);
     dispatch({ type: "retry" });
     setStage("mission-plan");
-    setSidebarTab("identity");
   }, []);
 
   const handleSelectSampleFallback = useCallback(() => {
@@ -211,7 +208,6 @@ export function HeistboardEditorProof() {
     setIsSampleMap(true);
     dispatch({ type: "retry" });
     setStage("mission-plan");
-    setSidebarTab("identity");
   }, []);
 
   const handleEditorLoad = useCallback(() => {
@@ -324,105 +320,55 @@ export function HeistboardEditorProof() {
       {stage === "mission-plan" && (
         <section className="workspace" aria-labelledby="workspace-title">
           <aside className="briefing">
-            <div className="briefing-tabs" role="tablist">
+            <p className="section-label">Mission brief</p>
+            <h2 id="workspace-title">Package before sunrise</h2>
+            <p>
+              The target area is locked. Trace your delivery route, mark safe locations,
+              and record the primary rendezvous point.
+            </p>
+
+            {/* Operative Callsign & Identity Badge in Briefing */}
+            <div className="brief-operative-card">
+              <div className="brief-operative-avatar">
+                {identity.portraitSource === "custom" && identity.portraitUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={identity.portraitUrl} alt={identity.alias} />
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
+                  </svg>
+                )}
+              </div>
+              <div className="brief-operative-meta">
+                <span className="brief-operative-tag">OPERATIVE / CALLSIGN</span>
+                <strong className="brief-operative-alias">{identity.alias}</strong>
+                <small className="brief-operative-role">
+                  {identity.portraitSource === "silhouette"
+                    ? getSilhouetteArchetype(identity.silhouetteId).role
+                    : "Field Agent"}
+                </small>
+              </div>
               <button
                 type="button"
-                className={`briefing-tab-btn ${sidebarTab === "identity" ? "active" : ""}`}
-                onClick={() => setSidebarTab("identity")}
+                className="brief-edit-identity-btn"
+                onClick={() => setRequestedEditorTool("identity")}
+                title="Open Operative Identity in Editor"
               >
-                Operative Identity
-              </button>
-              <button
-                type="button"
-                className={`briefing-tab-btn ${sidebarTab === "stickers" ? "active" : ""}`}
-                onClick={() => setSidebarTab("stickers")}
-              >
-                Tactical Stickers (30)
-              </button>
-              <button
-                type="button"
-                className={`briefing-tab-btn ${sidebarTab === "bg-layer" ? "active" : ""}`}
-                onClick={() => setSidebarTab("bg-layer")}
-              >
-                BG &amp; Styles
-              </button>
-              <button
-                type="button"
-                className={`briefing-tab-btn ${sidebarTab === "brief" ? "active" : ""}`}
-                onClick={() => setSidebarTab("brief")}
-              >
-                Mission Brief
+                Edit
               </button>
             </div>
 
-            {sidebarTab === "identity" ? (
-              <IdentityControls
-                initialOptions={gtaBadgeOptions}
-                identityState={identity}
-                onIdentityStateChange={setIdentity}
-                editorContainerRef={editorFrameRef}
-                onChange={setGtaBadgeOptions}
-              />
-            ) : sidebarTab === "bg-layer" ? (
-              <BgLayerControls
-                config={bgLayerConfig}
-                onChange={handleBgLayerChange}
-              />
-            ) : sidebarTab === "stickers" ? (
-              <StickerSidebar editorContainerRef={editorFrameRef} />
-            ) : (
-              <>
-                <p className="section-label">Mission brief</p>
-                <h2 id="workspace-title">Package before sunrise</h2>
-                <p>
-                  The target area is locked. Trace your delivery route, mark safe locations,
-                  and record the primary rendezvous point.
-                </p>
-
-                {/* Operative Callsign & Identity Badge in Briefing */}
-                <div className="brief-operative-card">
-                  <div className="brief-operative-avatar">
-                    {identity.portraitSource === "custom" && identity.portraitUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={identity.portraitUrl} alt={identity.alias} />
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
-                      </svg>
-                    )}
+            <ol className="mission-steps">
+              {MISSION_STEPS.map(([number, title, detail]) => (
+                <li key={number}>
+                  <span>{number}</span>
+                  <div>
+                    <strong>{title}</strong>
+                    <p>{detail}</p>
                   </div>
-                  <div className="brief-operative-meta">
-                    <span className="brief-operative-tag">OPERATIVE / CALLSIGN</span>
-                    <strong className="brief-operative-alias">{identity.alias}</strong>
-                    <small className="brief-operative-role">
-                      {identity.portraitSource === "silhouette"
-                        ? getSilhouetteArchetype(identity.silhouetteId).role
-                        : "Field Agent"}
-                    </small>
-                  </div>
-                  <button
-                    type="button"
-                    className="brief-edit-identity-btn"
-                    onClick={() => setSidebarTab("identity")}
-                    title="Change operative identity or portrait"
-                  >
-                    Edit
-                  </button>
-                </div>
-
-                <ol className="mission-steps">
-                  {MISSION_STEPS.map(([number, title, detail]) => (
-                    <li key={number}>
-                      <span>{number}</span>
-                      <div>
-                        <strong>{title}</strong>
-                        <p>{detail}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </>
-            )}
+                </li>
+              ))}
+            </ol>
 
             <div className="territory-source-tag">
               <small>
@@ -495,6 +441,8 @@ export function HeistboardEditorProof() {
                   onIdentityChange={setGtaBadgeOptions}
                   identityState={identity}
                   onIdentityStateChange={setIdentity}
+                  requestedTool={requestedEditorTool}
+                  onToolHandled={() => setRequestedEditorTool(null)}
                 />
               </div>
             )}
@@ -561,7 +509,7 @@ export function HeistboardEditorProof() {
                 type="button"
                 onClick={() => {
                   setStage("mission-plan");
-                  setSidebarTab("identity");
+                  setRequestedEditorTool("identity");
                 }}
               >
                 Edit identity
