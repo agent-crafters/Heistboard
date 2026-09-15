@@ -25,7 +25,6 @@ import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/
 import {
   type IdentityState,
   DEFAULT_IDENTITY_STATE,
-  getSilhouetteArchetype,
 } from "@/domain/identity";
 import {
   type GtaBadgeOptions,
@@ -531,63 +530,8 @@ export function HeistboardEditorProof() {
             </div>
           </div>
 
-          {/* Map Viewport with Left Corner Identity Badge */}
+          {/* Map Viewport — shows exactly what was saved from the mission editor */}
           <div className="dossier-map-viewport">
-            {/* Tactical Left Corner GTA VI Operative Badge */}
-            <div
-              className={`dossier-corner-identity-card gta-theme-${gtaBadgeOptions.theme ?? "vice-neon"}`}
-              aria-label="GTA VI Operative Identity Dossier Badge"
-            >
-              <div className="corner-identity-header">
-                <span className="corner-stamp-confidential">★ VICE CITY // HEIST RECORD</span>
-                <span className="corner-stamp-clearance">
-                  {"★ ".repeat(gtaBadgeOptions.wantedStars ?? 5).trim()}
-                </span>
-              </div>
-
-              <div className="corner-identity-content">
-                <div className="corner-avatar-frame">
-                  {/* Mugshot height lines overlay */}
-                  <div className="corner-mugshot-lines" aria-hidden="true" />
-                  {gtaBadgeOptions.portraitUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={gtaBadgeOptions.portraitUrl}
-                      alt={gtaBadgeOptions.alias}
-                      className="corner-avatar-img"
-                    />
-                  ) : (
-                    <div className="corner-silhouette-avatar">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d={getSilhouetteArchetype(gtaBadgeOptions.silhouetteId ?? "infiltrator").svgPath} />
-                      </svg>
-                    </div>
-                  )}
-                  <div className="corner-avatar-reticle" />
-                  <span className="corner-avatar-pulse-dot" title="Active Operative Status" />
-                  <span className="corner-avatar-status-tag">WANTED</span>
-                </div>
-
-                <div className="corner-identity-details">
-                  <span className="corner-label">OPERATIVE CALLSIGN</span>
-                  <strong className="corner-callsign gta-pricedown-title">{gtaBadgeOptions.alias}</strong>
-                  <span className="corner-archetype">
-                    {gtaBadgeOptions.role}
-                  </span>
-
-                  <div className="corner-stats-strip">
-                    <span className="corner-stat-pill pill-gold">{gtaBadgeOptions.bounty ?? "$1,250,000"}</span>
-                    <span className="corner-stat-pill pill-pink">CUT: {gtaBadgeOptions.crewCut ?? "40%"}</span>
-                  </div>
-
-                  <div className="corner-barcode-wrap">
-                    <span className="corner-barcode-lines" aria-hidden="true" />
-                    <span className="corner-barcode-id">VC-2026-OP</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="annotated-map"
