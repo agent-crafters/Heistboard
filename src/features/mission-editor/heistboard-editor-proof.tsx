@@ -37,6 +37,9 @@ import {
   applyBgLayerToFabricCanvas,
 } from "@/lib/bg-layer-processor";
 import { findFabricCanvas, importStickerToCanvas } from "@/lib/sticker-canvas-importer";
+import {
+  composeDossierCanvas,
+} from "@/lib/dossier-composer";
 import type { CustomEditorTool } from "./mission-editor";
 
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
@@ -122,6 +125,17 @@ export function HeistboardEditorProof() {
   const [bgLayerConfig, setBgLayerConfig] = useState<BgLayerConfig>(DEFAULT_BG_LAYER_CONFIG);
   const [requestedEditorTool, setRequestedEditorTool] = useState<CustomEditorTool | null>(null);
 
+  // Composed 2400 × 1600 final Dossier artifact (HB-007)
+  const [dossierArtifact, setDossierArtifact] = useState<{
+    previewUrl: string;
+    blob: Blob;
+    downloadUrl: string;
+    fileName: string;
+  } | null>(null);
+  const [isComposingDossier, setIsComposingDossier] = useState<boolean>(false);
+  const [dossierError, setDossierError] = useState<string | null>(null);
+  const dossierBlobUrlRef = useRef<string | null>(null);
+
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
   const mapBaseBlobUrlRef = useRef<string | null>(null);
   const editorFrameRef = useRef<HTMLDivElement>(null);
@@ -152,6 +166,9 @@ export function HeistboardEditorProof() {
       owner?.dispose();
       if (mapBaseBlobUrlRef.current) {
         URL.revokeObjectURL(mapBaseBlobUrlRef.current);
+      }
+      if (dossierBlobUrlRef.current) {
+        URL.revokeObjectURL(dossierBlobUrlRef.current);
       }
     };
   }, []);
@@ -227,6 +244,8 @@ export function HeistboardEditorProof() {
       const resource = await resourceOwner.current?.replace(pngPayload);
       if (!resource) throw new Error("The image resource owner is unavailable.");
       setAnnotatedMap(resource);
+      setIsComposingDossier(true);
+      setDossierError(null);
       dispatch({ type: "save-succeeded" });
       setStage("dossier");
     } catch (error) {
@@ -239,6 +258,51 @@ export function HeistboardEditorProof() {
       });
     }
   }, []);
+
+  // Compose 2400 × 1600 final Dossier canvas when entering dossier stage (HB-007)
+  useEffect(() => {
+    if (stage !== "dossier" || !annotatedMap) return;
+
+    let active = true;
+
+    composeDossierCanvas({
+      annotatedMapUrl: annotatedMap.previewUrl,
+      identity,
+      attribution,
+      cameraState: lockedCamera,
+      operationTitle: "OPERATION: THE LAST DELIVERY",
+      operationSubtitle: "Package before sunrise",
+    })
+      .then((result) => {
+        if (!active) return;
+        if (dossierBlobUrlRef.current) {
+          URL.revokeObjectURL(dossierBlobUrlRef.current);
+        }
+        const objectUrl = URL.createObjectURL(result.blob);
+        dossierBlobUrlRef.current = objectUrl;
+
+        setDossierArtifact({
+          previewUrl: objectUrl,
+          blob: result.blob,
+          downloadUrl: objectUrl,
+          fileName: "heistboard-dossier-the-last-delivery.png",
+        });
+        setIsComposingDossier(false);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setIsComposingDossier(false);
+        setDossierError(
+          err instanceof Error
+            ? err.message
+            : "Failed to compose the 2400 × 1600 final dossier.",
+        );
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [stage, annotatedMap, identity, attribution, lockedCamera]);
 
   const handleDragOver = (e: React.DragEvent) => {
     if (e.dataTransfer.types.includes("application/x-heistboard-sticker")) {
@@ -548,14 +612,18 @@ export function HeistboardEditorProof() {
         <section className="preview-panel" aria-labelledby="preview-title">
           <div className="preview-copy">
             <div>
-              <p className="section-label">Final Dossier / Annotated Map</p>
+              <p className="section-label">Final Dossier / 2400 × 1600 Artifact</p>
               <h2 id="preview-title">Operation Dossier</h2>
               <p role="status">
-                Your mission plan is locked and verified. This exact image will be exported.
+                {isComposingDossier
+                  ? "Composing deterministic 2400 × 1600 Canvas 2D Dossier..."
+                  : dossierError
+                    ? `Composition warning: ${dossierError}`
+                    : "Your 2400 × 1600 final mission dossier is locked and verified. Preview and download use this exact artifact."}
               </p>
             </div>
 
-          <div className="actions">
+            <div className="actions">
               <button
                 className="button button-secondary"
                 type="button"
@@ -585,23 +653,33 @@ export function HeistboardEditorProof() {
                 New territory
               </button>
               <a
-                className="button button-primary"
-                href={annotatedMap.download.href}
-                download={annotatedMap.download.fileName}
+                className={`button button-primary ${isComposingDossier ? "disabled" : ""}`}
+                href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
+                download={dossierArtifact?.fileName ?? annotatedMap.download.fileName}
+                aria-disabled={isComposingDossier}
               >
-                Download Dossier PNG
+                {isComposingDossier ? "Composing 2400 × 1600..." : "Download Dossier PNG"}
               </a>
             </div>
           </div>
 
-          {/* Map Viewport — shows exactly what was saved from the mission editor */}
+          {/* Composed Dossier Viewport — displays the composed 2400 × 1600 Dossier artifact */}
           <div className="dossier-map-viewport">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="annotated-map"
-              src={annotatedMap.previewUrl}
-              alt="The exact Annotated Map saved from the mission editor"
-            />
+            {isComposingDossier && !dossierArtifact ? (
+              <div className="dossier-composing-overlay" role="status">
+                <p>Composing 2400 × 1600 Dossier Artifact…</p>
+                <small>
+                  Assembling locked Map Base, Operative Identity, and protected attribution
+                </small>
+              </div>
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                className="annotated-map"
+                src={dossierArtifact?.previewUrl ?? annotatedMap.previewUrl}
+                alt="Deterministic 2400 × 1600 Operation Dossier composite saved from the mission editor"
+              />
+            )}
           </div>
 
           {/* Legally required attribution line under the Annotated Map */}

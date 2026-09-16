@@ -97,10 +97,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-17
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Produce the deterministic final artifact from the user's exact inputs.
 - Dependencies: HB-005, HB-006
-- GitHub issue: —
+- GitHub issue: #7
 - Acceptance criteria:
   - Canvas composition produces a 2400 × 1600 image.
   - Map, alias, Identity, Operation copy, fictional-use label, and verified provider attribution fit without clipping; attribution is rendered above user-authored imagery in a protected region.
