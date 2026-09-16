@@ -87,28 +87,30 @@ export function MissionEditor({
   // Handle programmatic tool open requests (e.g. clicking "Edit" in mission briefing)
   useEffect(() => {
     if (!requestedTool) return;
-    if (requestedTool === "identity") {
-      setIsIdentityOpen(true);
-      setIsGtaFontsOpen(false);
-      setIsStickersOpen(false);
-      setIsBgStylesOpen(false);
-    } else if (requestedTool === "stickers") {
-      setIsStickersOpen(true);
-      setIsIdentityOpen(false);
-      setIsGtaFontsOpen(false);
-      setIsBgStylesOpen(false);
-    } else if (requestedTool === "bg-styles") {
-      setIsBgStylesOpen(true);
-      setIsIdentityOpen(false);
-      setIsGtaFontsOpen(false);
-      setIsStickersOpen(false);
-    } else if (requestedTool === "gta-fonts") {
-      setIsGtaFontsOpen(true);
-      setIsIdentityOpen(false);
-      setIsStickersOpen(false);
-      setIsBgStylesOpen(false);
-    }
-    onToolHandled?.();
+    queueMicrotask(() => {
+      if (requestedTool === "identity") {
+        setIsIdentityOpen(true);
+        setIsGtaFontsOpen(false);
+        setIsStickersOpen(false);
+        setIsBgStylesOpen(false);
+      } else if (requestedTool === "stickers") {
+        setIsStickersOpen(true);
+        setIsIdentityOpen(false);
+        setIsGtaFontsOpen(false);
+        setIsBgStylesOpen(false);
+      } else if (requestedTool === "bg-styles") {
+        setIsBgStylesOpen(true);
+        setIsIdentityOpen(false);
+        setIsGtaFontsOpen(false);
+        setIsStickersOpen(false);
+      } else if (requestedTool === "gta-fonts") {
+        setIsGtaFontsOpen(true);
+        setIsIdentityOpen(false);
+        setIsStickersOpen(false);
+        setIsBgStylesOpen(false);
+      }
+      onToolHandled?.();
+    });
   }, [requestedTool, onToolHandled]);
 
   // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts, Identity, Stickers, and BG Styles
@@ -134,12 +136,12 @@ export function MissionEditor({
         gtaBtn.setAttribute("data-testid", "native-tool-gta-fonts");
         gtaBtn.className =
           "native-tool-gta-fonts-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
-        gtaBtn.title = "Rockstar & GTA Fonts (Pricedown)";
+        gtaBtn.title = "Tactical Display Fonts";
         gtaBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(255,208,0,0.3)"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a338" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(212,163,56,0.25)"/>
           </svg>
-          <span class="truncate max-w-full" style="font-family: 'Pricedown', sans-serif; font-size: 10px; letter-spacing: 0.04em; color: #ffd000; line-height: 1.1;">GTA Fonts</span>
+          <span class="truncate max-w-full" style="font-family: var(--font-sans), sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; color: #d4a338; line-height: 1.1;">Display</span>
         `;
 
         gtaBtn.onclick = (e) => {
@@ -338,7 +340,9 @@ export function MissionEditor({
   }, [isGtaFontsOpen, isIdentityOpen, isStickersOpen, isBgStylesOpen]);
 
   const bgConfigRef = useRef(bgConfig);
-  bgConfigRef.current = bgConfig;
+  useEffect(() => {
+    bgConfigRef.current = bgConfig;
+  }, [bgConfig]);
 
   // Cache clean original raster image
   useEffect(() => {

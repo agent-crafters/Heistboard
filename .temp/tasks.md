@@ -125,10 +125,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-18
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Establish the original Heistboard presentation while keeping the map dominant.
 - Dependencies: HB-008
-- GitHub issue: —
+- GitHub issue: #9
 - Acceptance criteria:
   - The experience uses charcoal, warm paper, deep petrol, faded coral, and restrained mustard accents.
   - The map remains the primary visual element.

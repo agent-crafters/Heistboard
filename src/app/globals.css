@@ -10,16 +10,59 @@
 }
 
 :root {
-  --ink: #171b1c;
-  --ink-soft: #262d2e;
-  --paper: #f0eadc;
+  /* Heistboard Master Palette (HB-009) */
+  /* Charcoal Surfaces */
+  --charcoal-950: #0c0f12;
+  --charcoal-900: #12161a;
+  --charcoal-850: #161c21;
+  --charcoal-800: #1c232a;
+  --charcoal-700: #262f37;
+  --charcoal-600: #333e48;
+
+  /* Warm Paper */
+  --paper: #f4efe6;
+  --paper-warm: #eae3d2;
   --paper-deep: #ded4bd;
-  --line: rgba(240, 234, 220, 0.17);
-  --muted: #aeb4ad;
-  --signal: #ef7866;
-  --signal-dark: #a94439;
-  --petrol: #194148;
-  --focus: #ffd36a;
+  --paper-ink: #22201c;
+  --paper-muted: #6b665c;
+
+  /* Deep Petrol */
+  --petrol-900: #091d22;
+  --petrol-800: #0e272e;
+  --petrol: #133943;
+  --petrol-light: #1b4e5c;
+  --petrol-bright: #256b7e;
+
+  /* Faded Coral */
+  --coral: #e06d53;
+  --coral-soft: #ea7a62;
+  --coral-dark: #a94439;
+  --coral-dim: rgba(224, 109, 83, 0.16);
+
+  /* Restrained Mustard */
+  --mustard: #d4a338;
+  --mustard-subtle: #c2932e;
+  --mustard-dark: #8c681b;
+  --mustard-dim: rgba(212, 163, 56, 0.15);
+
+  /* Semantic Variables */
+  --ink: var(--charcoal-900);
+  --ink-soft: var(--charcoal-850);
+  --surface: var(--charcoal-850);
+  --surface-raised: var(--charcoal-800);
+  --line: rgba(244, 239, 230, 0.15);
+  --line-strong: rgba(244, 239, 230, 0.28);
+  --muted: #9aa2a6;
+  --signal: var(--coral);
+  --signal-dark: var(--coral-dark);
+  --accent: var(--mustard);
+  --focus: var(--mustard);
+
+  /* Strict Typography Stacks (2 families + system monospace) */
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: Georgia, "Times New Roman", "Iowan Old Style", serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+
   color-scheme: dark;
 }
 
@@ -37,9 +80,10 @@ body {
   margin: 0;
   color: var(--paper);
   background:
-    radial-gradient(circle at 12% 0%, rgba(25, 65, 72, 0.52), transparent 34rem),
-    linear-gradient(145deg, #111516 0%, #1c2223 58%, #131718 100%);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    radial-gradient(circle at 12% 0%, rgba(19, 57, 67, 0.5), transparent 36rem),
+    radial-gradient(circle at 88% 100%, rgba(14, 39, 46, 0.42), transparent 38rem),
+    linear-gradient(150deg, var(--charcoal-950) 0%, var(--charcoal-900) 55%, #0b0e11 100%);
+  font-family: var(--font-sans);
 }
 
 button,
@@ -149,11 +193,13 @@ a:focus-visible {
   position: sticky;
   top: 1.25rem;
   padding: 1.5rem;
-  color: #302f2b;
+  color: var(--paper-ink);
   background:
-    linear-gradient(rgba(255, 255, 255, 0.1), transparent),
-    var(--paper);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+    linear-gradient(rgba(255, 255, 255, 0.08), transparent),
+    var(--paper-warm);
+  border-radius: 4px;
+  border: 1px solid rgba(212, 163, 56, 0.2);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
 
 .briefing::before {
@@ -161,15 +207,15 @@ a:focus-visible {
   top: -8px;
   left: 38%;
   width: 90px;
-  height: 23px;
+  height: 22px;
   content: "";
   transform: rotate(2deg);
-  background: rgba(215, 199, 165, 0.72);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  background: rgba(212, 163, 56, 0.68);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .briefing .section-label {
-  color: var(--signal-dark);
+  color: var(--coral-dark);
 }
 
 .briefing h2 {
