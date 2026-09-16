@@ -20,9 +20,9 @@ describe("Feature Freeze Invariants (HB-012)", () => {
     expect(content).toContain("P0 LOCKED");
   });
 
-  it("confirms that the 5-stage critical path is locked without scope leakage", () => {
-    expect(OPERATION_STAGES).toHaveLength(5);
+  it("confirms that the critical path is locked without scope leakage", () => {
+    expect(OPERATION_STAGES).toHaveLength(4);
     const stageIds = OPERATION_STAGES.map((s) => s.id);
-    expect(stageIds).toEqual(["file", "territory", "identity", "mission-plan", "dossier"]);
+    expect(stageIds).toEqual(["file", "territory", "mission-plan", "dossier"]);
   });
 });

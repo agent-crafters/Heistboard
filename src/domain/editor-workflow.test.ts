@@ -70,52 +70,42 @@ describe("Mission Plan editor workflow", () => {
   });
 });
 
-describe("Five-stage Operation Journey workflow", () => {
-  it("progresses through all five stages in strict sequence", () => {
+describe("Operation Journey workflow", () => {
+  it("progresses through stages in sequence without separate identity step", () => {
     let state = initialJourneyState;
     expect(state.stage).toBe("file");
 
-    // Stage 1 -> Stage 2
+    // Stage 1 -> Stage 2 (Territory)
     state = operationJourneyReducer(state, { type: "start-operation" });
     expect(state.stage).toBe("territory");
 
-    // Stage 2 -> Stage 3
+    // Stage 2 -> Stage 3 (Mission Plan directly on lock-territory)
     state = operationJourneyReducer(state, { type: "lock-territory" });
-    expect(state.stage).toBe("identity");
+    expect(state.stage).toBe("mission-plan");
     expect(state.isTerritoryLocked).toBe(true);
 
-    // Stage 3 -> Stage 4
-    state = operationJourneyReducer(state, { type: "confirm-identity" });
-    expect(state.stage).toBe("mission-plan");
-
-    // Stage 4 -> Stage 5
+    // Stage 3 -> Stage 4 (Dossier on save)
     state = operationJourneyReducer(state, { type: "save-succeeded" });
     expect(state.stage).toBe("dossier");
     expect(state.hasAnnotatedMap).toBe(true);
   });
 
   it("allows backward navigation preserving compatible work", () => {
-    // Starting at identity stage with locked territory
+    // Starting at territory, lock to mission-plan
     let state = operationJourneyReducer(initialJourneyState, { type: "start-operation" });
     state = operationJourneyReducer(state, { type: "lock-territory" });
-    expect(state.stage).toBe("identity");
+    expect(state.stage).toBe("mission-plan");
 
     // Back to territory preserves isTerritoryLocked
     state = operationJourneyReducer(state, { type: "go-to-stage", target: "territory" });
     expect(state.stage).toBe("territory");
     expect(state.isTerritoryLocked).toBe(true);
 
-    // Forward to identity, then to mission-plan
+    // Forward to mission-plan (or via legacy identity target redirect)
     state = operationJourneyReducer(state, { type: "go-to-stage", target: "identity" });
-    state = operationJourneyReducer(state, { type: "confirm-identity" });
     expect(state.stage).toBe("mission-plan");
 
-    // Back to identity preserves state
-    state = operationJourneyReducer(state, { type: "go-to-stage", target: "identity" });
-    expect(state.stage).toBe("identity");
-
-    // Forward to mission-plan and save to dossier
-    state = operationJourneyReducer(state, { type: "confirm-identity" });
+    // Save to dossier
     state = operationJourneyReducer(state, { type: "save-succeeded" });
     expect(state.stage).toBe("dossier");
 

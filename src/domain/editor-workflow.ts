@@ -148,9 +148,8 @@ export interface StageDescriptor {
 export const OPERATION_STAGES: readonly StageDescriptor[] = [
   { id: "file", number: "01", label: "Case File", shortDescription: "Operation Briefing & premise" },
   { id: "territory", number: "02", label: "Territory", shortDescription: "3D search & camera lock" },
-  { id: "identity", number: "03", label: "Identity", shortDescription: "Operative badge & portrait" },
-  { id: "mission-plan", number: "04", label: "Mission Plan", shortDescription: "Draw routes & locations" },
-  { id: "dossier", number: "05", label: "Dossier", shortDescription: "2400 × 1600 export" },
+  { id: "mission-plan", number: "03", label: "Mission Plan", shortDescription: "Draw routes & locations" },
+  { id: "dossier", number: "04", label: "Dossier", shortDescription: "2400 × 1600 export" },
 ] as const;
 
 export interface OperationJourneyState {
@@ -190,7 +189,7 @@ export function operationJourneyReducer(
       return { ...state, stage: "territory" };
 
     case "lock-territory":
-      return { ...state, isTerritoryLocked: true, stage: "identity" };
+      return { ...state, isTerritoryLocked: true, stage: "mission-plan" };
 
     case "confirm-identity":
       return { ...state, stage: "mission-plan" };
@@ -239,6 +238,10 @@ export function operationJourneyReducer(
         (state.hasMissionEdits || state.hasAnnotatedMap)
       ) {
         return { ...state, isConfirmingTerritoryReset: true };
+      }
+      // If target is identity, redirect directly to mission-plan
+      if (event.target === "identity") {
+        return { ...state, stage: "mission-plan" };
       }
       return { ...state, stage: event.target };
     }

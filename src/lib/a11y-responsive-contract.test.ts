@@ -8,7 +8,7 @@ import { getCategoryLabel, type PlaceCategory } from "@/domain/territory";
 describe("Accessibility & Responsive Contract (HB-011)", () => {
   describe("Operation Stages Navigation", () => {
     it("provides accessible metadata for every operation stage", () => {
-      expect(OPERATION_STAGES.length).toBe(5);
+      expect(OPERATION_STAGES.length).toBe(4);
       for (const stage of OPERATION_STAGES) {
         expect(stage.id).toBeTruthy();
         expect(stage.number).toMatch(/^\d{2}$/);

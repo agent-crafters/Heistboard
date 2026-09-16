@@ -216,9 +216,6 @@ export function HeistboardEditorProof() {
     journeyDispatch({ type: "start-operation" });
   }, []);
 
-  const handleConfirmIdentity = useCallback(() => {
-    journeyDispatch({ type: "confirm-identity" });
-  }, []);
 
   const handleConfirmChangeTerritory = useCallback(() => {
     if (dossierBlobUrlRef.current) {
@@ -457,11 +454,11 @@ export function HeistboardEditorProof() {
         </div>
       </header>
 
-      {/* 5-Stage Nav Stepper */}
+      {/* 4-Stage Nav Stepper */}
       <nav className="stage-indicator" aria-label="Operation Stages">
         {OPERATION_STAGES.map((s, idx) => {
           const isCurrent = stage === s.id;
-          const stageOrder: OperationStage[] = ["file", "territory", "identity", "mission-plan", "dossier"];
+          const stageOrder: OperationStage[] = ["file", "territory", "mission-plan", "dossier"];
           const currentIdx = stageOrder.indexOf(stage);
           const isPast = idx < currentIdx;
           const isAccessible =
@@ -469,7 +466,6 @@ export function HeistboardEditorProof() {
             isCurrent ||
             s.id === "file" ||
             s.id === "territory" ||
-            (s.id === "identity" && journey.isTerritoryLocked) ||
             (s.id === "mission-plan" && journey.isTerritoryLocked) ||
             (s.id === "dossier" && journey.hasAnnotatedMap);
 
@@ -571,47 +567,7 @@ export function HeistboardEditorProof() {
         </div>
       )}
 
-      {/* Stage 03: Dedicated Operative Identity */}
-      {stage === "identity" && (
-        <section className="identity-stage-wrapper" aria-labelledby="identity-title">
-          <div className="identity-stage-header">
-            <div>
-              <span className="case-file-eyebrow">Stage 03 / Operative Identity</span>
-              <h2 id="identity-title">Establish Field Identity</h2>
-              <p className="lede" style={{ margin: "0.5rem 0 0" }}>
-                Configure your callsign, alias, operative role, and custom portrait or vector archetype badge.
-              </p>
-            </div>
-          </div>
-
-          <IdentityControls
-            initialOptions={gtaBadgeOptions}
-            identityState={identity}
-            onIdentityStateChange={setIdentity}
-            onChange={setGtaBadgeOptions}
-            compact={false}
-          />
-
-          <div className="identity-stage-actions">
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={() => journeyDispatch({ type: "go-to-stage", target: "territory" })}
-            >
-              ← Back to Territory
-            </button>
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={handleConfirmIdentity}
-            >
-              Confirm Identity &amp; Plan Route →
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* Stage 04: Mission Editor (preserved in DOM across preview to maintain active Fabric objects) */}
+      {/* Stage 03: Mission Editor (preserved in DOM across preview to maintain active Fabric objects) */}
       {(stage === "mission-plan" || stage === "dossier") && (
         <section
           className="workspace"
@@ -852,9 +808,11 @@ export function HeistboardEditorProof() {
                     className="button button-secondary"
                     type="button"
                     onClick={() => {
-                      journeyDispatch({ type: "go-to-stage", target: "identity" });
+                      dispatch({ type: "edit-again" });
+                      setRequestedEditorTool("identity");
+                      journeyDispatch({ type: "go-to-stage", target: "mission-plan" });
                     }}
-                    aria-label="Edit operative identity callsign or portrait"
+                    aria-label="Edit operative identity callsign or portrait in editor"
                   >
                     Edit identity
                   </button>
