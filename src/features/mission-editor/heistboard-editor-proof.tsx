@@ -469,14 +469,23 @@ export function HeistboardEditorProof() {
     <main className="shell">
       <header className="masthead">
         <div>
-          <p className="eyebrow">VICE CITY // TACTICAL MISSION COMMAND · LEONIDA</p>
-          <h1>Plan the heist. Mark the streets.</h1>
+          <div className="masthead-badge-row">
+            <span className="eyebrow">VICE CITY // TACTICAL MISSION COMMAND · LEONIDA</span>
+            <span className="unlayer-hackathon-badge">
+              <span className="unlayer-pulse-dot" aria-hidden="true" />
+              UNLAYER HACKATHON EDITION
+            </span>
+          </div>
+          <h1 className="brand-heading">
+            HEIST<span className="gta-roman-vi">VI</span>BOARD
+          </h1>
           <p className="lede">
-            From zero-cost 3D place search and locked camera rasterization, to browser-based
-            mission editing and legal full-view export.
+            Plan the heist. Mark the streets. Powered by Unlayer React Image Editor with real-world 3D
+            satellite rasterization, tactical vector authoring, and instant full-view export.
           </p>
         </div>
         <div className="status-stamp" aria-label="Fictional scenario">
+          <div className="stamp-radar-ring" aria-hidden="true" />
           <span>VICE CITY OPS</span>
           <strong>THE LAST DELIVERY</strong>
           <small>FICTIONAL USE ONLY · LEONIDA</small>
