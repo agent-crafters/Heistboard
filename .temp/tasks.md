@@ -197,10 +197,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-21
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Establish honest release confidence in the supported browsers and artifact.
 - Dependencies: HB-013
-- GitHub issue: —
+- GitHub issue: #14
 - Acceptance criteria:
   - Critical path is checked in current Chromium, Firefox, Safari where available, and a real mobile browser.
   - Each available browser is checked for WebGL startup, vector/style loading, camera lock fidelity, missing tiles, nonblank fixed-ratio canvas capture, Blob decoding, and editor ingestion.
