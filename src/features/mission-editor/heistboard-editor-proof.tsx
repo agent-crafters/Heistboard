@@ -341,7 +341,7 @@ export function HeistboardEditorProof() {
           previewUrl: objectUrl,
           blob: result.blob,
           downloadUrl: objectUrl,
-          fileName: "heistboard-dossier-the-last-delivery.png",
+          fileName: "heistboard-edited-map.png",
         });
         setIsComposingDossier(false);
       })
@@ -810,14 +810,14 @@ export function HeistboardEditorProof() {
             <>
               <div className="preview-copy">
                 <div>
-                  <p className="section-label">Final Dossier / 2400 × 1600 Artifact</p>
-                  <h2 id="preview-title">Operation Dossier</h2>
+                  <p className="section-label">Final Export / Full View</p>
+                  <h2 id="preview-title">Mission Map Image</h2>
                   <p role="status">
                     {isComposingDossier
-                      ? "Composing deterministic 2400 × 1600 Canvas 2D Dossier..."
+                      ? "Preparing high-resolution full-view image..."
                       : dossierError
                         ? `Composition warning: ${dossierError}`
-                        : "Your 2400 × 1600 final mission dossier is locked and verified. Preview and download use this exact artifact."}
+                        : "Your edited map is ready in full view without any interface framing. Preview and download use this exact image."}
                   </p>
                 </div>
 
@@ -875,9 +875,9 @@ export function HeistboardEditorProof() {
                     href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
                     download={dossierArtifact?.fileName ?? annotatedMap.download.fileName}
                     aria-disabled={isComposingDossier}
-                    aria-label="Download verified 2400 by 1600 final Dossier PNG"
+                    aria-label="Download verified full-view edited map image PNG"
                   >
-                    {isComposingDossier ? "Composing 2400 × 1600..." : "Download Dossier PNG"}
+                    {isComposingDossier ? "Preparing Full-View Image..." : "Download Edited Image PNG"}
                   </a>
                 </div>
               </div>

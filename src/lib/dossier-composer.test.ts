@@ -128,34 +128,26 @@ describe("Dossier Composition Module (HB-007)", () => {
     expect(result.blob.type).toBe("image/png");
   });
 
-  it("renders protected legal attribution text in protected region", async () => {
+  it("draws the annotated map in full view across the entire 2400 x 1600 canvas without interface framing", async () => {
     const input: DossierCompositionInput = {
       annotatedMapUrl: "data:image/png;base64,mockAnnotatedMap",
       identity: DEFAULT_IDENTITY_STATE,
-      attribution: {
-        noticeText: "OpenFreeMap · © OpenMapTiles · Data from OpenStreetMap",
-        printedUrl: "openstreetmap.org/copyright",
-        links: [{ label: "OpenStreetMap", href: "https://www.openstreetmap.org/copyright" }],
-      },
+      attribution: STANDARD_TERRITORY_ATTRIBUTION,
     };
 
     await composeDossierCanvas(input);
 
-    // Verify attribution text was drawn
-    const fillTextFn = mockCtx.fillText as ReturnType<typeof vi.fn>;
-    const fillTextCalls = fillTextFn.mock.calls.map((c: unknown[]) => String(c[0]));
-    const hasAttribution = fillTextCalls.some(
-      (text: string) =>
-        text.includes("OpenFreeMap") && text.includes("openstreetmap.org/copyright"),
+    // Verify map is drawn at (0, 0, 2400, 1600) covering full canvas view
+    expect(mockCtx.drawImage).toHaveBeenCalledWith(
+      expect.anything(),
+      0,
+      0,
+      DOSSIER_WIDTH,
+      DOSSIER_HEIGHT,
     );
-    expect(hasAttribution).toBe(true);
-
-    // Verify "LEGAL ATTRIBUTION" badge exists
-    const hasBadge = fillTextCalls.some((text: string) => text.includes("LEGAL ATTRIBUTION"));
-    expect(hasBadge).toBe(true);
   });
 
-  it("renders operative alias, role, and operation title", async () => {
+  it("keeps the final export clean of interface chrome, headers, and tool overlays", async () => {
     const input: DossierCompositionInput = {
       annotatedMapUrl: "data:image/png;base64,mockAnnotatedMap",
       identity: {
@@ -171,17 +163,8 @@ describe("Dossier Composition Module (HB-007)", () => {
 
     await composeDossierCanvas(input);
 
-    const fillTextFn = mockCtx.fillText as ReturnType<typeof vi.fn>;
-    const fillTextCalls = fillTextFn.mock.calls.map((c: unknown[]) => String(c[0]));
-
-    // Check alias
-    expect(fillTextCalls.some((text: string) => text.includes("SHADOW-NINE"))).toBe(true);
-
-    // Check operation title
-    expect(fillTextCalls.some((text: string) => text.includes("NIGHT HAWK"))).toBe(true);
-
-    // Check fictional disclaimer
-    expect(fillTextCalls.some((text: string) => text.includes("FICTIONAL SCENARIO"))).toBe(true);
+    // No interface tool chrome text is burned onto the downloaded image
+    expect(mockCtx.fillText).not.toHaveBeenCalled();
   });
 
   it("draws the annotated map into the framed viewport", async () => {
