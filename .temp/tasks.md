@@ -226,10 +226,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-23
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Confirm production readiness and hand the exact unpublished history to the user.
 - Dependencies: HB-015
-- GitHub issue: —
+- GitHub issue: #16
 - Acceptance criteria:
   - Production links work without login.
   - Map quota and hosting status are checked.
