@@ -45,6 +45,7 @@ import {
   composeDossierCanvas,
 } from "@/lib/dossier-composer";
 import { IdentityControls } from "./identity-controls";
+import { CinematicReveal } from "./cinematic-reveal";
 import type { CustomEditorTool } from "./mission-editor";
 
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
@@ -144,6 +145,7 @@ export function HeistboardEditorProof() {
   } | null>(null);
   const [isComposingDossier, setIsComposingDossier] = useState<boolean>(false);
   const [dossierError, setDossierError] = useState<string | null>(null);
+  const [isRevealing, setIsRevealing] = useState<boolean>(false);
   const dossierBlobUrlRef = useRef<string | null>(null);
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
@@ -299,6 +301,7 @@ export function HeistboardEditorProof() {
       if (!resource) throw new Error("The image resource owner is unavailable.");
       setAnnotatedMap(resource);
       setIsComposingDossier(true);
+      setIsRevealing(true);
       setDossierError(null);
       dispatch({ type: "save-succeeded" });
       journeyDispatch({ type: "save-succeeded" });
@@ -786,105 +789,124 @@ export function HeistboardEditorProof() {
         </section>
       )}
 
-      {/* Stage 4: Dossier Preview */}
+      {/* Stage 5: Dossier Preview & Cinematic Reveal */}
       {stage === "dossier" && annotatedMap && (
         <section className="preview-panel" aria-labelledby="preview-title">
-          <div className="preview-copy">
-            <div>
-              <p className="section-label">Final Dossier / 2400 × 1600 Artifact</p>
-              <h2 id="preview-title">Operation Dossier</h2>
-              <p role="status">
-                {isComposingDossier
-                  ? "Composing deterministic 2400 × 1600 Canvas 2D Dossier..."
-                  : dossierError
-                    ? `Composition warning: ${dossierError}`
-                    : "Your 2400 × 1600 final mission dossier is locked and verified. Preview and download use this exact artifact."}
-              </p>
-            </div>
+          {isRevealing ? (
+            <CinematicReveal
+              annotatedMapUrl={annotatedMap.previewUrl}
+              dossierUrl={dossierArtifact?.previewUrl ?? annotatedMap.previewUrl}
+              onComplete={() => setIsRevealing(false)}
+              onSkip={() => setIsRevealing(false)}
+            />
+          ) : (
+            <>
+              <div className="preview-copy">
+                <div>
+                  <p className="section-label">Final Dossier / 2400 × 1600 Artifact</p>
+                  <h2 id="preview-title">Operation Dossier</h2>
+                  <p role="status">
+                    {isComposingDossier
+                      ? "Composing deterministic 2400 × 1600 Canvas 2D Dossier..."
+                      : dossierError
+                        ? `Composition warning: ${dossierError}`
+                        : "Your 2400 × 1600 final mission dossier is locked and verified. Preview and download use this exact artifact."}
+                  </p>
+                </div>
 
-            <div className="actions">
-              <button
-                className="button button-secondary"
-                type="button"
-                onClick={() => {
-                  dispatch({ type: "edit-again" });
-                  journeyDispatch({ type: "go-to-stage", target: "mission-plan" });
-                }}
-              >
-                Edit mission again
-              </button>
-              <button
-                className="button button-secondary"
-                type="button"
-                onClick={() => {
-                  journeyDispatch({ type: "go-to-stage", target: "identity" });
-                }}
-              >
-                Edit identity
-              </button>
-              <button
-                className="button button-secondary"
-                type="button"
-                onClick={handleReturnToTerritory}
-              >
-                New territory
-              </button>
-              <button
-                className="button button-secondary"
-                type="button"
-                onClick={handleRestartOperation}
-              >
-                Restart operation
-              </button>
-              <a
-                className={`button button-primary ${isComposingDossier ? "disabled" : ""}`}
-                href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
-                download={dossierArtifact?.fileName ?? annotatedMap.download.fileName}
-                aria-disabled={isComposingDossier}
-              >
-                {isComposingDossier ? "Composing 2400 × 1600..." : "Download Dossier PNG"}
-              </a>
-            </div>
-          </div>
-
-          {/* Composed Dossier Viewport — displays the composed 2400 × 1600 Dossier artifact */}
-          <div className="dossier-map-viewport">
-            {isComposingDossier && !dossierArtifact ? (
-              <div className="dossier-composing-overlay" role="status">
-                <p>Composing 2400 × 1600 Dossier Artifact…</p>
-                <small>
-                  Assembling locked Map Base, Operative Identity, and protected attribution
-                </small>
+                <div className="actions">
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    onClick={() => {
+                      dispatch({ type: "edit-again" });
+                      journeyDispatch({ type: "go-to-stage", target: "mission-plan" });
+                    }}
+                  >
+                    Edit mission again
+                  </button>
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    onClick={() => {
+                      journeyDispatch({ type: "go-to-stage", target: "identity" });
+                    }}
+                  >
+                    Edit identity
+                  </button>
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    onClick={handleReturnToTerritory}
+                  >
+                    New territory
+                  </button>
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    onClick={() => setIsRevealing(true)}
+                    title="Replay cinematic reveal transition"
+                  >
+                    Replay reveal
+                  </button>
+                  <button
+                    className="button button-secondary"
+                    type="button"
+                    onClick={handleRestartOperation}
+                  >
+                    Restart operation
+                  </button>
+                  <a
+                    className={`button button-primary ${isComposingDossier ? "disabled" : ""}`}
+                    href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
+                    download={dossierArtifact?.fileName ?? annotatedMap.download.fileName}
+                    aria-disabled={isComposingDossier}
+                  >
+                    {isComposingDossier ? "Composing 2400 × 1600..." : "Download Dossier PNG"}
+                  </a>
+                </div>
               </div>
-            ) : (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                className="annotated-map"
-                src={dossierArtifact?.previewUrl ?? annotatedMap.previewUrl}
-                alt="Deterministic 2400 × 1600 Operation Dossier composite saved from the mission editor"
-              />
-            )}
-          </div>
 
-          {/* Legally required attribution line under the Annotated Map */}
-          <div className="dossier-attribution-block">
-            <span>
-              <strong>Map Base Attribution:</strong> {attribution.noticeText} ·{" "}
-              <span>{attribution.printedUrl}</span>
-            </span>
-            <div className="dossier-attribution-links">
-              {attribution.links.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          </div>
+              {/* Composed Dossier Viewport — displays the composed 2400 × 1600 Dossier artifact */}
+              <div className="dossier-map-viewport">
+                {isComposingDossier && !dossierArtifact ? (
+                  <div className="dossier-composing-overlay" role="status">
+                    <p>Composing 2400 × 1600 Dossier Artifact…</p>
+                    <small>
+                      Assembling locked Map Base, Operative Identity, and protected attribution
+                    </small>
+                  </div>
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    className="annotated-map"
+                    src={dossierArtifact?.previewUrl ?? annotatedMap.previewUrl}
+                    alt="Deterministic 2400 × 1600 Operation Dossier composite saved from the mission editor"
+                  />
+                )}
+              </div>
+
+              {/* Legally required attribution line under the Annotated Map */}
+              <div className="dossier-attribution-block">
+                <span>
+                  <strong>Map Base Attribution:</strong> {attribution.noticeText} ·{" "}
+                  <span>{attribution.printedUrl}</span>
+                </span>
+                <div className="dossier-attribution-links">
+                  {attribution.links.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </section>
       )}
 

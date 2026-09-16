@@ -139,10 +139,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-19
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Transition the authored map into the complete Dossier without faking generation.
 - Dependencies: HB-009
-- GitHub issue: —
+- GitHub issue: #10
 - Acceptance criteria:
   - The exact Annotated Map from the locked Territory Shot pulls back into the Dossier without rerendering the live map.
   - Reveal completes within about two seconds and can be skipped or replayed.
