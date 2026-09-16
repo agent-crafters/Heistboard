@@ -212,10 +212,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-22
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Explain the product and show authentic authoring clearly to judges and developers.
 - Dependencies: HB-014
-- GitHub issue: —
+- GitHub issue: #15
 - Acceptance criteria:
   - A 30–60 second trailer shows location, portrait, real editor actions, Reveal, and download.
   - README explains the product, editor integration, architecture, setup, limitations, credits, and privacy behavior.
