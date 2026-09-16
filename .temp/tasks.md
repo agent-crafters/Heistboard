@@ -181,10 +181,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-21
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Make the frozen critical path safe and resilient under realistic constraints.
 - Dependencies: HB-012
-- GitHub issue: —
+- GitHub issue: #13
 - Acceptance criteria:
   - Large uploads are bounded and normalized.
   - External failures provide retry or sample-path recovery.

@@ -6,7 +6,7 @@
  * duotone and surveillance filters.
  */
 
-import type { PortraitFilter } from "@/domain/identity";
+import { MAX_PORTRAIT_DIMENSION_PX, type PortraitFilter } from "@/domain/identity";
 
 export interface PortraitCropOptions {
   zoom?: number; // 1.0 to 3.0 (default: 1.0)
@@ -40,6 +40,15 @@ export async function decodeImageFromFile(file: File): Promise<HTMLImageElement>
 
     if (typeof img.decode === "function") {
       await img.decode();
+    }
+
+    if (
+      (img.naturalWidth && img.naturalWidth > MAX_PORTRAIT_DIMENSION_PX) ||
+      (img.naturalHeight && img.naturalHeight > MAX_PORTRAIT_DIMENSION_PX)
+    ) {
+      throw new Error(
+        `Image dimensions (${img.naturalWidth}×${img.naturalHeight}) exceed the ${MAX_PORTRAIT_DIMENSION_PX}×${MAX_PORTRAIT_DIMENSION_PX} maximum resolution limit.`,
+      );
     }
 
     return img;

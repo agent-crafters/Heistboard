@@ -7,6 +7,7 @@ export interface PlaceSearchOptions {
   endpoint?: string;
   limit?: number;
   fetchFn?: typeof fetch;
+  minIntervalMs?: number;
 }
 
 interface RawNominatimItem {
@@ -23,14 +24,16 @@ interface RawNominatimItem {
 
 const DEFAULT_NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const MIN_REQUEST_INTERVAL_MS = 1000;
+export const MAX_SEARCH_CACHE_ENTRIES = 50;
 
-// Application-wide in-memory rate limiting and cache
+// Application-wide in-memory rate limiting and bounded cache
 let lastRequestTimestamp = 0;
 const searchCache = new Map<string, PlaceCandidate[]>();
 
 export class PlaceSearchService {
   private readonly endpoint: string;
   private readonly customFetch?: typeof fetch;
+  private readonly minIntervalMs: number;
 
   constructor(options: PlaceSearchOptions = {}) {
     this.endpoint =
@@ -38,11 +41,12 @@ export class PlaceSearchService {
       (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_NOMINATIM_URL) ||
       DEFAULT_NOMINATIM_URL;
     this.customFetch = options.fetchFn;
+    this.minIntervalMs = options.minIntervalMs ?? MIN_REQUEST_INTERVAL_MS;
   }
 
   getCooldownRemainingMs(): number {
     const elapsed = Date.now() - lastRequestTimestamp;
-    return Math.max(0, MIN_REQUEST_INTERVAL_MS - elapsed);
+    return Math.max(0, this.minIntervalMs - elapsed);
   }
 
   async search(query: string, limit = 5): Promise<PlaceCandidate[]> {
@@ -53,11 +57,11 @@ export class PlaceSearchService {
     const cached = searchCache.get(cacheKey);
     if (cached) return cached;
 
-    // Enforce 1 req/sec rate limit across the application
+    // Enforce rate limit across requests
     const now = Date.now();
     const elapsed = now - lastRequestTimestamp;
-    if (elapsed < MIN_REQUEST_INTERVAL_MS) {
-      const waitTime = MIN_REQUEST_INTERVAL_MS - elapsed;
+    if (elapsed < this.minIntervalMs) {
+      const waitTime = this.minIntervalMs - elapsed;
       await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
     lastRequestTimestamp = Date.now();
@@ -132,6 +136,10 @@ export class PlaceSearchService {
       };
     });
 
+    if (searchCache.size >= MAX_SEARCH_CACHE_ENTRIES) {
+      const oldestKey = searchCache.keys().next().value;
+      if (oldestKey) searchCache.delete(oldestKey);
+    }
     searchCache.set(cacheKey, results);
     return results;
   }

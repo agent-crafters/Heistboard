@@ -102,6 +102,7 @@ export const TACTICAL_CALLSIGNS: readonly string[] = [
 ];
 
 export const MAX_PORTRAIT_FILE_BYTES = 5 * 1024 * 1024; // 5MB limit
+export const MAX_PORTRAIT_DIMENSION_PX = 4096; // 4096px maximum width or height
 export const ALLOWED_PORTRAIT_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
 
 export interface AliasValidationResult {
