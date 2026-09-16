@@ -423,6 +423,7 @@ export function TerritoryView({
                         selectedPlace?.id === candidate.id ? "active" : ""
                       } ${focusedIndex === idx ? "focused" : ""}`}
                       onClick={() => handleSelectCandidate(candidate)}
+                      aria-label={`Select candidate ${candidate.name}, ${candidate.subtitle} (${getCategoryLabel(candidate.category)})`}
                     >
                       <div className="candidate-header">
                         <strong className="candidate-name">{candidate.name}</strong>
@@ -509,12 +510,13 @@ export function TerritoryView({
           </div>
 
           {/* Quick Pitch Presets */}
-          <div className="camera-presets">
+          <div className="camera-presets" role="group" aria-label="3D camera pitch angle presets">
             <span className="preset-label">3D Angle:</span>
             <button
               type="button"
               className={`preset-button ${camera.pitch <= 10 ? "active" : ""}`}
               onClick={() => handleSetPresetPitch(0)}
+              aria-label="Set 3D camera pitch to Top-Down 0 degrees"
             >
               Top-Down (0°)
             </button>
@@ -522,6 +524,7 @@ export function TerritoryView({
               type="button"
               className={`preset-button ${camera.pitch >= 25 && camera.pitch <= 35 ? "active" : ""}`}
               onClick={() => handleSetPresetPitch(30)}
+              aria-label="Set 3D camera pitch to Street 30 degrees"
             >
               Street (30°)
             </button>
@@ -529,6 +532,7 @@ export function TerritoryView({
               type="button"
               className={`preset-button ${camera.pitch >= 40 && camera.pitch <= 50 ? "active" : ""}`}
               onClick={() => handleSetPresetPitch(45)}
+              aria-label="Set 3D camera pitch to Isometric 45 degrees"
             >
               Isometric (45°)
             </button>
@@ -536,6 +540,7 @@ export function TerritoryView({
               type="button"
               className={`preset-button ${camera.pitch >= 55 ? "active" : ""}`}
               onClick={() => handleSetPresetPitch(60)}
+              aria-label="Set 3D camera pitch to Cinematic 60 degrees"
             >
               Cinematic (60°)
             </button>
@@ -552,6 +557,10 @@ export function TerritoryView({
               value={camera.pitch}
               onChange={handlePitchSlider}
               disabled={isCapturing}
+              aria-label="Fine pitch angle in degrees"
+              aria-valuemin={0}
+              aria-valuemax={70}
+              aria-valuenow={camera.pitch}
             />
           </div>
 
@@ -562,24 +571,27 @@ export function TerritoryView({
               className="helper-button compass-btn"
               onClick={handleResetBearing}
               title="Reset view to North"
+              aria-label={`Reset map bearing to North (currently ${camera.bearing} degrees)`}
             >
               🧭 Reset North ({camera.bearing}°)
             </button>
-            <div className="zoom-stepper">
+            <div className="zoom-stepper" role="group" aria-label="Map zoom controls">
               <button
                 type="button"
                 className="stepper-btn"
                 onClick={() => handleZoomDelta(-0.5)}
                 title="Zoom out"
+                aria-label="Zoom out map by 0.5 levels"
               >
                 −
               </button>
-              <span className="stepper-val">{camera.zoom}z</span>
+              <span className="stepper-val" aria-label={`Current zoom level ${camera.zoom}`}>{camera.zoom}z</span>
               <button
                 type="button"
                 className="stepper-btn"
                 onClick={() => handleZoomDelta(0.5)}
                 title="Zoom in"
+                aria-label="Zoom in map by 0.5 levels"
               >
                 +
               </button>
@@ -632,6 +644,7 @@ export function TerritoryView({
             className="action-button primary-accent lock-button"
             onClick={handleLockTerritory}
             disabled={isCapturing || !mapLoaded || !webglSupported || contextLost}
+            aria-label="Lock 3D Territory Shot and enter Mission Plan editor"
           >
             {isCapturing
               ? capturePhaseLabel[capturePhase]
@@ -643,6 +656,7 @@ export function TerritoryView({
             className="action-button tertiary fallback-button"
             onClick={onSelectSampleFallback}
             disabled={isCapturing}
+            aria-label="Switch to original fictional sample map fallback"
           >
             Use Fictional Sample Map Instead
           </button>

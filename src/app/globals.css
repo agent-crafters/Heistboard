@@ -5215,5 +5215,282 @@ a:focus-visible {
   }
 }
 
+/* =========================================================================
+   HB-011 — Critical Path Responsive Layout and Accessibility Enhancements
+   ========================================================================= */
+
+/* Skip link for keyboard users */
+.skip-to-editor-link {
+  position: absolute;
+  top: -200px;
+  left: 1.5rem;
+  background: var(--mustard);
+  color: var(--charcoal-900);
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 9999;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  text-decoration: none;
+  transition: top 150ms ease;
+}
+
+.skip-to-editor-link:focus {
+  top: 1rem;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Universal high-contrast focus visible ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--mustard) !important;
+  outline-offset: 2px !important;
+}
+
+/* Minimum tap target sizing (44px) across interactive controls */
+.stage-nav-btn {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.preset-button {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.stepper-btn {
+  min-height: 44px;
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.helper-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.search-btn,
+.search-clear-btn {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.candidate-button {
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.action-button,
+.button {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.filter-chip {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.brief-edit-identity-btn {
+  min-height: 44px;
+  min-width: 44px;
+  box-sizing: border-box;
+}
+
+.reveal-skip-btn {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.briefing-mobile-toggle {
+  display: none;
+}
+
+/* Stepper Responsive Horizontal Scroll */
+@media (max-width: 768px) {
+  .stage-indicator {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding: 0.5rem;
+    gap: 0.35rem;
+    margin: 1rem 0 1.5rem;
+  }
+
+  .stage-nav-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.78rem;
+  }
+
+  .stage-nav-divider {
+    flex-shrink: 0;
+  }
+}
+
+/* Small Screen Layout: Giving the Mission Editor Maximum Usable Width */
+@media (max-width: 900px) {
+  .briefing-mobile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--charcoal-800);
+    border: 1px solid var(--petrol);
+    border-radius: 6px;
+    color: var(--paper);
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    margin-bottom: 0.75rem;
+    transition: background 150ms ease;
+  }
+
+  .briefing-mobile-toggle:hover {
+    background: var(--charcoal-700);
+  }
+
+  .briefing.mobile-collapsed {
+    display: none;
+  }
+
+  .briefing.mobile-expanded {
+    display: block;
+    margin-bottom: 1.25rem;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0.75rem 0 1.5rem;
+  }
+
+  .editor-column {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .editor-frame {
+    width: 100%;
+    min-height: 540px;
+    border-radius: 4px;
+  }
+
+  .territory-workspace {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .territory-control-panel {
+    padding: 1rem;
+  }
+
+  .territory-map-canvas-container {
+    height: 380px;
+  }
+
+  .camera-presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .camera-presets .preset-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .shell {
+    padding: 0.5rem 0.65rem;
+  }
+
+  .masthead {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .masthead h1 {
+    font-size: 1.75rem;
+  }
+
+  .editor-heading h2 {
+    font-size: 1.25rem;
+  }
+
+  .editor-frame {
+    min-height: 480px;
+    width: 100%;
+  }
+
+  /* Full-width tap-friendly actions in Dossier Preview */
+  .preview-copy .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+  }
+
+  .preview-copy .actions .button,
+  .preview-copy .actions a.button {
+    width: 100%;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .preview-copy .actions a.button-primary {
+    order: -1;
+    box-shadow: 0 4px 16px rgba(224, 108, 85, 0.35);
+  }
+
+  .recovery-panel {
+    padding: 1.25rem 1rem;
+  }
+
+  .recovery-panel .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+  }
+
+  .recovery-panel .button {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+
 
 

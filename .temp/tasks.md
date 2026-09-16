@@ -153,10 +153,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-19
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Keep the complete journey usable across input methods and small screens.
 - Dependencies: HB-010
-- GitHub issue: —
+- GitHub issue: #11
 - Acceptance criteria:
   - The editor receives maximum usable width on small screens.
   - Keyboard focus, labels, contrast, and tap targets are usable.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   type GtaBadgeOptions,
   type GtaBadgeTheme,
@@ -125,17 +125,30 @@ export function IdentityControls({
   const activePortraitUrl = portraitSource === "custom" ? customPhotoUrl : undefined;
 
   // Build current badge options
-  const currentBadgeOptions: GtaBadgeOptions = {
-    alias: alias || "CIPHER",
-    role,
-    silhouetteId,
-    portraitUrl: activePortraitUrl,
-    theme,
-    badgeStyle,
-    wantedStars,
-    bounty,
-    crewCut,
-  };
+  const currentBadgeOptions: GtaBadgeOptions = useMemo(
+    () => ({
+      alias: alias || "CIPHER",
+      role,
+      silhouetteId,
+      portraitUrl: activePortraitUrl,
+      theme,
+      badgeStyle,
+      wantedStars,
+      bounty,
+      crewCut,
+    }),
+    [
+      alias,
+      role,
+      silhouetteId,
+      activePortraitUrl,
+      theme,
+      badgeStyle,
+      wantedStars,
+      bounty,
+      crewCut,
+    ],
+  );
 
   const aliasValidation = validateAlias(alias);
 
@@ -171,19 +184,7 @@ export function IdentityControls({
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [
-    isBadgeOnCanvas,
-    alias,
-    role,
-    silhouetteId,
-    activePortraitUrl,
-    theme,
-    badgeStyle,
-    wantedStars,
-    bounty,
-    crewCut,
-    editorContainerRef,
-  ]);
+  }, [isBadgeOnCanvas, currentBadgeOptions, editorContainerRef]);
 
   // Reprocess uploaded photo when zoom, offset, or filter changes
   useEffect(() => {
@@ -294,7 +295,6 @@ export function IdentityControls({
 
       setTimeout(() => setPlacedStatus(null), 3000);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentBadgeOptions, editorContainerRef],
   );
 
@@ -596,6 +596,7 @@ export function IdentityControls({
                     key={arch.id}
                     role="radio"
                     aria-checked={isSelected}
+                    aria-label={`Archetype: ${arch.name}, Role: ${arch.role}`}
                     tabIndex={0}
                     className={`silhouette-card ${isSelected ? "selected" : ""}`}
                     onClick={() => setSilhouetteId(arch.id)}
@@ -637,6 +638,7 @@ export function IdentityControls({
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 className="visually-hidden"
+                aria-label="Upload operative portrait photo (PNG, JPEG, WebP up to 5MB)"
                 onChange={handleFileInputChange}
               />
 
@@ -732,6 +734,8 @@ export function IdentityControls({
                             portraitFilter === f.id ? "active" : ""
                           }`}
                           onClick={() => setPortraitFilter(f.id)}
+                          aria-label={`${f.name} filter: ${f.tagline}`}
+                          aria-pressed={portraitFilter === f.id}
                         >
                           <strong className="chip-name">{f.name}</strong>
                           <small className="chip-tag">{f.tagline}</small>

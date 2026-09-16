@@ -146,6 +146,7 @@ export function HeistboardEditorProof() {
   const [isComposingDossier, setIsComposingDossier] = useState<boolean>(false);
   const [dossierError, setDossierError] = useState<string | null>(null);
   const [isRevealing, setIsRevealing] = useState<boolean>(false);
+  const [isMobileBriefOpen, setIsMobileBriefOpen] = useState<boolean>(false);
   const dossierBlobUrlRef = useRef<string | null>(null);
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
@@ -488,6 +489,7 @@ export function HeistboardEditorProof() {
                 }}
                 disabled={!isAccessible}
                 aria-current={isCurrent ? "step" : undefined}
+                aria-label={`Stage ${s.number}: ${s.label} - ${s.shortDescription}`}
                 title={`${s.number} / ${s.label}: ${s.shortDescription}`}
               >
                 <span className="stage-nav-num">{s.number}</span>
@@ -616,7 +618,26 @@ export function HeistboardEditorProof() {
           aria-labelledby="workspace-title"
           style={{ display: stage === "mission-plan" ? undefined : "none" }}
         >
-          <aside className="briefing">
+          <a href="#editor-frame-container" className="skip-to-editor-link">
+            Skip to Mission Plan Editor Canvas
+          </a>
+
+          <button
+            type="button"
+            className="briefing-mobile-toggle"
+            onClick={() => setIsMobileBriefOpen((prev) => !prev)}
+            aria-expanded={isMobileBriefOpen}
+            aria-controls="mission-briefing-aside"
+            aria-label={isMobileBriefOpen ? "Collapse mission briefing panel" : "Expand mission briefing panel"}
+          >
+            <span>📋 Mission Briefing &amp; Steps ({isMobileBriefOpen ? "Hide" : "Show"})</span>
+            <span aria-hidden="true">{isMobileBriefOpen ? "▲" : "▼"}</span>
+          </button>
+
+          <aside
+            id="mission-briefing-aside"
+            className={`briefing ${isMobileBriefOpen ? "mobile-expanded" : "mobile-collapsed"}`}
+          >
             <p className="section-label">Mission brief</p>
             <h2 id="workspace-title">Package before sunrise</h2>
             <p>
@@ -711,6 +732,7 @@ export function HeistboardEditorProof() {
 
             {editorVisible && (
               <div
+                id="editor-frame-container"
                 ref={editorFrameRef}
                 className="editor-frame"
                 aria-busy={workflow.phase !== "editing"}
@@ -822,6 +844,7 @@ export function HeistboardEditorProof() {
                       dispatch({ type: "edit-again" });
                       journeyDispatch({ type: "go-to-stage", target: "mission-plan" });
                     }}
+                    aria-label="Edit mission plan again in editor"
                   >
                     Edit mission again
                   </button>
@@ -831,6 +854,7 @@ export function HeistboardEditorProof() {
                     onClick={() => {
                       journeyDispatch({ type: "go-to-stage", target: "identity" });
                     }}
+                    aria-label="Edit operative identity callsign or portrait"
                   >
                     Edit identity
                   </button>
@@ -838,6 +862,7 @@ export function HeistboardEditorProof() {
                     className="button button-secondary"
                     type="button"
                     onClick={handleReturnToTerritory}
+                    aria-label="Select a new territory location"
                   >
                     New territory
                   </button>
@@ -846,6 +871,7 @@ export function HeistboardEditorProof() {
                     type="button"
                     onClick={() => setIsRevealing(true)}
                     title="Replay cinematic reveal transition"
+                    aria-label="Replay cinematic pullback reveal animation"
                   >
                     Replay reveal
                   </button>
@@ -853,6 +879,7 @@ export function HeistboardEditorProof() {
                     className="button button-secondary"
                     type="button"
                     onClick={handleRestartOperation}
+                    aria-label="Restart operation from stage one"
                   >
                     Restart operation
                   </button>
@@ -861,6 +888,7 @@ export function HeistboardEditorProof() {
                     href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
                     download={dossierArtifact?.fileName ?? annotatedMap.download.fileName}
                     aria-disabled={isComposingDossier}
+                    aria-label="Download verified 2400 by 1600 final Dossier PNG"
                   >
                     {isComposingDossier ? "Composing 2400 × 1600..." : "Download Dossier PNG"}
                   </a>
