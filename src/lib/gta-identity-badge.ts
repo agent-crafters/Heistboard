@@ -828,7 +828,8 @@ export function hasBadgeOnFabricCanvas(
 export async function placeOrUpdateBadgeOnFabricCanvas(
   fabricCanvas: FabricCanvasLike | null | undefined,
   options: GtaBadgeOptions,
-  pinCorner?: "top-left" | "top-right" | "bottom-left" | "bottom-right",
+  pinCorner?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center",
+  customPosition?: { x: number; y: number },
 ): Promise<boolean> {
   if (!fabricCanvas) return false;
 
@@ -874,8 +875,10 @@ export async function placeOrUpdateBadgeOnFabricCanvas(
               scale = existing.scaleX;
             }
 
-            // Only reposition to a corner if user explicitly clicked a corner button
-            if (pinCorner === "top-right") {
+            if (customPosition) {
+              left = customPosition.x;
+              top = customPosition.y;
+            } else if (pinCorner === "top-right") {
               left = canvasW - 24 - targetWidth / 2;
               top = 24 + (badgeCanvas.height * scale) / 2;
             } else if (pinCorner === "bottom-left") {
@@ -887,19 +890,30 @@ export async function placeOrUpdateBadgeOnFabricCanvas(
             } else if (pinCorner === "top-left") {
               left = 24 + targetWidth / 2;
               top = 24 + (badgeCanvas.height * scale) / 2;
+            } else if (pinCorner === "center") {
+              left = canvasW / 2;
+              top = canvasH / 2;
             }
 
             // Remove old instance before placing the freshly rendered replacement
             (fabricCanvas as unknown as { remove?(o: FabricObjectLike): void }).remove?.(existing);
           } else {
-            const corner = pinCorner ?? "top-left";
-            if (corner === "top-right") {
-              left = canvasW - 24 - targetWidth / 2;
-            } else if (corner === "bottom-left") {
-              top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
-            } else if (corner === "bottom-right") {
-              left = canvasW - 24 - targetWidth / 2;
-              top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
+            if (customPosition) {
+              left = customPosition.x;
+              top = customPosition.y;
+            } else {
+              const corner = pinCorner ?? "top-left";
+              if (corner === "top-right") {
+                left = canvasW - 24 - targetWidth / 2;
+              } else if (corner === "bottom-left") {
+                top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
+              } else if (corner === "bottom-right") {
+                left = canvasW - 24 - targetWidth / 2;
+                top = canvasH - 24 - (badgeCanvas.height * scale) / 2;
+              } else if (corner === "center") {
+                left = canvasW / 2;
+                top = canvasH / 2;
+              }
             }
           }
 
@@ -911,6 +925,10 @@ export async function placeOrUpdateBadgeOnFabricCanvas(
             selectable: true,
             hasControls: true,
             hasBorders: true,
+            lockMovementX: false,
+            lockMovementY: false,
+            hoverCursor: "move",
+            moveCursor: "grabbing",
           });
 
           badgeObject.scale(scale);

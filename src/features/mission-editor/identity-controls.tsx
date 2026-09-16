@@ -262,7 +262,7 @@ export function IdentityControls({
   ]);
 
   const handlePlaceOnCanvas = useCallback(
-    async (corner?: "top-left" | "top-right" | "bottom-left") => {
+    async (corner?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center") => {
       const canvas =
         findFabricCanvas(editorContainerRef?.current) ??
         (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike })
@@ -285,9 +285,9 @@ export function IdentityControls({
       if (success) {
         setIsBadgeOnCanvas(true);
         if (corner) {
-          setPlacedStatus(`✓ Badge pinned to ${corner.replace("-", " ")} on map canvas!`);
+          setPlacedStatus(`✓ Badge placed at ${corner.replace("-", " ")} on map canvas! You can drag it anywhere.`);
         } else {
-          setPlacedStatus("✓ Existing badge updated on map canvas!");
+          setPlacedStatus("✓ Badge updated on map canvas! You can drag it anywhere.");
         }
       } else {
         setPlacedStatus("⚠️ Could not place badge on canvas.");
@@ -431,7 +431,7 @@ export function IdentityControls({
         </div>
       </div>
 
-      {/* Live Badge Preview Box */}
+      {/* Live Badge Preview Box — Draggable directly onto map */}
       <div className="gta-badge-live-preview-box">
         {previewDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -439,6 +439,13 @@ export function IdentityControls({
             src={previewDataUrl}
             alt="GTA VI Identity Badge Live Preview"
             className="gta-badge-preview-img"
+            style={{ cursor: "grab" }}
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData("application/x-heistboard-badge", JSON.stringify(currentBadgeOptions));
+              e.dataTransfer.effectAllowed = "copy";
+            }}
+            title="Drag and drop this badge directly onto any spot on the map!"
           />
         ) : (
           <div className="badge-loading-placeholder">Rendering GTA VI badge…</div>
@@ -451,11 +458,11 @@ export function IdentityControls({
         <div className="flex items-center justify-between px-0.5 py-0.5">
           {isBadgeOnCanvas ? (
             <span className="gta-on-canvas-badge">
-              ✓ Active on Canvas — Editing Existing Badge
+              ✓ Active on Map Canvas — Drag Anywhere to Reposition
             </span>
           ) : (
             <span className="text-[11px] text-gray-400 font-mono">
-              Not placed on canvas yet
+              Not placed on map yet
             </span>
           )}
         </div>
@@ -463,37 +470,61 @@ export function IdentityControls({
         <button
           type="button"
           className={`action-button primary gta-pin-btn ${isBadgeOnCanvas ? "active-update" : ""}`}
-          onClick={() => void handlePlaceOnCanvas(isBadgeOnCanvas ? undefined : "top-left")}
+          onClick={() => void handlePlaceOnCanvas(isBadgeOnCanvas ? undefined : "center")}
           disabled={isUpdatingCanvas}
           title={
             isBadgeOnCanvas
-              ? "Update the existing badge on map canvas"
+              ? "Update badge and keep its position"
               : "Place badge on the map canvas"
           }
         >
           {isUpdatingCanvas
             ? "Updating…"
             : isBadgeOnCanvas
-              ? "✓ Update Existing Badge on Canvas"
-              : "⚡ Add Badge to Canvas (Top-Left)"}
+              ? "✓ Update Badge on Map"
+              : "⚡ Add Badge to Map"}
         </button>
 
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 flex-wrap">
+          <button
+            type="button"
+            className="action-button secondary gta-sub-pin-btn"
+            onClick={() => void handlePlaceOnCanvas("top-left")}
+            title="Move to Top-Left"
+          >
+            Top-Left
+          </button>
           <button
             type="button"
             className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("top-right")}
-            title="Place or move to Top-Right"
+            title="Move to Top-Right"
           >
             Top-Right
           </button>
           <button
             type="button"
             className="action-button secondary gta-sub-pin-btn"
+            onClick={() => void handlePlaceOnCanvas("center")}
+            title="Move to Center"
+          >
+            Center
+          </button>
+          <button
+            type="button"
+            className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("bottom-left")}
-            title="Place or move to Bottom-Left"
+            title="Move to Bottom-Left"
           >
             Bottom-Left
+          </button>
+          <button
+            type="button"
+            className="action-button secondary gta-sub-pin-btn"
+            onClick={() => void handlePlaceOnCanvas("bottom-right")}
+            title="Move to Bottom-Right"
+          >
+            Bottom-Right
           </button>
           <button
             type="button"
@@ -504,6 +535,9 @@ export function IdentityControls({
             ✕
           </button>
         </div>
+        <p className="text-[11px] text-gray-400 mt-1 font-mono text-center">
+          💡 Drag badge directly onto map, or click above to place &amp; drag anywhere
+        </p>
       </div>
 
       {placedStatus && (

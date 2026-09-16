@@ -34,6 +34,7 @@ import {
 import {
   type GtaBadgeOptions,
   DEFAULT_GTA_BADGE_OPTIONS,
+  placeOrUpdateBadgeOnFabricCanvas,
 } from "@/lib/gta-identity-badge";
 import {
   type BgLayerConfig,
@@ -360,7 +361,10 @@ export function HeistboardEditorProof() {
   }, [stage, annotatedMap, identity, attribution, lockedCamera]);
 
   const handleDragOver = (e: React.DragEvent) => {
-    if (e.dataTransfer.types.includes("application/x-heistboard-sticker")) {
+    if (
+      e.dataTransfer.types.includes("application/x-heistboard-sticker") ||
+      e.dataTransfer.types.includes("application/x-heistboard-badge")
+    ) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
     }
@@ -368,6 +372,31 @@ export function HeistboardEditorProof() {
 
   const handleDrop = async (e: React.DragEvent) => {
     journeyDispatch({ type: "record-mission-edit" });
+
+    // 1. Direct drag-and-drop of the Operative Identity Badge onto the map
+    if (e.dataTransfer.types.includes("application/x-heistboard-badge")) {
+      e.preventDefault();
+      const fabricCanvas =
+        findFabricCanvas(editorFrameRef.current) ??
+        (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike })
+          .__heistboardFabricCanvas;
+      if (!fabricCanvas) return;
+
+      let position: { x: number; y: number } | undefined;
+      if (typeof fabricCanvas.getPointer === "function") {
+        position = fabricCanvas.getPointer(e.nativeEvent);
+      }
+
+      await placeOrUpdateBadgeOnFabricCanvas(
+        fabricCanvas,
+        gtaBadgeOptions,
+        undefined,
+        position,
+      );
+      return;
+    }
+
+    // 2. Direct drag-and-drop of Stickers onto the map
     const stickerUrl = e.dataTransfer.getData("application/x-heistboard-sticker");
     if (!stickerUrl) return;
     e.preventDefault();

@@ -232,7 +232,10 @@ export async function composeDossierCanvas(
 
   ctx.font = '13px monospace, "Courier New", sans-serif';
   ctx.fillStyle = "#7e8b91";
-  ctx.fillText("DECLASSIFIED FOR COURIER DISPATCH · LOSSLESS RASTER", 2348, 185);
+  const authLine = input.identity?.alias
+    ? `AUTHORITY: ${input.identity.alias.toUpperCase()} · LOSSLESS RASTER`
+    : "DECLASSIFIED FOR COURIER DISPATCH · LOSSLESS RASTER";
+  ctx.fillText(authLine, 2348, 185);
 
   // Horizontal separating rule below header
   ctx.strokeStyle = "rgba(240, 234, 220, 0.14)";
@@ -243,12 +246,12 @@ export async function composeDossierCanvas(
   ctx.stroke();
 
   // -------------------------------------------------------------
-  // Layer 3: Dominant Framed Map Viewport (Left / Center)
-  // Dimensions: X: 52, Y: 232, W: 1618, H: 1228
+  // Layer 3: Dominant Full-Width Framed Map Viewport
+  // Dimensions: X: 52, Y: 232, W: 2296, H: 1228
   // -------------------------------------------------------------
   const mapFrameX = 52;
   const mapFrameY = 232;
-  const mapFrameW = 1618;
+  const mapFrameW = DOSSIER_WIDTH - 104; // 2296px full prominent width
   const mapFrameH = 1228;
 
   // Frame Background and Outer Border
@@ -267,15 +270,15 @@ export async function composeDossierCanvas(
   ctx.lineTo(mapFrameX + mapFrameW, mapFrameY + 40);
   ctx.stroke();
 
-  ctx.font = 'bold 13px monospace, "Inter", sans-serif';
+  ctx.font = 'bold 14px monospace, "Inter", sans-serif';
   ctx.fillStyle = "#00f5d4";
   ctx.textAlign = "left";
-  ctx.fillText("SATELLITE & TACTICAL VECTOR COMPOSITION // LOCKED MAP BASE", mapFrameX + 16, mapFrameY + 25);
+  ctx.fillText("SATELLITE & TACTICAL VECTOR COMPOSITION // LOCKED MAP BASE", mapFrameX + 18, mapFrameY + 25);
 
   ctx.font = '13px monospace, sans-serif';
   ctx.fillStyle = "#7e8b91";
   ctx.textAlign = "right";
-  ctx.fillText("STATUS: VERIFIED FLATTENED RASTER", mapFrameX + mapFrameW - 16, mapFrameY + 25);
+  ctx.fillText("STATUS: VERIFIED FLATTENED RASTER · 2400 × 1600", mapFrameX + mapFrameW - 18, mapFrameY + 25);
 
   // Protected Attribution Bar Height
   const attributionBarH = 64;
@@ -339,184 +342,6 @@ export async function composeDossierCanvas(
   ctx.fillStyle = "#f0eadc";
   const fullNotice = `${input.attribution.noticeText} · ${input.attribution.printedUrl}`;
   ctx.fillText(fullNotice, mapFrameX + 212, attrY + 36);
-
-  // -------------------------------------------------------------
-  // Layer 5: Right Column: Tactical Mission Briefing Panel
-  // Dimensions: X: 1690, Y: 232, W: 658, H: 1228
-  // -------------------------------------------------------------
-  const sideX = 1690;
-  const sideY = 232;
-  const sideW = 658;
-  const sideH = 1228;
-
-  ctx.fillStyle = "rgba(17, 22, 26, 0.85)";
-  ctx.fillRect(sideX, sideY, sideW, sideH);
-  ctx.strokeStyle = "rgba(240, 234, 220, 0.16)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(sideX, sideY, sideW, sideH);
-
-  // Sidebar Header
-  ctx.fillStyle = "rgba(25, 65, 72, 0.35)";
-  ctx.fillRect(sideX, sideY, sideW, 40);
-  ctx.strokeStyle = "rgba(240, 234, 220, 0.12)";
-  ctx.beginPath();
-  ctx.moveTo(sideX, sideY + 40);
-  ctx.lineTo(sideX + sideW, sideY + 40);
-  ctx.stroke();
-
-  ctx.font = 'bold 14px "Inter", sans-serif';
-  ctx.fillStyle = "#ffd36a";
-  ctx.textAlign = "left";
-  ctx.fillText("TACTICAL MISSION BRIEF // SPECIFICATION", sideX + 18, sideY + 25);
-
-  ctx.font = '13px monospace, sans-serif';
-  ctx.fillStyle = "#aeb4ad";
-  ctx.textAlign = "right";
-  ctx.fillText("STATUS: VERIFIED", sideX + sideW - 18, sideY + 25);
-
-  // Section 1: Mission Objectives & Action Audit (Checklist)
-  ctx.font = 'bold 16px "Inter", sans-serif';
-  ctx.fillStyle = "#f0eadc";
-  ctx.fillText("TACTICAL OBJECTIVES // COMPLETED", sideX + 24, sideY + 70);
-
-  const steps = [
-    { num: "01", name: "DRAW ROUTE", desc: "Trace primary courier transit across locked neighborhood streets" },
-    { num: "02", name: "MARK LOCATIONS", desc: "Identify safe pickup point and emergency getaway rendezvous" },
-    { num: "03", name: "COURIER NOTE", desc: "Record crucial tactical briefing note before dawn departure" },
-    { num: "04", name: "VERIFY & LOCK", desc: "Confirm composite raster, attribution lock, and dossier export" },
-  ];
-
-  let stepY = sideY + 92;
-  for (const step of steps) {
-    ctx.fillStyle = "rgba(25, 65, 72, 0.25)";
-    ctx.strokeStyle = "rgba(240, 234, 220, 0.15)";
-    ctx.lineWidth = 1;
-    drawRoundedRect(ctx, sideX + 24, stepY, sideW - 48, 76, 4);
-    ctx.fill();
-    ctx.stroke();
-
-    // Check badge
-    ctx.fillStyle = "#22c55e";
-    ctx.font = 'bold 16px "Inter", sans-serif';
-    ctx.fillText("✓", sideX + 40, stepY + 34);
-
-    ctx.font = 'bold 15px "Inter", monospace, sans-serif';
-    ctx.fillStyle = "#ffd36a";
-    ctx.fillText(`${step.num} // ${step.name}`, sideX + 66, stepY + 32);
-
-    ctx.font = '13px "Inter", sans-serif';
-    ctx.fillStyle = "#aeb4ad";
-    ctx.fillText(step.desc, sideX + 66, stepY + 54);
-
-    stepY += 88;
-  }
-
-  // Divider before Telemetry
-  ctx.strokeStyle = "rgba(240, 234, 220, 0.12)";
-  ctx.beginPath();
-  ctx.moveTo(sideX + 24, sideY + 460);
-  ctx.lineTo(sideX + sideW - 24, sideY + 460);
-  ctx.stroke();
-
-  // Section 2: Territory Telemetry Box
-  ctx.font = 'bold 16px "Inter", sans-serif';
-  ctx.fillStyle = "#f0eadc";
-  ctx.fillText("TERRITORY TELEMETRY // CAMERA LOCK", sideX + 24, sideY + 494);
-
-  ctx.fillStyle = "#080c0e";
-  ctx.strokeStyle = "rgba(25, 65, 72, 0.5)";
-  ctx.lineWidth = 1;
-  drawRoundedRect(ctx, sideX + 24, sideY + 514, sideW - 48, 172, 4);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.font = '14px monospace, "Courier New", sans-serif';
-  ctx.fillStyle = "#aeb4ad";
-
-  if (input.cameraState) {
-    const lng = input.cameraState.center[0].toFixed(5);
-    const lat = input.cameraState.center[1].toFixed(5);
-    ctx.fillText(`CENTER COORDS: ${lat}° N, ${lng}° E`, sideX + 44, sideY + 548);
-    ctx.fillText(`ZOOM LEVEL:    ${input.cameraState.zoom.toFixed(2)}`, sideX + 44, sideY + 578);
-    ctx.fillText(`PITCH / BEARING: ${input.cameraState.pitch.toFixed(1)}° / ${input.cameraState.bearing.toFixed(1)}°`, sideX + 44, sideY + 608);
-    ctx.fillText(`STYLE TREATMENT: STYLIZED 3D VECTOR`, sideX + 44, sideY + 638);
-  } else {
-    ctx.fillText(`CENTER SECTOR: FICTIONAL DISTRICT // SECTOR 01`, sideX + 44, sideY + 548);
-    ctx.fillText(`PROJECTION:    MERCATOR SPHERICAL 3D`, sideX + 44, sideY + 578);
-    ctx.fillText(`CAMERA STATE:  LOCKED ORTHOGRAPHIC BASE`, sideX + 44, sideY + 608);
-    ctx.fillText(`MAP RESOLUTION: LOSSLESS 2400 × 1600 RASTER`, sideX + 44, sideY + 638);
-  }
-
-  // Divider before Directives
-  ctx.strokeStyle = "rgba(240, 234, 220, 0.12)";
-  ctx.beginPath();
-  ctx.moveTo(sideX + 24, sideY + 704);
-  ctx.lineTo(sideX + sideW - 24, sideY + 704);
-  ctx.stroke();
-
-  // Section 3: Operational Directives & Security Protocol
-  ctx.font = 'bold 16px "Inter", sans-serif';
-  ctx.fillStyle = "#f0eadc";
-  ctx.fillText("OPERATIONAL DIRECTIVES // PROTOCOL", sideX + 24, sideY + 738);
-
-  ctx.fillStyle = "rgba(25, 65, 72, 0.2)";
-  ctx.strokeStyle = "rgba(240, 234, 220, 0.15)";
-  ctx.lineWidth = 1;
-  drawRoundedRect(ctx, sideX + 24, sideY + 758, sideW - 48, 160, 4);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.font = '14px monospace, "Courier New", sans-serif';
-  ctx.fillStyle = "#aeb4ad";
-  ctx.fillText("SECURITY PROTOCOL: SECTOR LOCKED FOR FIELD COURIER", sideX + 44, sideY + 790);
-  ctx.fillText("DATA INTEGRITY:    CLIENT-SIDE LOSSLESS RASTER 2400x1600", sideX + 44, sideY + 820);
-  ctx.fillText("PRIVACY DIRECTIVE: ZERO TELEMETRY // EPHEMERAL IN-MEMORY", sideX + 44, sideY + 850);
-
-  const operativeAlias = input.identity?.alias || "CIPHER";
-  const operativeRole =
-    input.identity?.portraitSource === "silhouette" && input.identity.silhouetteId
-      ? getSilhouetteArchetype(input.identity.silhouetteId).role
-      : "Field Operative";
-
-  ctx.fillStyle = "#ffd36a";
-  ctx.fillText(`DISPATCH AUTHORITY: ${operativeAlias.toUpperCase()} // ${operativeRole.toUpperCase()}`, sideX + 44, sideY + 882);
-
-  // Decorative Barcode & Seal in bottom of sidebar
-  ctx.strokeStyle = "rgba(240, 234, 220, 0.35)";
-  ctx.lineWidth = 1.5;
-  const barcodeX = sideX + 24;
-  const barcodeY = sideY + 940;
-  const barcodeW = sideW - 48;
-  const barcodeH = 48;
-
-  // Render a clean procedural barcode
-  for (let bx = 0; bx < barcodeW; bx += 6) {
-    const barWidth = (bx % 12 === 0 || bx % 18 === 0) ? 3 : 1.5;
-    ctx.fillStyle = (bx % 24 === 0) ? "rgba(240, 234, 220, 0.7)" : "rgba(240, 234, 220, 0.35)";
-    ctx.fillRect(barcodeX + bx, barcodeY, barWidth, barcodeH);
-  }
-
-  ctx.font = '12px monospace, sans-serif';
-  ctx.fillStyle = "#7e8b91";
-  ctx.textAlign = "center";
-  ctx.fillText(`* ${refId}-AUTH-VERIFIED-DOSSIER *`, sideX + sideW / 2, barcodeY + barcodeH + 20);
-
-  // Authentication Stamp Box
-  ctx.fillStyle = "rgba(239, 120, 102, 0.12)";
-  ctx.strokeStyle = "#ef7866";
-  ctx.lineWidth = 1.5;
-  drawRoundedRect(ctx, sideX + 24, sideY + 1040, sideW - 48, 140, 4);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.font = 'bold 22px "Inter", sans-serif';
-  ctx.fillStyle = "#ef7866";
-  ctx.textAlign = "center";
-  ctx.fillText("CONFIRMED OPERATIONAL DOSSIER", sideX + sideW / 2, sideY + 1090);
-
-  ctx.font = '14px "Inter", sans-serif';
-  ctx.fillStyle = "#f0eadc";
-  ctx.fillText("READY FOR MISSION EXECUTION // SUNRISE DEADLINE", sideX + sideW / 2, sideY + 1130);
 
   // -------------------------------------------------------------
   // Layer 6: Bottom Footer Bar (Y: 1475 to 1570)
