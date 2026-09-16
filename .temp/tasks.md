@@ -240,10 +240,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-23
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Submit verified public links with one day reserved for critical availability fixes.
 - Dependencies: HB-016
-- GitHub issue: —
+- GitHub issue: #17
 - Acceptance criteria:
   - Public repository requirement is verified after the user pushes.
   - Deployment, repository, demo, and submission links work from a clean session.
