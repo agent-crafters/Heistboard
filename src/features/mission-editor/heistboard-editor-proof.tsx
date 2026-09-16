@@ -469,17 +469,17 @@ export function HeistboardEditorProof() {
     <main className="shell">
       <header className="masthead">
         <div>
-          <p className="eyebrow">Case file / HB-004 Territory Search &amp; Composition</p>
+          <p className="eyebrow">VICE CITY // TACTICAL MISSION COMMAND · LEONIDA</p>
           <h1>Plan the heist. Mark the streets.</h1>
           <p className="lede">
             From zero-cost 3D place search and locked camera rasterization, to browser-based
-            mission editing and legal dossier export.
+            mission editing and legal full-view export.
           </p>
         </div>
         <div className="status-stamp" aria-label="Fictional scenario">
-          <span>Operation</span>
-          <strong>The Last Delivery</strong>
-          <small>Fictional use only</small>
+          <span>VICE CITY OPS</span>
+          <strong>THE LAST DELIVERY</strong>
+          <small>FICTIONAL USE ONLY · LEONIDA</small>
         </div>
       </header>
 
