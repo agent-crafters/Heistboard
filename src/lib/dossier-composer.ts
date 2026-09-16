@@ -24,8 +24,8 @@ export const DOSSIER_HEIGHT = 1600;
 export interface DossierCompositionInput {
   /** Data URL or object URL of the exact saved Annotated Map */
   annotatedMapUrl: string;
-  /** Operative identity state */
-  identity: IdentityState;
+  /** Operative identity state (optional) */
+  identity?: IdentityState;
   /** Fictional operation title (default: "OPERATION: THE LAST DELIVERY") */
   operationTitle?: string;
   /** Fictional operation subtitle (default: "Package before sunrise") */
@@ -113,15 +113,10 @@ export async function composeDossierCanvas(
     throw new Error("Dossier canvas composition can only execute in a browser environment.");
   }
 
-  // 1. Wait for fonts and all input images to decode
+  // 1. Wait for fonts and annotated map image to decode
   await ensureDossierFonts();
 
-  const [annotatedMapImg, portraitImg] = await Promise.all([
-    loadImageElement(input.annotatedMapUrl),
-    input.identity.portraitSource === "custom" && input.identity.portraitUrl
-      ? loadImageElement(input.identity.portraitUrl).catch(() => null)
-      : Promise.resolve(null),
-  ]);
+  const annotatedMapImg = await loadImageElement(input.annotatedMapUrl);
 
   // 2. Allocate the 2400 × 1600 canvas
   const canvas = document.createElement("canvas");
@@ -346,7 +341,7 @@ export async function composeDossierCanvas(
   ctx.fillText(fullNotice, mapFrameX + 212, attrY + 36);
 
   // -------------------------------------------------------------
-  // Layer 5: Right Column: Operative Identity & Briefing Panel
+  // Layer 5: Right Column: Tactical Mission Briefing Panel
   // Dimensions: X: 1690, Y: 232, W: 658, H: 1228
   // -------------------------------------------------------------
   const sideX = 1690;
@@ -372,116 +367,17 @@ export async function composeDossierCanvas(
   ctx.font = 'bold 14px "Inter", sans-serif';
   ctx.fillStyle = "#ffd36a";
   ctx.textAlign = "left";
-  ctx.fillText("OPERATIVE PROFILE // ACTIVE ASSET", sideX + 18, sideY + 25);
+  ctx.fillText("TACTICAL MISSION BRIEF // SPECIFICATION", sideX + 18, sideY + 25);
 
   ctx.font = '13px monospace, sans-serif';
   ctx.fillStyle = "#aeb4ad";
   ctx.textAlign = "right";
-  ctx.fillText("STAGE 02 VERIFIED", sideX + sideW - 18, sideY + 25);
+  ctx.fillText("STATUS: VERIFIED", sideX + sideW - 18, sideY + 25);
 
-  // Operative Avatar Box (250 × 250)
-  const avatarBoxX = sideX + 24;
-  const avatarBoxY = sideY + 62;
-  const avatarBoxSize = 240;
-
-  ctx.fillStyle = "#0c1216";
-  ctx.fillRect(avatarBoxX, avatarBoxY, avatarBoxSize, avatarBoxSize);
-  ctx.strokeStyle = "#194148";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(avatarBoxX, avatarBoxY, avatarBoxSize, avatarBoxSize);
-
-  // Draw Avatar: custom photo or silhouette SVG archetype
-  if (portraitImg) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(avatarBoxX + 2, avatarBoxY + 2, avatarBoxSize - 4, avatarBoxSize - 4);
-    ctx.clip();
-    ctx.drawImage(portraitImg, avatarBoxX + 2, avatarBoxY + 2, avatarBoxSize - 4, avatarBoxSize - 4);
-    ctx.restore();
-  } else {
-    // Silhouette Archetype Path rendering
-    const archetype = getSilhouetteArchetype(input.identity.silhouetteId);
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(avatarBoxX + 2, avatarBoxY + 2, avatarBoxSize - 4, avatarBoxSize - 4);
-    ctx.clip();
-
-    // Background gradient for silhouette
-    const grad = ctx.createLinearGradient(avatarBoxX, avatarBoxY, avatarBoxX, avatarBoxY + avatarBoxSize);
-    grad.addColorStop(0, "#13232c");
-    grad.addColorStop(1, "#0a1318");
-    ctx.fillStyle = grad;
-    ctx.fillRect(avatarBoxX, avatarBoxY, avatarBoxSize, avatarBoxSize);
-
-    // Render SVG path centered in the avatar box
-    // Silhouette SVGs use a 24x24 viewBox
-    const svgScale = (avatarBoxSize - 40) / 24;
-    ctx.translate(avatarBoxX + 20, avatarBoxY + 20);
-    ctx.scale(svgScale, svgScale);
-    ctx.fillStyle = "#ded4bd";
-    const path2D = new Path2D(archetype.svgPath);
-    ctx.fill(path2D);
-    ctx.restore();
-  }
-
-  // Circular reticle overlay on avatar
-  ctx.strokeStyle = "rgba(0, 245, 212, 0.45)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(
-    avatarBoxX + avatarBoxSize / 2,
-    avatarBoxY + avatarBoxSize / 2,
-    avatarBoxSize / 2 - 14,
-    0,
-    Math.PI * 2,
-  );
-  ctx.stroke();
-
-  // Operative Metadata beside Avatar
-  const metaX = avatarBoxX + avatarBoxSize + 24;
-  const metaY = avatarBoxY + 16;
-
-  ctx.textAlign = "left";
-  ctx.font = 'bold 13px monospace, sans-serif';
-  ctx.fillStyle = "#7e8b91";
-  ctx.fillText("CALLSIGN / ALIAS", metaX, metaY + 12);
-
-  ctx.font = '900 42px "Bebas Neue", "Russo One", sans-serif';
-  ctx.fillStyle = "#f0eadc";
-  ctx.fillText(input.identity.alias.toUpperCase(), metaX, metaY + 54);
-
-  ctx.font = 'bold 13px monospace, sans-serif';
-  ctx.fillStyle = "#7e8b91";
-  ctx.fillText("TACTICAL ROLE", metaX, metaY + 98);
-
-  const archetypeRole =
-    input.identity.portraitSource === "silhouette"
-      ? getSilhouetteArchetype(input.identity.silhouetteId).role
-      : "Field Operative";
-
-  ctx.font = 'bold 18px "Inter", sans-serif';
-  ctx.fillStyle = "#ffd36a";
-  ctx.fillText(archetypeRole, metaX, metaY + 124);
-
-  ctx.font = 'bold 13px monospace, sans-serif';
-  ctx.fillStyle = "#7e8b91";
-  ctx.fillText("SECURITY CLEARANCE", metaX, metaY + 166);
-
-  ctx.font = 'bold 15px monospace, sans-serif';
-  ctx.fillStyle = "#22c55e";
-  ctx.fillText("ACTIVE // CLEARED FOR ACTION", metaX, metaY + 190);
-
-  // Divider inside sidebar
-  ctx.strokeStyle = "rgba(240, 234, 220, 0.12)";
-  ctx.beginPath();
-  ctx.moveTo(sideX + 24, sideY + 328);
-  ctx.lineTo(sideX + sideW - 24, sideY + 328);
-  ctx.stroke();
-
-  // Section: Mission Objectives & Action Audit (Checklist)
+  // Section 1: Mission Objectives & Action Audit (Checklist)
   ctx.font = 'bold 16px "Inter", sans-serif';
   ctx.fillStyle = "#f0eadc";
-  ctx.fillText("TACTICAL OBJECTIVES // COMPLETED", sideX + 24, sideY + 364);
+  ctx.fillText("TACTICAL OBJECTIVES // COMPLETED", sideX + 24, sideY + 70);
 
   const steps = [
     { num: "01", name: "DRAW ROUTE", desc: "Trace primary courier transit across locked neighborhood streets" },
@@ -490,7 +386,7 @@ export async function composeDossierCanvas(
     { num: "04", name: "VERIFY & LOCK", desc: "Confirm composite raster, attribution lock, and dossier export" },
   ];
 
-  let stepY = sideY + 400;
+  let stepY = sideY + 92;
   for (const step of steps) {
     ctx.fillStyle = "rgba(25, 65, 72, 0.25)";
     ctx.strokeStyle = "rgba(240, 234, 220, 0.15)";
@@ -512,25 +408,25 @@ export async function composeDossierCanvas(
     ctx.fillStyle = "#aeb4ad";
     ctx.fillText(step.desc, sideX + 66, stepY + 54);
 
-    stepY += 92;
+    stepY += 88;
   }
 
   // Divider before Telemetry
   ctx.strokeStyle = "rgba(240, 234, 220, 0.12)";
   ctx.beginPath();
-  ctx.moveTo(sideX + 24, sideY + 790);
-  ctx.lineTo(sideX + sideW - 24, sideY + 790);
+  ctx.moveTo(sideX + 24, sideY + 460);
+  ctx.lineTo(sideX + sideW - 24, sideY + 460);
   ctx.stroke();
 
-  // Section: Territory Telemetry Box
+  // Section 2: Territory Telemetry Box
   ctx.font = 'bold 16px "Inter", sans-serif';
   ctx.fillStyle = "#f0eadc";
-  ctx.fillText("TERRITORY TELEMETRY // CAMERA LOCK", sideX + 24, sideY + 826);
+  ctx.fillText("TERRITORY TELEMETRY // CAMERA LOCK", sideX + 24, sideY + 494);
 
   ctx.fillStyle = "#080c0e";
   ctx.strokeStyle = "rgba(25, 65, 72, 0.5)";
   ctx.lineWidth = 1;
-  drawRoundedRect(ctx, sideX + 24, sideY + 846, sideW - 48, 172, 4);
+  drawRoundedRect(ctx, sideX + 24, sideY + 514, sideW - 48, 172, 4);
   ctx.fill();
   ctx.stroke();
 
@@ -540,22 +436,56 @@ export async function composeDossierCanvas(
   if (input.cameraState) {
     const lng = input.cameraState.center[0].toFixed(5);
     const lat = input.cameraState.center[1].toFixed(5);
-    ctx.fillText(`CENTER COORDS: ${lat}° N, ${lng}° E`, sideX + 44, sideY + 882);
-    ctx.fillText(`ZOOM LEVEL:    ${input.cameraState.zoom.toFixed(2)}`, sideX + 44, sideY + 912);
-    ctx.fillText(`PITCH / BEARING: ${input.cameraState.pitch.toFixed(1)}° / ${input.cameraState.bearing.toFixed(1)}°`, sideX + 44, sideY + 942);
-    ctx.fillText(`STYLE TREATMENT: STYLIZED 3D VECTOR`, sideX + 44, sideY + 972);
+    ctx.fillText(`CENTER COORDS: ${lat}° N, ${lng}° E`, sideX + 44, sideY + 548);
+    ctx.fillText(`ZOOM LEVEL:    ${input.cameraState.zoom.toFixed(2)}`, sideX + 44, sideY + 578);
+    ctx.fillText(`PITCH / BEARING: ${input.cameraState.pitch.toFixed(1)}° / ${input.cameraState.bearing.toFixed(1)}°`, sideX + 44, sideY + 608);
+    ctx.fillText(`STYLE TREATMENT: STYLIZED 3D VECTOR`, sideX + 44, sideY + 638);
   } else {
-    ctx.fillText(`CENTER SECTOR: FICTIONAL DISTRICT // SECTOR 01`, sideX + 44, sideY + 882);
-    ctx.fillText(`PROJECTION:    MERCATOR SPHERICAL 3D`, sideX + 44, sideY + 912);
-    ctx.fillText(`CAMERA STATE:  LOCKED ORTHOGRAPHIC BASE`, sideX + 44, sideY + 942);
-    ctx.fillText(`MAP RESOLUTION: LOSSLESS 2400 × 1600 RASTER`, sideX + 44, sideY + 972);
+    ctx.fillText(`CENTER SECTOR: FICTIONAL DISTRICT // SECTOR 01`, sideX + 44, sideY + 548);
+    ctx.fillText(`PROJECTION:    MERCATOR SPHERICAL 3D`, sideX + 44, sideY + 578);
+    ctx.fillText(`CAMERA STATE:  LOCKED ORTHOGRAPHIC BASE`, sideX + 44, sideY + 608);
+    ctx.fillText(`MAP RESOLUTION: LOSSLESS 2400 × 1600 RASTER`, sideX + 44, sideY + 638);
   }
+
+  // Divider before Directives
+  ctx.strokeStyle = "rgba(240, 234, 220, 0.12)";
+  ctx.beginPath();
+  ctx.moveTo(sideX + 24, sideY + 704);
+  ctx.lineTo(sideX + sideW - 24, sideY + 704);
+  ctx.stroke();
+
+  // Section 3: Operational Directives & Security Protocol
+  ctx.font = 'bold 16px "Inter", sans-serif';
+  ctx.fillStyle = "#f0eadc";
+  ctx.fillText("OPERATIONAL DIRECTIVES // PROTOCOL", sideX + 24, sideY + 738);
+
+  ctx.fillStyle = "rgba(25, 65, 72, 0.2)";
+  ctx.strokeStyle = "rgba(240, 234, 220, 0.15)";
+  ctx.lineWidth = 1;
+  drawRoundedRect(ctx, sideX + 24, sideY + 758, sideW - 48, 160, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.font = '14px monospace, "Courier New", sans-serif';
+  ctx.fillStyle = "#aeb4ad";
+  ctx.fillText("SECURITY PROTOCOL: SECTOR LOCKED FOR FIELD COURIER", sideX + 44, sideY + 790);
+  ctx.fillText("DATA INTEGRITY:    CLIENT-SIDE LOSSLESS RASTER 2400x1600", sideX + 44, sideY + 820);
+  ctx.fillText("PRIVACY DIRECTIVE: ZERO TELEMETRY // EPHEMERAL IN-MEMORY", sideX + 44, sideY + 850);
+
+  const operativeAlias = input.identity?.alias || "CIPHER";
+  const operativeRole =
+    input.identity?.portraitSource === "silhouette" && input.identity.silhouetteId
+      ? getSilhouetteArchetype(input.identity.silhouetteId).role
+      : "Field Operative";
+
+  ctx.fillStyle = "#ffd36a";
+  ctx.fillText(`DISPATCH AUTHORITY: ${operativeAlias.toUpperCase()} // ${operativeRole.toUpperCase()}`, sideX + 44, sideY + 882);
 
   // Decorative Barcode & Seal in bottom of sidebar
   ctx.strokeStyle = "rgba(240, 234, 220, 0.35)";
   ctx.lineWidth = 1.5;
   const barcodeX = sideX + 24;
-  const barcodeY = sideY + 1040;
+  const barcodeY = sideY + 940;
   const barcodeW = sideW - 48;
   const barcodeH = 48;
 
@@ -575,18 +505,18 @@ export async function composeDossierCanvas(
   ctx.fillStyle = "rgba(239, 120, 102, 0.12)";
   ctx.strokeStyle = "#ef7866";
   ctx.lineWidth = 1.5;
-  drawRoundedRect(ctx, sideX + 24, sideY + 1130, sideW - 48, 70, 4);
+  drawRoundedRect(ctx, sideX + 24, sideY + 1040, sideW - 48, 140, 4);
   ctx.fill();
   ctx.stroke();
 
-  ctx.font = 'bold 18px "Inter", sans-serif';
+  ctx.font = 'bold 22px "Inter", sans-serif';
   ctx.fillStyle = "#ef7866";
   ctx.textAlign = "center";
-  ctx.fillText("CONFIRMED OPERATIONAL DOSSIER", sideX + sideW / 2, sideY + 1158);
+  ctx.fillText("CONFIRMED OPERATIONAL DOSSIER", sideX + sideW / 2, sideY + 1090);
 
-  ctx.font = '13px "Inter", sans-serif';
+  ctx.font = '14px "Inter", sans-serif';
   ctx.fillStyle = "#f0eadc";
-  ctx.fillText("READY FOR MISSION EXECUTION // SUNRISE DEADLINE", sideX + sideW / 2, sideY + 1182);
+  ctx.fillText("READY FOR MISSION EXECUTION // SUNRISE DEADLINE", sideX + sideW / 2, sideY + 1130);
 
   // -------------------------------------------------------------
   // Layer 6: Bottom Footer Bar (Y: 1475 to 1570)
