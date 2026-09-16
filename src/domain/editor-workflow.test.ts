@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   editorWorkflowReducer,
   initialEditorWorkflow,
+  initialJourneyState,
+  operationJourneyReducer,
+  type OperationJourneyState,
 } from "./editor-workflow";
 
 describe("Mission Plan editor workflow", () => {
@@ -66,3 +69,117 @@ describe("Mission Plan editor workflow", () => {
     });
   });
 });
+
+describe("Five-stage Operation Journey workflow", () => {
+  it("progresses through all five stages in strict sequence", () => {
+    let state = initialJourneyState;
+    expect(state.stage).toBe("file");
+
+    // Stage 1 -> Stage 2
+    state = operationJourneyReducer(state, { type: "start-operation" });
+    expect(state.stage).toBe("territory");
+
+    // Stage 2 -> Stage 3
+    state = operationJourneyReducer(state, { type: "lock-territory" });
+    expect(state.stage).toBe("identity");
+    expect(state.isTerritoryLocked).toBe(true);
+
+    // Stage 3 -> Stage 4
+    state = operationJourneyReducer(state, { type: "confirm-identity" });
+    expect(state.stage).toBe("mission-plan");
+
+    // Stage 4 -> Stage 5
+    state = operationJourneyReducer(state, { type: "save-succeeded" });
+    expect(state.stage).toBe("dossier");
+    expect(state.hasAnnotatedMap).toBe(true);
+  });
+
+  it("allows backward navigation preserving compatible work", () => {
+    // Starting at identity stage with locked territory
+    let state = operationJourneyReducer(initialJourneyState, { type: "start-operation" });
+    state = operationJourneyReducer(state, { type: "lock-territory" });
+    expect(state.stage).toBe("identity");
+
+    // Back to territory preserves isTerritoryLocked
+    state = operationJourneyReducer(state, { type: "go-to-stage", target: "territory" });
+    expect(state.stage).toBe("territory");
+    expect(state.isTerritoryLocked).toBe(true);
+
+    // Forward to identity, then to mission-plan
+    state = operationJourneyReducer(state, { type: "go-to-stage", target: "identity" });
+    state = operationJourneyReducer(state, { type: "confirm-identity" });
+    expect(state.stage).toBe("mission-plan");
+
+    // Back to identity preserves state
+    state = operationJourneyReducer(state, { type: "go-to-stage", target: "identity" });
+    expect(state.stage).toBe("identity");
+
+    // Forward to mission-plan and save to dossier
+    state = operationJourneyReducer(state, { type: "confirm-identity" });
+    state = operationJourneyReducer(state, { type: "save-succeeded" });
+    expect(state.stage).toBe("dossier");
+
+    // From dossier, edit plan returns to mission-plan
+    state = operationJourneyReducer(state, { type: "go-to-stage", target: "mission-plan" });
+    expect(state.stage).toBe("mission-plan");
+    expect(state.hasAnnotatedMap).toBe(true);
+  });
+
+  it("warns before resetting territory when mission plan has edits", () => {
+    let state = operationJourneyReducer(initialJourneyState, { type: "start-operation" });
+    state = operationJourneyReducer(state, { type: "lock-territory" });
+    state = operationJourneyReducer(state, { type: "confirm-identity" });
+    expect(state.stage).toBe("mission-plan");
+
+    // User marks route or places shapes
+    state = operationJourneyReducer(state, { type: "record-mission-edit" });
+    expect(state.hasMissionEdits).toBe(true);
+
+    // Attempting to change territory triggers warning instead of immediately navigating
+    state = operationJourneyReducer(state, { type: "request-change-territory" });
+    expect(state.isConfirmingTerritoryReset).toBe(true);
+    expect(state.stage).toBe("mission-plan"); // still on mission plan
+
+    // Cancelling warning keeps state intact
+    state = operationJourneyReducer(state, { type: "cancel-change-territory" });
+    expect(state.isConfirmingTerritoryReset).toBe(false);
+    expect(state.stage).toBe("mission-plan");
+    expect(state.hasMissionEdits).toBe(true);
+
+    // Confirming warning resets mission edits and returns to territory
+    state = operationJourneyReducer(state, { type: "request-change-territory" });
+    state = operationJourneyReducer(state, { type: "confirm-change-territory" });
+    expect(state.isConfirmingTerritoryReset).toBe(false);
+    expect(state.stage).toBe("territory");
+    expect(state.hasMissionEdits).toBe(false);
+    expect(state.isTerritoryLocked).toBe(false);
+  });
+
+  it("warns when navigating to territory via go-to-stage if annotated map exists", () => {
+    const state: OperationJourneyState = {
+      ...initialJourneyState,
+      stage: "dossier",
+      hasAnnotatedMap: true,
+      hasMissionEdits: true,
+      isTerritoryLocked: true,
+    };
+
+    const nextState = operationJourneyReducer(state, { type: "go-to-stage", target: "territory" });
+    expect(nextState.isConfirmingTerritoryReset).toBe(true);
+    expect(nextState.stage).toBe("dossier");
+  });
+
+  it("resets cleanly on restart-operation", () => {
+    const complexState = {
+      stage: "dossier" as const,
+      isTerritoryLocked: true,
+      hasMissionEdits: true,
+      hasAnnotatedMap: true,
+      isConfirmingTerritoryReset: true,
+    };
+
+    const restarted = operationJourneyReducer(complexState, { type: "restart-operation" });
+    expect(restarted).toEqual(initialJourneyState);
+  });
+});
+

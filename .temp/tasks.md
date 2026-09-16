@@ -111,10 +111,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-17
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Connect all stages without accidental data loss or leaked resources.
 - Dependencies: HB-007
-- GitHub issue: —
+- GitHub issue: #8
 - Acceptance criteria:
   - All five stages work in sequence.
   - Back and edit actions preserve compatible work.

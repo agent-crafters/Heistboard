@@ -122,3 +122,129 @@ export function editorWorkflowReducer(
       };
   }
 }
+
+/**
+ * The five stages of the Heistboard journey (CONTEXT.md):
+ * 1. file: Open the file & understand fictional premise
+ * 2. territory: Search, compose 3D view, lock Territory Shot
+ * 3. identity: Add alias, role, callsign, and portrait/silhouette badge
+ * 4. mission-plan: Author routes, shapes, text, and notes on stable Map Base
+ * 5. dossier: Inspect composed 2400 × 1600 artifact & download
+ */
+export type OperationStage =
+  | "file"
+  | "territory"
+  | "identity"
+  | "mission-plan"
+  | "dossier";
+
+export interface StageDescriptor {
+  id: OperationStage;
+  number: string;
+  label: string;
+  shortDescription: string;
+}
+
+export const OPERATION_STAGES: readonly StageDescriptor[] = [
+  { id: "file", number: "01", label: "Case File", shortDescription: "Operation Briefing & premise" },
+  { id: "territory", number: "02", label: "Territory", shortDescription: "3D search & camera lock" },
+  { id: "identity", number: "03", label: "Identity", shortDescription: "Operative badge & portrait" },
+  { id: "mission-plan", number: "04", label: "Mission Plan", shortDescription: "Draw routes & locations" },
+  { id: "dossier", number: "05", label: "Dossier", shortDescription: "2400 × 1600 export" },
+] as const;
+
+export interface OperationJourneyState {
+  stage: OperationStage;
+  isTerritoryLocked: boolean;
+  hasMissionEdits: boolean;
+  hasAnnotatedMap: boolean;
+  isConfirmingTerritoryReset: boolean;
+}
+
+export const initialJourneyState: OperationJourneyState = {
+  stage: "file",
+  isTerritoryLocked: false,
+  hasMissionEdits: false,
+  hasAnnotatedMap: false,
+  isConfirmingTerritoryReset: false,
+};
+
+export type OperationJourneyEvent =
+  | { type: "start-operation" }
+  | { type: "lock-territory" }
+  | { type: "confirm-identity" }
+  | { type: "save-succeeded" }
+  | { type: "go-to-stage"; target: OperationStage }
+  | { type: "request-change-territory" }
+  | { type: "confirm-change-territory" }
+  | { type: "cancel-change-territory" }
+  | { type: "record-mission-edit" }
+  | { type: "restart-operation" };
+
+export function operationJourneyReducer(
+  state: OperationJourneyState,
+  event: OperationJourneyEvent,
+): OperationJourneyState {
+  switch (event.type) {
+    case "start-operation":
+      return { ...state, stage: "territory" };
+
+    case "lock-territory":
+      return { ...state, isTerritoryLocked: true, stage: "identity" };
+
+    case "confirm-identity":
+      return { ...state, stage: "mission-plan" };
+
+    case "save-succeeded":
+      return {
+        ...state,
+        hasAnnotatedMap: true,
+        hasMissionEdits: true,
+        stage: "dossier",
+      };
+
+    case "record-mission-edit":
+      return { ...state, hasMissionEdits: true };
+
+    case "request-change-territory":
+      if (state.hasMissionEdits || state.hasAnnotatedMap) {
+        return { ...state, isConfirmingTerritoryReset: true };
+      }
+      return {
+        ...state,
+        stage: "territory",
+        isTerritoryLocked: false,
+        hasMissionEdits: false,
+        hasAnnotatedMap: false,
+        isConfirmingTerritoryReset: false,
+      };
+
+    case "confirm-change-territory":
+      return {
+        ...state,
+        stage: "territory",
+        isTerritoryLocked: false,
+        hasMissionEdits: false,
+        hasAnnotatedMap: false,
+        isConfirmingTerritoryReset: false,
+      };
+
+    case "cancel-change-territory":
+      return { ...state, isConfirmingTerritoryReset: false };
+
+    case "go-to-stage": {
+      // If moving to territory when mission edits exist, require confirmation
+      if (
+        event.target === "territory" &&
+        (state.hasMissionEdits || state.hasAnnotatedMap)
+      ) {
+        return { ...state, isConfirmingTerritoryReset: true };
+      }
+      return { ...state, stage: event.target };
+    }
+
+    case "restart-operation":
+      return { ...initialJourneyState };
+  }
+}
+

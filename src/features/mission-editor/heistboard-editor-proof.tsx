@@ -7,7 +7,11 @@ import type { ImageEditorSaveResult } from "@unlayer/react-image-editor";
 import {
   editorWorkflowReducer,
   initialEditorWorkflow,
+  initialJourneyState,
+  operationJourneyReducer,
+  OPERATION_STAGES,
   type EditorWorkflowPhase,
+  type OperationStage,
 } from "@/domain/editor-workflow";
 import {
   SAMPLE_MAP_ATTRIBUTION,
@@ -40,11 +44,12 @@ import { findFabricCanvas, importStickerToCanvas } from "@/lib/sticker-canvas-im
 import {
   composeDossierCanvas,
 } from "@/lib/dossier-composer";
+import { IdentityControls } from "./identity-controls";
 import type { CustomEditorTool } from "./mission-editor";
 
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
-export type HeistStage = "territory" | "identity" | "mission-plan" | "dossier";
+export type HeistStage = OperationStage;
 
 /** Each step maps to a native editor tool button's data-testid, or null for save. */
 const MISSION_STEPS: ReadonlyArray<{
@@ -101,7 +106,12 @@ const MissionEditor = dynamic(() => loadMissionEditor(), {
 });
 
 export function HeistboardEditorProof() {
-  const [stage, setStage] = useState<HeistStage>("territory");
+  const [journey, journeyDispatch] = useReducer(
+    operationJourneyReducer,
+    initialJourneyState,
+  );
+  const stage = journey.stage;
+
   const [mapBaseUrl, setMapBaseUrl] = useState<string>(SAMPLE_MAP_BASE_URL);
   const [attribution, setAttribution] = useState<TerritoryAttribution>(
     STANDARD_TERRITORY_ATTRIBUTION,
@@ -199,6 +209,50 @@ export function HeistboardEditorProof() {
     };
   }, [stage, workflow.phase, workflow.retryKey, mapBaseUrl]);
 
+  const handleStartOperation = useCallback(() => {
+    journeyDispatch({ type: "start-operation" });
+  }, []);
+
+  const handleConfirmIdentity = useCallback(() => {
+    journeyDispatch({ type: "confirm-identity" });
+  }, []);
+
+  const handleConfirmChangeTerritory = useCallback(() => {
+    if (dossierBlobUrlRef.current) {
+      URL.revokeObjectURL(dossierBlobUrlRef.current);
+      dossierBlobUrlRef.current = null;
+    }
+    setAnnotatedMap(null);
+    setDossierArtifact(null);
+    dispatch({ type: "retry" });
+    journeyDispatch({ type: "confirm-change-territory" });
+  }, []);
+
+  const handleRestartOperation = useCallback(() => {
+    if (mapBaseBlobUrlRef.current) {
+      URL.revokeObjectURL(mapBaseBlobUrlRef.current);
+      mapBaseBlobUrlRef.current = null;
+    }
+    if (dossierBlobUrlRef.current) {
+      URL.revokeObjectURL(dossierBlobUrlRef.current);
+      dossierBlobUrlRef.current = null;
+    }
+    if (identity.portraitUrl && identity.portraitUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(identity.portraitUrl);
+    }
+    resourceOwner.current?.dispose();
+    resourceOwner.current = new AnnotatedMapResourceOwner();
+
+    setAnnotatedMap(null);
+    setDossierArtifact(null);
+    setIdentity(DEFAULT_IDENTITY_STATE);
+    setMapBaseUrl(SAMPLE_MAP_BASE_URL);
+    setLockedCamera(undefined);
+    setIsSampleMap(false);
+    dispatch({ type: "retry" });
+    journeyDispatch({ type: "restart-operation" });
+  }, [identity.portraitUrl]);
+
   const handleTerritoryLocked = useCallback((result: TerritoryLockedResult) => {
     if (mapBaseBlobUrlRef.current) {
       URL.revokeObjectURL(mapBaseBlobUrlRef.current);
@@ -218,7 +272,7 @@ export function HeistboardEditorProof() {
     setAttribution(result.attribution);
     setLockedCamera(result.camera);
     dispatch({ type: "retry" });
-    setStage("mission-plan");
+    journeyDispatch({ type: "lock-territory" });
   }, []);
 
   const handleSelectSampleFallback = useCallback(() => {
@@ -230,7 +284,7 @@ export function HeistboardEditorProof() {
     setAttribution(SAMPLE_MAP_ATTRIBUTION);
     setIsSampleMap(true);
     dispatch({ type: "retry" });
-    setStage("mission-plan");
+    journeyDispatch({ type: "lock-territory" });
   }, []);
 
   const handleEditorLoad = useCallback(() => {
@@ -247,7 +301,7 @@ export function HeistboardEditorProof() {
       setIsComposingDossier(true);
       setDossierError(null);
       dispatch({ type: "save-succeeded" });
-      setStage("dossier");
+      journeyDispatch({ type: "save-succeeded" });
     } catch (error) {
       dispatch({
         type: "save-failed",
@@ -312,6 +366,7 @@ export function HeistboardEditorProof() {
   };
 
   const handleDrop = async (e: React.DragEvent) => {
+    journeyDispatch({ type: "record-mission-edit" });
     const stickerUrl = e.dataTransfer.getData("application/x-heistboard-sticker");
     if (!stickerUrl) return;
     e.preventDefault();
@@ -328,18 +383,13 @@ export function HeistboardEditorProof() {
     });
   };
 
-  const handleReturnToTerritory = () => {
-    if (annotatedMap) {
-      const confirmed = window.confirm(
-        "Warning: Changing Territory resets your current Mission Plan. Continue?",
-      );
-      if (!confirmed) return;
-    }
-    setStage("territory");
-  };
+  const handleReturnToTerritory = useCallback(() => {
+    journeyDispatch({ type: "request-change-territory" });
+  }, []);
 
   /** Programmatically click the native editor tool button matching a mission step. */
   const activateNativeTool = useCallback((nativeTool: string | null) => {
+    journeyDispatch({ type: "record-mission-edit" });
     if (!editorFrameRef.current) return;
     if (nativeTool) {
       // Steps 01-03: click the native Draw / Shapes / Text tool button
@@ -368,7 +418,7 @@ export function HeistboardEditorProof() {
   }, []);
 
   const editorVisible =
-    stage !== "territory" &&
+    (stage === "mission-plan" || stage === "dossier") &&
     (workflow.phase === "loading-editor" ||
       workflow.phase === "editing" ||
       workflow.phase === "saving" ||
@@ -403,32 +453,161 @@ export function HeistboardEditorProof() {
         </div>
       </header>
 
-      {/* 3-Stage Progress Nav */}
+      {/* 5-Stage Nav Stepper */}
       <nav className="stage-indicator" aria-label="Operation Stages">
-        <span className={`stage-badge ${stage === "territory" ? "active" : "complete"}`}>
-          01 / Territory
-        </span>
-        <span
-          className={`stage-badge ${stage === "mission-plan" ? "active" : stage === "dossier" ? "complete" : ""}`}
-        >
-          02 / Mission Plan &amp; Identity
-        </span>
-        <span className={`stage-badge ${stage === "dossier" ? "active" : ""}`}>
-          03 / Dossier Preview
-        </span>
+        {OPERATION_STAGES.map((s, idx) => {
+          const isCurrent = stage === s.id;
+          const stageOrder: OperationStage[] = ["file", "territory", "identity", "mission-plan", "dossier"];
+          const currentIdx = stageOrder.indexOf(stage);
+          const isPast = idx < currentIdx;
+          const isAccessible =
+            isPast ||
+            isCurrent ||
+            s.id === "file" ||
+            s.id === "territory" ||
+            (s.id === "identity" && journey.isTerritoryLocked) ||
+            (s.id === "mission-plan" && journey.isTerritoryLocked) ||
+            (s.id === "dossier" && journey.hasAnnotatedMap);
+
+          return (
+            <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+              {idx > 0 && <span className="stage-nav-divider" aria-hidden="true">›</span>}
+              <button
+                type="button"
+                className={`stage-nav-btn ${isCurrent ? "active" : isPast ? "complete" : ""}`}
+                onClick={() => {
+                  if (isCurrent) return;
+                  if (s.id === "territory" && (journey.hasMissionEdits || journey.hasAnnotatedMap)) {
+                    journeyDispatch({ type: "request-change-territory" });
+                  } else {
+                    journeyDispatch({ type: "go-to-stage", target: s.id });
+                  }
+                }}
+                disabled={!isAccessible}
+                aria-current={isCurrent ? "step" : undefined}
+                title={`${s.number} / ${s.label}: ${s.shortDescription}`}
+              >
+                <span className="stage-nav-num">{s.number}</span>
+                <span>{s.label}</span>
+              </button>
+            </div>
+          );
+        })}
       </nav>
 
-      {/* Stage 1: Territory Composition */}
-      {stage === "territory" && (
-        <TerritoryView
-          onLockTerritory={handleTerritoryLocked}
-          onSelectSampleFallback={handleSelectSampleFallback}
-          initialCamera={lockedCamera}
-        />
+      {/* Stage 01: Case File Briefing */}
+      {stage === "file" && (
+        <section className="case-file-panel" aria-labelledby="case-file-title">
+          <div className="case-file-header">
+            <div>
+              <span className="case-file-eyebrow">Operation Case File // 01</span>
+              <h2 id="case-file-title" className="case-file-title">
+                The Last Delivery
+              </h2>
+            </div>
+            <span className="case-file-stamp-badge">Courier Directive // Eyes Only</span>
+          </div>
+
+          <div className="case-file-body">
+            <p>
+              A single high-priority courier package must be picked up and routed to a secure
+              safehouse before first light. Search your neighborhood, lock your 3D Territory
+              camera, author your tactical route, and produce the verified 2400 × 1600 final dossier.
+            </p>
+            <p>
+              Your local streets become the operational theatre. All marks, routes, and callouts
+              remain client-side in browser memory with full legal provider attribution.
+            </p>
+          </div>
+
+          <div className="case-file-grid">
+            <div>
+              <span className="case-file-stat-label">Objective</span>
+              <span className="case-file-stat-value">Package before sunrise</span>
+            </div>
+            <div>
+              <span className="case-file-stat-label">Operational Duration</span>
+              <span className="case-file-stat-value">2–5 Minutes</span>
+            </div>
+            <div>
+              <span className="case-file-stat-label">Territory Engine</span>
+              <span className="case-file-stat-value">OpenFreeMap 3D &amp; OSM</span>
+            </div>
+            <div>
+              <span className="case-file-stat-label">Final Artifact</span>
+              <span className="case-file-stat-value">2400 × 1600 Dossier PNG</span>
+            </div>
+          </div>
+
+          <div className="case-file-actions">
+            <button
+              type="button"
+              className="button button-primary case-file-cta"
+              onClick={handleStartOperation}
+            >
+              Start Operation: Select Territory →
+            </button>
+            <span className="case-file-disclaimer">
+              Fictional creative use only. Extruded 3D context is approximate and not intended
+              for real navigation, surveillance, or safety claims.
+            </span>
+          </div>
+        </section>
       )}
 
-      {/* Stage 2: Mission Editor (preserved in DOM across preview to maintain active Fabric objects) */}
-      {stage !== "territory" && (
+      {/* Stage 02: Territory Composition */}
+      {stage === "territory" && (
+        <div>
+          <TerritoryView
+            onLockTerritory={handleTerritoryLocked}
+            onSelectSampleFallback={handleSelectSampleFallback}
+            initialCamera={lockedCamera}
+          />
+        </div>
+      )}
+
+      {/* Stage 03: Dedicated Operative Identity */}
+      {stage === "identity" && (
+        <section className="identity-stage-wrapper" aria-labelledby="identity-title">
+          <div className="identity-stage-header">
+            <div>
+              <span className="case-file-eyebrow">Stage 03 / Operative Identity</span>
+              <h2 id="identity-title">Establish Field Identity</h2>
+              <p className="lede" style={{ margin: "0.5rem 0 0" }}>
+                Configure your callsign, alias, operative role, and custom portrait or vector archetype badge.
+              </p>
+            </div>
+          </div>
+
+          <IdentityControls
+            initialOptions={gtaBadgeOptions}
+            identityState={identity}
+            onIdentityStateChange={setIdentity}
+            onChange={setGtaBadgeOptions}
+            compact={false}
+          />
+
+          <div className="identity-stage-actions">
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={() => journeyDispatch({ type: "go-to-stage", target: "territory" })}
+            >
+              ← Back to Territory
+            </button>
+            <button
+              type="button"
+              className="button button-primary"
+              onClick={handleConfirmIdentity}
+            >
+              Confirm Identity &amp; Plan Route →
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* Stage 04: Mission Editor (preserved in DOM across preview to maintain active Fabric objects) */}
+      {(stage === "mission-plan" || stage === "dossier") && (
         <section
           className="workspace"
           aria-labelledby="workspace-title"
@@ -629,7 +808,7 @@ export function HeistboardEditorProof() {
                 type="button"
                 onClick={() => {
                   dispatch({ type: "edit-again" });
-                  setStage("mission-plan");
+                  journeyDispatch({ type: "go-to-stage", target: "mission-plan" });
                 }}
               >
                 Edit mission again
@@ -638,9 +817,7 @@ export function HeistboardEditorProof() {
                 className="button button-secondary"
                 type="button"
                 onClick={() => {
-                  dispatch({ type: "edit-again" });
-                  setStage("mission-plan");
-                  setRequestedEditorTool("identity");
+                  journeyDispatch({ type: "go-to-stage", target: "identity" });
                 }}
               >
                 Edit identity
@@ -651,6 +828,13 @@ export function HeistboardEditorProof() {
                 onClick={handleReturnToTerritory}
               >
                 New territory
+              </button>
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={handleRestartOperation}
+              >
+                Restart operation
               </button>
               <a
                 className={`button button-primary ${isComposingDossier ? "disabled" : ""}`}
@@ -702,6 +886,45 @@ export function HeistboardEditorProof() {
             </div>
           </div>
         </section>
+      )}
+
+      {/* Accessible Territory Reset Warning Dialog */}
+      {journey.isConfirmingTerritoryReset && (
+        <div className="dialog-backdrop" role="presentation">
+          <div
+            className="dialog-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="territory-dialog-title"
+            aria-describedby="territory-dialog-desc"
+          >
+            <h3 id="territory-dialog-title" className="dialog-title">
+              ⚠️ Reset Mission Plan?
+            </h3>
+            <p id="territory-dialog-desc" className="dialog-body">
+              Changing Territory resets your current Mission Plan and Annotated Map. All
+              routes, markers, notes, and custom stickers authored on this map base will be
+              permanently discarded.
+            </p>
+            <div className="dialog-actions">
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => journeyDispatch({ type: "cancel-change-territory" })}
+                autoFocus
+              >
+                Keep Mission Plan
+              </button>
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={handleConfirmChangeTerritory}
+              >
+                Discard &amp; Change Territory
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <footer className="footer-note">
