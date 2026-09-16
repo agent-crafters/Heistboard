@@ -43,12 +43,18 @@ const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
 export type HeistStage = "territory" | "identity" | "mission-plan" | "dossier";
 
-const MISSION_STEPS = [
-  ["01", "Draw the route", "Use Draw to trace a bold path across the neighborhood."],
-  ["02", "Mark two locations", "Use Shapes for the pickup point and the getaway."],
-  ["03", "Leave one note", "Use Text to add a short courier instruction."],
-  ["04", "Save the plan", "Use the editor's Save action when the route reads clearly."],
-] as const;
+/** Each step maps to a native editor tool button's data-testid, or null for save. */
+const MISSION_STEPS: ReadonlyArray<{
+  id: string;
+  title: string;
+  detail: string;
+  nativeTool: string | null;
+}> = [
+  { id: "01", title: "Draw the route", detail: "Use Draw to trace a bold path across the neighborhood.", nativeTool: "native-tool-draw" },
+  { id: "02", title: "Mark two locations", detail: "Use Shapes for the pickup point and the getaway.", nativeTool: "native-tool-shapes" },
+  { id: "03", title: "Leave one note", detail: "Use Text to add a short courier instruction.", nativeTool: "native-tool-text" },
+  { id: "04", title: "Save the plan", detail: "Use the editor's Save action when the route reads clearly.", nativeTool: null },
+];
 
 async function normalizeSaveResultToPng(
   result: ImageEditorSaveResult,
@@ -268,6 +274,35 @@ export function HeistboardEditorProof() {
     setStage("territory");
   };
 
+  /** Programmatically click the native editor tool button matching a mission step. */
+  const activateNativeTool = useCallback((nativeTool: string | null) => {
+    if (!editorFrameRef.current) return;
+    if (nativeTool) {
+      // Steps 01-03: click the native Draw / Shapes / Text tool button
+      const btn = editorFrameRef.current.querySelector<HTMLButtonElement>(
+        `button[data-testid="${nativeTool}"]`,
+      );
+      btn?.click();
+    } else {
+      // Step 04 (Save): click the editor's save button
+      const saveBtn = editorFrameRef.current.querySelector<HTMLButtonElement>(
+        'button[data-testid="save-button"]',
+      );
+      if (saveBtn) {
+        saveBtn.click();
+      } else {
+        // Fallback: try finding a save button by accessible name
+        const buttons = editorFrameRef.current.querySelectorAll<HTMLButtonElement>('button');
+        for (const b of buttons) {
+          if (/save/i.test(b.textContent ?? '') || /save/i.test(b.getAttribute('aria-label') ?? '')) {
+            b.click();
+            break;
+          }
+        }
+      }
+    }
+  }, []);
+
   const editorVisible =
     stage !== "territory" &&
     (workflow.phase === "loading-editor" ||
@@ -375,13 +410,21 @@ export function HeistboardEditorProof() {
             </div>
 
             <ol className="mission-steps">
-              {MISSION_STEPS.map(([number, title, detail]) => (
-                <li key={number}>
-                  <span>{number}</span>
-                  <div>
-                    <strong>{title}</strong>
-                    <p>{detail}</p>
-                  </div>
+              {MISSION_STEPS.map((step) => (
+                <li key={step.id}>
+                  <button
+                    type="button"
+                    className="mission-step-btn"
+                    onClick={() => activateNativeTool(step.nativeTool)}
+                    title={step.nativeTool ? `Activate ${step.title}` : step.title}
+                  >
+                    <span className="mission-step-num">{step.id}</span>
+                    <div>
+                      <strong>{step.title}</strong>
+                      <p>{step.detail}</p>
+                    </div>
+                    <span className="mission-step-arrow" aria-hidden="true">→</span>
+                  </button>
                 </li>
               ))}
             </ol>

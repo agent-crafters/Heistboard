@@ -83,10 +83,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-16
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Make the required Mission Plan actions quick and discoverable.
 - Dependencies: HB-004
-- GitHub issue: —
+- GitHub issue: #6
 - Acceptance criteria:
   - The Last Delivery Operation gives four short editing prompts.
   - Required draw, shapes, and text tools are discoverable.

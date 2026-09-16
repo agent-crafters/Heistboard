@@ -312,7 +312,7 @@ export function MissionEditor({
     };
   }, []);
 
-  // Synchronize active state styling on the injected custom tool buttons
+  // Synchronize active state styling and aria-pressed on the injected custom tool buttons
   useEffect(() => {
     if (!containerRef.current) return;
     const tools = [
@@ -327,6 +327,7 @@ export function MissionEditor({
         `button[data-testid="${id}"]`,
       );
       if (btn) {
+        btn.setAttribute("aria-pressed", String(active));
         if (active) {
           btn.classList.add("active");
         } else {
