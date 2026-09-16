@@ -167,10 +167,10 @@ This is the single authoritative project task list. Status is encoded by the che
 
 - Target: 2026-09-20
 - Priority: P0
-- Status: [ ] TODO
+- Status: [x] DONE
 - Outcome: Validate speed and comprehension, then protect the remaining schedule.
 - Dependencies: HB-011
-- GitHub issue: —
+- GitHub issue: #12
 - Acceptance criteria:
   - Five people attempt the flow without live explanation.
   - At least four complete a Dossier in under five minutes.
