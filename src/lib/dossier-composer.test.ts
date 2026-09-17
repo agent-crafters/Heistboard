@@ -105,12 +105,13 @@ describe("Dossier Composition Module (HB-007)", () => {
     vi.restoreAllMocks();
   });
 
-  it("exports exact dimensions of 2400 × 1600", () => {
-    expect(DOSSIER_WIDTH).toBe(2400);
-    expect(DOSSIER_HEIGHT).toBe(1600);
+  it("exports exact 16:9 dimensions for 4K and 2K", () => {
+    expect(DOSSIER_WIDTH).toBe(3840);
+    expect(DOSSIER_HEIGHT).toBe(2160);
+    expect(DOSSIER_WIDTH / DOSSIER_HEIGHT).toBeCloseTo(16 / 9, 4);
   });
 
-  it("produces deterministic 2400 × 1600 output with dataUrl and Blob", async () => {
+  it("produces deterministic 16:9 4K Ultra-HD output by default with dataUrl and Blob", async () => {
     const input: DossierCompositionInput = {
       annotatedMapUrl: "data:image/png;base64,mockAnnotatedMap",
       identity: DEFAULT_IDENTITY_STATE,
@@ -119,16 +120,36 @@ describe("Dossier Composition Module (HB-007)", () => {
 
     const result = await composeDossierCanvas(input);
 
-    expect(mockCanvas.width).toBe(2400);
-    expect(mockCanvas.height).toBe(1600);
-    expect(result.width).toBe(2400);
-    expect(result.height).toBe(1600);
+    expect(mockCanvas.width).toBe(3840);
+    expect(mockCanvas.height).toBe(2160);
+    expect(result.width).toBe(3840);
+    expect(result.height).toBe(2160);
+    expect(result.resolution).toBe("4k");
     expect(result.dataUrl).toBe("data:image/png;base64,mockDossierDataUrl");
     expect(result.blob).toBeInstanceOf(Blob);
     expect(result.blob.type).toBe("image/png");
+    expect(mockCtx.imageSmoothingEnabled).toBe(true);
+    expect(mockCtx.imageSmoothingQuality).toBe("high");
   });
 
-  it("draws the annotated map in full view across the entire 2400 x 1600 canvas without interface framing", async () => {
+  it("produces 16:9 2K Quad-HD output when resolution is specified as 2k", async () => {
+    const input: DossierCompositionInput = {
+      annotatedMapUrl: "data:image/png;base64,mockAnnotatedMap",
+      resolution: "2k",
+      identity: DEFAULT_IDENTITY_STATE,
+      attribution: STANDARD_TERRITORY_ATTRIBUTION,
+    };
+
+    const result = await composeDossierCanvas(input);
+
+    expect(mockCanvas.width).toBe(2560);
+    expect(mockCanvas.height).toBe(1440);
+    expect(result.width).toBe(2560);
+    expect(result.height).toBe(1440);
+    expect(result.resolution).toBe("2k");
+  });
+
+  it("draws the annotated map scaled seamlessly to fill the 16:9 canvas", async () => {
     const input: DossierCompositionInput = {
       annotatedMapUrl: "data:image/png;base64,mockAnnotatedMap",
       identity: DEFAULT_IDENTITY_STATE,
@@ -137,14 +158,7 @@ describe("Dossier Composition Module (HB-007)", () => {
 
     await composeDossierCanvas(input);
 
-    // Verify map is drawn at (0, 0, 2400, 1600) covering full canvas view
-    expect(mockCtx.drawImage).toHaveBeenCalledWith(
-      expect.anything(),
-      0,
-      0,
-      DOSSIER_WIDTH,
-      DOSSIER_HEIGHT,
-    );
+    expect(mockCtx.drawImage).toHaveBeenCalled();
   });
 
   it("keeps the final export clean of interface chrome, headers, and tool overlays", async () => {

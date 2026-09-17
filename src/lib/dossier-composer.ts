@@ -18,12 +18,23 @@ import {
   type TerritoryCameraState,
 } from "@/domain/territory";
 
-export const DOSSIER_WIDTH = 2400;
-export const DOSSIER_HEIGHT = 1600;
+export type DossierTargetResolution = "4k" | "2k";
+
+export const DOSSIER_4K_WIDTH = 3840;
+export const DOSSIER_4K_HEIGHT = 2160;
+
+export const DOSSIER_2K_WIDTH = 2560;
+export const DOSSIER_2K_HEIGHT = 1440;
+
+// Default constants: 16:9 4K Ultra-HD resolution
+export const DOSSIER_WIDTH = DOSSIER_4K_WIDTH;
+export const DOSSIER_HEIGHT = DOSSIER_4K_HEIGHT;
 
 export interface DossierCompositionInput {
   /** Data URL or object URL of the exact saved Annotated Map */
   annotatedMapUrl: string;
+  /** Desired export resolution: "4k" (3840x2160) or "2k" (2560x1440). Defaults to "4k". */
+  resolution?: DossierTargetResolution;
   /** Operative identity state (optional) */
   identity?: IdentityState;
   /** Fictional operation title (default: "OPERATION: THE LAST DELIVERY") */
@@ -43,6 +54,7 @@ export interface ComposedDossierResult {
   blob: Blob;
   width: number;
   height: number;
+  resolution: DossierTargetResolution;
 }
 
 /**
@@ -104,7 +116,7 @@ function drawRoundedRect(
 }
 
 /**
- * Compose the deterministic 2400 × 1600 Canvas 2D Dossier.
+ * Compose the deterministic 16:9 high-resolution (4K Ultra-HD or 2K Quad-HD) Canvas 2D Dossier.
  */
 export async function composeDossierCanvas(
   input: DossierCompositionInput,
@@ -118,21 +130,42 @@ export async function composeDossierCanvas(
 
   const annotatedMapImg = await loadImageElement(input.annotatedMapUrl);
 
-  // 2. Allocate the 2400 × 1600 canvas
+  const activeResolution: DossierTargetResolution = input.resolution ?? "4k";
+  const targetWidth = activeResolution === "2k" ? DOSSIER_2K_WIDTH : DOSSIER_4K_WIDTH;
+  const targetHeight = activeResolution === "2k" ? DOSSIER_2K_HEIGHT : DOSSIER_4K_HEIGHT;
+
+  // 2. Allocate the 16:9 high-resolution canvas
   const canvas = document.createElement("canvas");
-  canvas.width = DOSSIER_WIDTH;
-  canvas.height = DOSSIER_HEIGHT;
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     throw new Error("Could not acquire 2D context for Dossier composition.");
   }
 
   // -------------------------------------------------------------
-  // Full-View Authored Map:
-  // Draws ONLY the exact image the user edited in the editor,
-  // occupying 100% full view of the 2400 × 1600 canvas with no interface frames.
+  // High-Resolution 16:9 Full-View Composition:
+  // Render using maximum smoothing quality so vector annotations,
+  // badges, stickers, and textures render with crisp 4K/2K clarity.
   // -------------------------------------------------------------
-  ctx.drawImage(annotatedMapImg, 0, 0, DOSSIER_WIDTH, DOSSIER_HEIGHT);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // Fill canvas base with dark tactical backdrop
+  ctx.fillStyle = "#0a0714";
+  ctx.fillRect(0, 0, targetWidth, targetHeight);
+
+  // Compute 16:9 scaling (centered cover) so the authored map seamlessly fills the 16:9 aspect ratio
+  const imgWidth = annotatedMapImg.naturalWidth || annotatedMapImg.width;
+  const imgHeight = annotatedMapImg.naturalHeight || annotatedMapImg.height;
+
+  const scale = Math.max(targetWidth / imgWidth, targetHeight / imgHeight);
+  const drawW = Math.round(imgWidth * scale);
+  const drawH = Math.round(imgHeight * scale);
+  const drawX = Math.round((targetWidth - drawW) / 2);
+  const drawY = Math.round((targetHeight - drawH) / 2);
+
+  ctx.drawImage(annotatedMapImg, drawX, drawY, drawW, drawH);
 
   // -------------------------------------------------------------
   // 3. Export to PNG Blob and Data URL
@@ -152,7 +185,8 @@ export async function composeDossierCanvas(
   return {
     dataUrl,
     blob,
-    width: DOSSIER_WIDTH,
-    height: DOSSIER_HEIGHT,
+    width: targetWidth,
+    height: targetHeight,
+    resolution: activeResolution,
   };
 }

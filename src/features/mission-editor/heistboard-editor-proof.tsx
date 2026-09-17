@@ -127,12 +127,16 @@ export function HeistboardEditorProof() {
   const [bgLayerConfig, setBgLayerConfig] = useState<BgLayerConfig>(DEFAULT_BG_LAYER_CONFIG);
   const [requestedEditorTool, setRequestedEditorTool] = useState<CustomEditorTool | null>(null);
 
-  // Composed 2400 × 1600 final Dossier artifact (HB-007)
+  // Composed 16:9 final Dossier artifact (HB-007) with 4K UHD and 2K QHD support
+  const [selectedResolution, setSelectedResolution] = useState<"4k" | "2k">("4k");
   const [dossierArtifact, setDossierArtifact] = useState<{
     previewUrl: string;
     blob: Blob;
     downloadUrl: string;
     fileName: string;
+    width: number;
+    height: number;
+    resolution: "4k" | "2k";
   } | null>(null);
   const [isComposingDossier, setIsComposingDossier] = useState<boolean>(false);
   const [dossierError, setDossierError] = useState<string | null>(null);
@@ -304,14 +308,16 @@ export function HeistboardEditorProof() {
     }
   }, []);
 
-  // Compose 2400 × 1600 final Dossier canvas when entering dossier stage (HB-007)
+  // Compose 16:9 final Dossier canvas when entering dossier stage (HB-007)
   useEffect(() => {
     if (stage !== "dossier" || !annotatedMap) return;
 
     let active = true;
+    setIsComposingDossier(true);
 
     composeDossierCanvas({
       annotatedMapUrl: annotatedMap.previewUrl,
+      resolution: selectedResolution,
       identity,
       attribution,
       cameraState: lockedCamera,
@@ -330,7 +336,10 @@ export function HeistboardEditorProof() {
           previewUrl: objectUrl,
           blob: result.blob,
           downloadUrl: objectUrl,
-          fileName: "heistboard-edited-map.png",
+          fileName: `heistboard-mission-map-${selectedResolution.toUpperCase()}-${result.width}x${result.height}.png`,
+          width: result.width,
+          height: result.height,
+          resolution: selectedResolution,
         });
         setIsComposingDossier(false);
       })
@@ -340,14 +349,14 @@ export function HeistboardEditorProof() {
         setDossierError(
           err instanceof Error
             ? err.message
-            : "Failed to compose the 2400 × 1600 final dossier.",
+            : "Failed to compose the 16:9 high-resolution final dossier.",
         );
       });
 
     return () => {
       active = false;
     };
-  }, [stage, annotatedMap, identity, attribution, lockedCamera]);
+  }, [stage, annotatedMap, identity, attribution, lockedCamera, selectedResolution]);
 
   const handleDragOver = (e: React.DragEvent) => {
     if (
@@ -695,22 +704,79 @@ export function HeistboardEditorProof() {
             />
           ) : (
             <>
-              <div className="preview-copy">
-                <div>
-                  <p className="section-label">Final Export / Full View</p>
-                  <h2 id="preview-title">Mission Map Image</h2>
-                  <p role="status">
+              {/* Clean 16:9 Dossier Command Header */}
+              <div className="dossier-clean-header">
+                <div className="dossier-title-col">
+                  <div className="dossier-badge-row">
+                    <span className="dossier-stage-pill">STAGE 04 / FINAL MISSION DOSSIER</span>
+                    <span className="dossier-ratio-pill">16:9 CINEMATIC</span>
+                    <span className={`dossier-res-pill res-${selectedResolution}`}>
+                      {selectedResolution === "4k" ? "4K ULTRA-HD (3840×2160)" : "2K QUAD-HD (2560×1440)"}
+                    </span>
+                  </div>
+                  <h2 id="preview-title" className="dossier-main-title">Tactical Mission Dossier</h2>
+                  <p className="dossier-sub-text">
                     {isComposingDossier
-                      ? "Preparing high-resolution full-view image..."
+                      ? "Rendering 16:9 high-resolution composite canvas…"
                       : dossierError
-                        ? `Composition warning: ${dossierError}`
-                        : "Your edited map is ready in full view without any interface framing. Preview and download use this exact image."}
+                        ? `Notice: ${dossierError}`
+                        : "Your authored tactical plan is composed in crystal-clear 16:9 widescreen format, rendered in lossless high-definition ready for briefing and presentation."}
                   </p>
                 </div>
 
-                <div className="actions">
+                {/* Resolution Switcher & Primary 4K/2K Download Action */}
+                <div className="dossier-export-card">
+                  <div className="dossier-res-picker" role="group" aria-label="Select export resolution">
+                    <span className="res-picker-label">Resolution:</span>
+                    <button
+                      type="button"
+                      className={`res-btn ${selectedResolution === "4k" ? "active" : ""}`}
+                      onClick={() => setSelectedResolution("4k")}
+                      title="Switch to 4K Ultra-HD (3840 × 2160)"
+                      disabled={isComposingDossier}
+                    >
+                      🌟 4K Ultra-HD <small>3840 × 2160</small>
+                    </button>
+                    <button
+                      type="button"
+                      className={`res-btn ${selectedResolution === "2k" ? "active" : ""}`}
+                      onClick={() => setSelectedResolution("2k")}
+                      title="Switch to 2K Quad-HD (2560 × 1440)"
+                      disabled={isComposingDossier}
+                    >
+                      ⚡ 2K Quad-HD <small>2560 × 1440</small>
+                    </button>
+                  </div>
+
+                  <a
+                    className={`dossier-primary-download-btn ${isComposingDossier ? "disabled" : ""}`}
+                    href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
+                    download={dossierArtifact?.fileName ?? `heistboard-mission-map-${selectedResolution.toUpperCase()}.png`}
+                    aria-disabled={isComposingDossier}
+                    aria-label={`Download verified ${selectedResolution.toUpperCase()} 16:9 High-Resolution Edited Map PNG`}
+                  >
+                    <span className="download-icon" aria-hidden="true">⬇️</span>
+                    <div className="download-label-group">
+                      <span className="download-title">
+                        {isComposingDossier
+                          ? "Encoding High-Res PNG…"
+                          : `Download ${selectedResolution.toUpperCase()} High-Res PNG`}
+                      </span>
+                      <span className="download-subtitle">
+                        {selectedResolution === "4k"
+                          ? "3840 × 2160 • 16:9 Cinematic Widescreen • Lossless Quality"
+                          : "2560 × 1440 • 16:9 High Definition • Lossless Quality"}
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              {/* Clean Secondary Tool Bar */}
+              <div className="dossier-secondary-bar">
+                <div className="secondary-left-actions">
                   <button
-                    className="button button-secondary"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={() => {
                       dispatch({ type: "edit-again" });
@@ -718,10 +784,10 @@ export function HeistboardEditorProof() {
                     }}
                     aria-label="Edit mission plan again in editor"
                   >
-                    Edit mission again
+                    ✏️ Edit Mission Plan
                   </button>
                   <button
-                    className="button button-secondary"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={() => {
                       dispatch({ type: "edit-again" });
@@ -730,61 +796,74 @@ export function HeistboardEditorProof() {
                     }}
                     aria-label="Edit operative identity callsign or portrait in editor"
                   >
-                    Edit identity
+                    🪪 Edit Operative ID
                   </button>
                   <button
-                    className="button button-secondary"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={handleReturnToTerritory}
                     aria-label="Select a new territory location"
                   >
-                    New territory
+                    🗺️ Change Territory
                   </button>
                   <button
-                    className="button button-secondary"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={() => setIsRevealing(true)}
                     title="Replay cinematic reveal transition"
                     aria-label="Replay cinematic pullback reveal animation"
                   >
-                    Replay reveal
+                    🎬 Replay Reveal
                   </button>
-                  <button
-                    className="button button-secondary"
-                    type="button"
-                    onClick={handleRestartOperation}
-                    aria-label="Restart operation from stage one"
-                  >
-                    Restart operation
-                  </button>
-                  <a
-                    className={`button button-primary ${isComposingDossier ? "disabled" : ""}`}
-                    href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
-                    download={dossierArtifact?.fileName ?? annotatedMap.download.fileName}
-                    aria-disabled={isComposingDossier}
-                    aria-label="Download verified full-view edited map image PNG"
-                  >
-                    {isComposingDossier ? "Preparing Full-View Image..." : "Download Edited Image PNG"}
-                  </a>
                 </div>
+                <button
+                  className="dossier-tool-btn restart-btn"
+                  type="button"
+                  onClick={handleRestartOperation}
+                  aria-label="Restart operation from stage one"
+                >
+                  ↺ Restart Operation
+                </button>
               </div>
 
-              {/* Composed Dossier Viewport — displays the composed 2400 × 1600 Dossier artifact */}
-              <div className="dossier-map-viewport">
+              {/* Composed 16:9 Dossier Viewport */}
+              <div className="dossier-map-viewport" role="region" aria-label="16:9 Final Dossier Viewport">
                 {isComposingDossier && !dossierArtifact ? (
                   <div className="dossier-composing-overlay" role="status">
-                    <p>Composing 2400 × 1600 Dossier Artifact…</p>
+                    <span className="loading-mark" aria-hidden="true" />
+                    <p>Composing {selectedResolution.toUpperCase()} (16:9) Tactical Dossier…</p>
                     <small>
-                      Assembling locked Map Base, Operative Identity, and protected attribution
+                      Rendering high-fidelity map base, custom stickers, operative identity badge, and tactical routes
                     </small>
                   </div>
                 ) : (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    className="annotated-map"
-                    src={dossierArtifact?.previewUrl ?? annotatedMap.previewUrl}
-                    alt="Deterministic 2400 × 1600 Operation Dossier composite saved from the mission editor"
-                  />
+                  <div className="dossier-image-frame">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="annotated-map-16-9"
+                      src={dossierArtifact?.previewUrl ?? annotatedMap.previewUrl}
+                      alt={`16:9 ${selectedResolution.toUpperCase()} Operation Dossier composite saved from mission editor`}
+                    />
+                    {/* Corner HUD Telemetry Reticles */}
+                    <div className="dossier-hud-overlay" aria-hidden="true">
+                      <div className="hud-corner top-left">
+                        <span className="hud-reticle">⌜</span>
+                        <span className="hud-tag">SECTOR // {selectedResolution.toUpperCase()} RECON</span>
+                      </div>
+                      <div className="hud-corner top-right">
+                        <span className="hud-tag">{selectedResolution === "4k" ? "3840 × 2160 UHD" : "2560 × 1440 QHD"}</span>
+                        <span className="hud-reticle">⌝</span>
+                      </div>
+                      <div className="hud-corner bottom-left">
+                        <span className="hud-reticle">⌞</span>
+                        <span className="hud-tag">16:9 WIDESCREEN</span>
+                      </div>
+                      <div className="hud-corner bottom-right">
+                        <span className="hud-tag">LEONIDA SEC-INTEL</span>
+                        <span className="hud-reticle">⌟</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
