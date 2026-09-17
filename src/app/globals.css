@@ -607,6 +607,8 @@ a:focus-visible {
 .recovery-panel > p:not(.section-label) {
   max-width: 620px;
   margin: 0.55rem 0 0;
+}
+
 /* ==========================================================================
    Clean 16:9 Dossier Command Center (Stage 4)
    ========================================================================== */
