@@ -78,50 +78,6 @@ export const BADGE_STYLES: readonly BadgeStyleMeta[] = [
   },
 ];
 
-interface ThemeColors {
-  primary: string;
-  secondary: string;
-  bgStart: string;
-  bgEnd: string;
-  accent: string;
-  textGlow: string;
-}
-
-const THEME_MAP: Record<GtaBadgeTheme, ThemeColors> = {
-  "vice-neon": {
-    primary: "#ff007f", // Vice Hot Pink
-    secondary: "#00f5d4", // Electric Cyan
-    bgStart: "#0e0818",
-    bgEnd: "#1a0f2e",
-    accent: "#ffd000",
-    textGlow: "rgba(255, 0, 127, 0.4)",
-  },
-  "sunset-gold": {
-    primary: "#ffd000", // Rockstar Gold
-    secondary: "#ff6b35", // Sunset Orange
-    bgStart: "#140e05",
-    bgEnd: "#261706",
-    accent: "#00f5d4",
-    textGlow: "rgba(255, 208, 0, 0.45)",
-  },
-  "miami-cyan": {
-    primary: "#00f5d4", // Cyan
-    secondary: "#9d4edd", // Neon Violet
-    bgStart: "#051316",
-    bgEnd: "#0e1e24",
-    accent: "#ff007f",
-    textGlow: "rgba(0, 245, 212, 0.4)",
-  },
-  "vice-noir": {
-    primary: "#ffffff", // Silver
-    secondary: "#ffd000", // Gold
-    bgStart: "#0a0d0e",
-    bgEnd: "#15191b",
-    accent: "#ff4d4d",
-    textGlow: "rgba(255, 255, 255, 0.3)",
-  },
-};
-
 /**
  * Universal rounded rectangle helper compatible with canvas mock environments.
  */
@@ -263,28 +219,6 @@ function drawVoucherDownloadIcon(
   ctx.lineTo(cx + 7, cy + 9);
   ctx.stroke();
 
-  ctx.restore();
-}
-
-/**
- * Draws realistic barcode lines.
- */
-function drawBarcode(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): void {
-  ctx.save();
-  let currX = x;
-  const pattern = [2, 1, 3, 2, 1, 4, 2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 2, 3, 1, 4, 2, 1, 3, 2];
-  ctx.fillStyle = "#ffffff";
-  pattern.forEach((pw) => {
-    ctx.fillRect(currX, y, pw, h);
-    currX += pw + 2;
-    if (currX > x + w) return;
-  });
   ctx.restore();
 }
 

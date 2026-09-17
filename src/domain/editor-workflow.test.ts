@@ -68,6 +68,22 @@ describe("Mission Plan editor workflow", () => {
       notice: "Editing cancelled. Your last saved Annotated Map is unchanged.",
     });
   });
+
+  it("discards saved editor state when a new Map Base is selected", () => {
+    const preview = {
+      ...initialEditorWorkflow,
+      phase: "preview" as const,
+      hasAnnotatedMap: true,
+      notice: "Mission Plan saved.",
+    };
+
+    expect(
+      editorWorkflowReducer(preview, { type: "reset-for-map-base" }),
+    ).toEqual({
+      ...initialEditorWorkflow,
+      retryKey: 1,
+    });
+  });
 });
 
 describe("Operation Journey workflow", () => {
@@ -172,4 +188,3 @@ describe("Operation Journey workflow", () => {
     expect(restarted).toEqual(initialJourneyState);
   });
 });
-

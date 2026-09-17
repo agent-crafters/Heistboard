@@ -14,7 +14,6 @@ import {
 import {
   findFabricCanvas,
   type FabricCanvasLike,
-  type FabricObjectLike,
 } from "@/lib/sticker-canvas-importer";
 import { ensureFontsLoaded, setupNativeFontMenuObserver } from "@/lib/gta-fonts";
 import { BgLayerControls } from "./bg-layer-controls";

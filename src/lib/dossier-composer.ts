@@ -9,10 +9,7 @@
  * Implements ADR 0003 and product specification invariants.
  */
 
-import {
-  type IdentityState,
-  getSilhouetteArchetype,
-} from "@/domain/identity";
+import { type IdentityState } from "@/domain/identity";
 import {
   type TerritoryAttribution,
   type TerritoryCameraState,
@@ -89,30 +86,6 @@ export async function ensureDossierFonts(): Promise<void> {
   } catch {
     // Fallback to system fonts gracefully
   }
-}
-
-/**
- * Helper to draw a rounded rectangle on a 2D canvas.
- */
-function drawRoundedRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-): void {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-  ctx.lineTo(x + r, y + h);
-  ctx.arcTo(x, y + h, x, y + h - r, r);
-  ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r);
-  ctx.closePath();
 }
 
 /**

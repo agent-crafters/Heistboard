@@ -147,7 +147,7 @@ export async function captureTerritoryShot(
   }
 }
 
-function waitForMapIdle(
+export function waitForMapIdle(
   map: {
     loaded(): boolean;
     areTilesLoaded(): boolean;
@@ -162,8 +162,7 @@ function waitForMapIdle(
     const timer = setTimeout(() => {
       if (!settled) {
         settled = true;
-        // If tiles are already loaded or map loaded, accept current state rather than hanging
-        if (map.loaded()) {
+        if (map.loaded() && map.areTilesLoaded()) {
           resolve();
         } else {
           reject(
@@ -187,10 +186,8 @@ function waitForMapIdle(
       }
     };
 
-    map.on("error", (e) => {
-      // Non-fatal tile 404s shouldn't fail capture if map is otherwise loaded
-      console.warn("MapLibre capture warning:", e?.error);
-    });
+    // Non-fatal tile errors are swallowed here; raw provider URLs can encode coordinates.
+    map.on("error", () => {});
 
     map.once("idle", () => {
       if (!settled) {

@@ -28,12 +28,15 @@ export const MAX_SEARCH_CACHE_ENTRIES = 50;
 
 // Application-wide in-memory rate limiting and bounded cache
 let lastRequestTimestamp = 0;
+let requestQueue: Promise<void> = Promise.resolve();
 const searchCache = new Map<string, PlaceCandidate[]>();
+const inFlightSearches = new Map<string, Promise<PlaceCandidate[]>>();
 
 export class PlaceSearchService {
   private readonly endpoint: string;
   private readonly customFetch?: typeof fetch;
   private readonly minIntervalMs: number;
+  private readonly defaultLimit: number;
 
   constructor(options: PlaceSearchOptions = {}) {
     this.endpoint =
@@ -42,6 +45,7 @@ export class PlaceSearchService {
       DEFAULT_NOMINATIM_URL;
     this.customFetch = options.fetchFn;
     this.minIntervalMs = options.minIntervalMs ?? MIN_REQUEST_INTERVAL_MS;
+    this.defaultLimit = options.limit ?? 5;
   }
 
   getCooldownRemainingMs(): number {
@@ -49,25 +53,40 @@ export class PlaceSearchService {
     return Math.max(0, this.minIntervalMs - elapsed);
   }
 
-  async search(query: string, limit = 5): Promise<PlaceCandidate[]> {
+  async search(query: string, limit = this.defaultLimit): Promise<PlaceCandidate[]> {
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    const cacheKey = `${this.endpoint}::${trimmed.toLowerCase()}::${limit}`;
+    const boundedLimit = Math.max(1, Math.min(10, Math.trunc(limit)));
+
+    const cacheKey = `${this.endpoint}::${trimmed.toLowerCase()}::${boundedLimit}`;
     const cached = searchCache.get(cacheKey);
     if (cached) return cached;
 
-    // Enforce rate limit across requests
-    const now = Date.now();
-    const elapsed = now - lastRequestTimestamp;
-    if (elapsed < this.minIntervalMs) {
-      const waitTime = this.minIntervalMs - elapsed;
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
+    const pending = inFlightSearches.get(cacheKey);
+    if (pending) return pending;
+
+    const request = this.fetchAndCache(trimmed, boundedLimit, cacheKey);
+    const shouldTrackRequest = inFlightSearches.size < MAX_SEARCH_CACHE_ENTRIES;
+    if (shouldTrackRequest) inFlightSearches.set(cacheKey, request);
+    try {
+      return await request;
+    } finally {
+      if (shouldTrackRequest && inFlightSearches.get(cacheKey) === request) {
+        inFlightSearches.delete(cacheKey);
+      }
     }
-    lastRequestTimestamp = Date.now();
+  }
+
+  private async fetchAndCache(
+    query: string,
+    limit: number,
+    cacheKey: string,
+  ): Promise<PlaceCandidate[]> {
+    await reserveRequestSlot(this.minIntervalMs);
 
     const url = new URL(this.endpoint);
-    url.searchParams.set("q", trimmed);
+    url.searchParams.set("q", query);
     url.searchParams.set("format", "jsonv2");
     url.searchParams.set("limit", String(limit));
     url.searchParams.set("addressdetails", "1");
@@ -98,9 +117,21 @@ export class PlaceSearchService {
       throw new Error("Invalid response format from search service.");
     }
 
-    const results: PlaceCandidate[] = rawData.map((item) => {
-      const lat = parseFloat(item.lat);
-      const lon = parseFloat(item.lon);
+    const results: PlaceCandidate[] = rawData.flatMap((item) => {
+      const lat = Number(item.lat);
+      const lon = Number(item.lon);
+      if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon) ||
+        lat < -90 ||
+        lat > 90 ||
+        lon < -180 ||
+        lon > 180 ||
+        !item.display_name?.trim() ||
+        !Number.isFinite(item.place_id)
+      ) {
+        return [];
+      }
       const primaryName =
         item.name || item.display_name.split(",")[0].trim();
 
@@ -114,17 +145,13 @@ export class PlaceSearchService {
 
       const category = classifyPlaceCategory(item.type, item.class);
 
+      const parsedBoundingBox = item.boundingbox?.map(Number);
       const boundingBox: [number, number, number, number] | undefined =
-        item.boundingbox && item.boundingbox.length === 4
-          ? [
-              parseFloat(item.boundingbox[0]), // south
-              parseFloat(item.boundingbox[1]), // north
-              parseFloat(item.boundingbox[2]), // west
-              parseFloat(item.boundingbox[3]), // east
-            ]
+        parsedBoundingBox?.length === 4 && parsedBoundingBox.every(Number.isFinite)
+          ? (parsedBoundingBox as [number, number, number, number])
           : undefined;
 
-      return {
+      return [{
         id: String(item.place_id),
         name: primaryName,
         displayName: item.display_name,
@@ -133,7 +160,7 @@ export class PlaceSearchService {
         lat,
         lon,
         boundingBox,
-      };
+      }];
     });
 
     if (searchCache.size >= MAX_SEARCH_CACHE_ENTRIES) {
@@ -150,3 +177,17 @@ export class PlaceSearchService {
 }
 
 export const defaultPlaceSearchService = new PlaceSearchService();
+
+async function reserveRequestSlot(minIntervalMs: number): Promise<void> {
+  const reservation = requestQueue.then(async () => {
+    const elapsed = Date.now() - lastRequestTimestamp;
+    const waitTime = Math.max(0, minIntervalMs - elapsed);
+    if (waitTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+    }
+    lastRequestTimestamp = Date.now();
+  });
+
+  requestQueue = reservation.catch(() => undefined);
+  await reservation;
+}

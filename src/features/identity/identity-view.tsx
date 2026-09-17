@@ -69,7 +69,6 @@ export function IdentityView({
     if (!uploadedImage || portraitSource !== "custom") return;
 
     let active = true;
-    setIsProcessing(true);
 
     const timer = setTimeout(async () => {
       try {
@@ -86,7 +85,9 @@ export function IdentityView({
         setProcessedBlob(result.blob);
       } catch (err) {
         if (!active) return;
-        console.error("Portrait processing error:", err);
+        setUploadError(
+          err instanceof Error ? err.message : "Failed to process the uploaded image.",
+        );
       } finally {
         if (active) setIsProcessing(false);
       }
@@ -121,11 +122,10 @@ export function IdentityView({
       setOffsetX(0);
       setOffsetY(0);
     } catch (err) {
+      setIsProcessing(false);
       setUploadError(
         err instanceof Error ? err.message : "Failed to decode the uploaded image.",
       );
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -263,7 +263,10 @@ export function IdentityView({
                   role="tab"
                   aria-selected={portraitSource === "silhouette"}
                   className={`portrait-tab-btn ${portraitSource === "silhouette" ? "active" : ""}`}
-                  onClick={() => setPortraitSource("silhouette")}
+                  onClick={() => {
+                    setIsProcessing(false);
+                    setPortraitSource("silhouette");
+                  }}
                 >
                   <span className="tab-icon">👤</span>
                   <span>Authored Silhouettes</span>
@@ -274,6 +277,8 @@ export function IdentityView({
                   aria-selected={portraitSource === "custom"}
                   className={`portrait-tab-btn ${portraitSource === "custom" ? "active" : ""}`}
                   onClick={() => {
+                    if (portraitSource === "custom") return;
+                    if (uploadedImage) setIsProcessing(true);
                     setPortraitSource("custom");
                     if (!uploadedImage) {
                       fileInputRef.current?.click();
@@ -409,7 +414,10 @@ export function IdentityView({
                             max="3.0"
                             step="0.1"
                             value={zoom}
-                            onChange={(e) => setZoom(parseFloat(e.target.value))}
+                            onChange={(e) => {
+                              setIsProcessing(true);
+                              setZoom(parseFloat(e.target.value));
+                            }}
                             className="crop-range-slider"
                           />
                         </label>
@@ -420,7 +428,10 @@ export function IdentityView({
                             min="-100"
                             max="100"
                             value={offsetX}
-                            onChange={(e) => setOffsetX(parseInt(e.target.value, 10))}
+                            onChange={(e) => {
+                              setIsProcessing(true);
+                              setOffsetX(parseInt(e.target.value, 10));
+                            }}
                             className="crop-range-slider"
                           />
                         </label>
@@ -431,7 +442,10 @@ export function IdentityView({
                             min="-100"
                             max="100"
                             value={offsetY}
-                            onChange={(e) => setOffsetY(parseInt(e.target.value, 10))}
+                            onChange={(e) => {
+                              setIsProcessing(true);
+                              setOffsetY(parseInt(e.target.value, 10));
+                            }}
                             className="crop-range-slider"
                           />
                         </label>
@@ -446,7 +460,11 @@ export function IdentityView({
                               key={f.id}
                               type="button"
                               className={`filter-chip ${portraitFilter === f.id ? "active" : ""}`}
-                              onClick={() => setPortraitFilter(f.id)}
+                              onClick={() => {
+                                if (portraitFilter === f.id) return;
+                                setIsProcessing(true);
+                                setPortraitFilter(f.id);
+                              }}
                             >
                               <strong className="chip-name">{f.name}</strong>
                               <small className="chip-tag">{f.tagline}</small>

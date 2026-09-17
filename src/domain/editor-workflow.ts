@@ -32,6 +32,7 @@ export type EditorWorkflowEvent =
   | { type: "save-failed"; message: string }
   | { type: "cancelled" }
   | { type: "edit-again" }
+  | { type: "reset-for-map-base" }
   | { type: "retry" };
 
 export const initialEditorWorkflow: EditorWorkflowState = {
@@ -110,6 +111,11 @@ export function editorWorkflowReducer(
         phase: "editing",
         failure: null,
         notice: null,
+      };
+    case "reset-for-map-base":
+      return {
+        ...initialEditorWorkflow,
+        retryKey: state.retryKey + 1,
       };
     case "retry":
       if (state.phase !== "failure") return state;
@@ -250,4 +256,3 @@ export function operationJourneyReducer(
       return { ...initialJourneyState };
   }
 }
-

@@ -177,8 +177,8 @@ export function updateTargetLocationMarker(
           "text-halo-width": 2.5,
         },
       });
-    } catch (e) {
-      console.warn("Could not add target location marker:", e);
+    } catch {
+      console.warn("Could not add target location marker.");
     }
   }
 }
@@ -281,8 +281,8 @@ export function applyMapLayers(
         maxzoom: 19,
         attribution: "© Esri, Maxar, Earthstar Geographics, and the GIS User Community",
       });
-    } catch (e) {
-      console.warn("Could not add satellite raster source:", e);
+    } catch {
+      console.warn("Could not add satellite raster source.");
     }
   }
 
@@ -309,8 +309,8 @@ export function applyMapLayers(
         },
         beforeRoadsId,
       );
-    } catch (e) {
-      console.warn("Could not add satellite raster layer:", e);
+    } catch {
+      console.warn("Could not add satellite raster layer.");
     }
   } else {
     try {
@@ -319,8 +319,8 @@ export function applyMapLayers(
         "raster-opacity",
         mode === "realistic" ? 1.0 : 0.0,
       );
-    } catch (e) {
-      console.warn("Could not update satellite opacity:", e);
+    } catch {
+      console.warn("Could not update satellite opacity.");
     }
   }
 
@@ -396,8 +396,8 @@ export function applyMapLayers(
             },
             beforeLabelsId,
           );
-        } catch (e) {
-          console.warn("Could not inject 3d building extrusion layer:", e);
+        } catch {
+          console.warn("Could not inject 3d building extrusion layer.");
         }
       }
     } else {
@@ -435,8 +435,8 @@ export function applyMapLayers(
           "fill-extrusion-opacity",
           buildingOpacity,
         );
-      } catch (e) {
-        console.warn("Could not update 3d building properties:", e);
+      } catch {
+        console.warn("Could not update 3d building properties.");
       }
     }
   }

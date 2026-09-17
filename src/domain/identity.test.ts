@@ -3,6 +3,7 @@ import {
   DEFAULT_IDENTITY_STATE,
   SILHOUETTE_ARCHETYPES,
   getSilhouetteArchetype,
+  type SilhouetteId,
   validateAlias,
   validatePortraitFile,
 } from "./identity";
@@ -108,7 +109,7 @@ describe("Identity Domain Model", () => {
       expect(ghost.name).toBe("The Ghost");
 
       // Fallback for unknown
-      const fallback = getSilhouetteArchetype("unknown" as any);
+      const fallback = getSilhouetteArchetype("unknown" as unknown as SilhouetteId);
       expect(fallback.id).toBe("courier");
     });
 

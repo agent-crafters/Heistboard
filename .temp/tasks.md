@@ -249,3 +249,18 @@ This is the single authoritative project task list. Status is encoded by the che
   - Deployment, repository, demo, and submission links work from a clean session.
   - Submission receipt or confirmation is retained.
   - September 24 is reserved for availability checks and critical fixes only.
+
+## HB-018 — Audit non-UI code and migrate global stylesheet naming
+
+- Target: 2026-09-17
+- Priority: P0
+- Status: [x] DONE
+- Outcome: Audit and repair verified non-visual defects, then rename the application stylesheet to `tailwind.css` without changing the intended UI.
+- Dependencies: HB-017
+- GitHub issue: #18
+- Acceptance criteria:
+  - Lint, typecheck, tests, and production build pass.
+  - Verified non-UI defects found during the audit are fixed or documented.
+  - The root layout imports `tailwind.css`; `globals.css` no longer exists.
+  - The stylesheet rename does not silently introduce Tailwind tooling or alter existing visual rules.
+  - The completed diff passes standards and issue-fidelity review.

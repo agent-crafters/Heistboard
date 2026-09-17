@@ -5,7 +5,6 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import {
-  DEFAULT_TERRITORY_CAMERA,
   OPENFREEMAP_LIBERTY_STYLE,
   REALISTIC_TERRITORY_ATTRIBUTION,
   STANDARD_TERRITORY_ATTRIBUTION,
@@ -158,9 +157,8 @@ export function TerritoryView({
           setContextLost(true);
         });
 
-        map.on("error", (e) => {
-          console.warn("MapLibre map notice:", e);
-        });
+        // Consume provider errors without logging tile URLs or coordinate-bearing payloads.
+        map.on("error", () => {});
 
         map.on("load", () => {
           if (!active || !map) return;
@@ -189,8 +187,7 @@ export function TerritoryView({
 
         map.on("move", updateCamera);
         mapInstanceRef.current = map;
-      } catch (err) {
-        console.error("MapLibre initialization error:", err);
+      } catch {
         setWebglSupported(false);
       }
     }
@@ -795,4 +792,3 @@ function checkWebGLSupported(): boolean {
     return false;
   }
 }
-

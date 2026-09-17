@@ -45,10 +45,7 @@ import {
   importStickerToCanvas,
   type FabricCanvasLike,
 } from "@/lib/sticker-canvas-importer";
-import {
-  composeDossierCanvas,
-  type ComposedDossierResult,
-} from "@/lib/dossier-composer";
+import { composeDossierCanvas } from "@/lib/dossier-composer";
 import type { CustomEditorTool } from "./mission-editor";
 import { CinematicReveal } from "./cinematic-reveal";
 
@@ -216,9 +213,9 @@ export function HeistboardEditorProof() {
       URL.revokeObjectURL(dossierBlobUrlRef.current);
       dossierBlobUrlRef.current = null;
     }
+    resourceOwner.current?.dispose();
     setAnnotatedMap(null);
     setDossierArtifact(null);
-    dispatch({ type: "retry" });
     journeyDispatch({ type: "confirm-change-territory" });
   }, []);
 
@@ -243,7 +240,8 @@ export function HeistboardEditorProof() {
     setMapBaseUrl(SAMPLE_MAP_BASE_URL);
     setLockedCamera(undefined);
     setIsSampleMap(false);
-    dispatch({ type: "retry" });
+    setAttribution(STANDARD_TERRITORY_ATTRIBUTION);
+    dispatch({ type: "reset-for-map-base" });
     journeyDispatch({ type: "restart-operation" });
   }, [identity.portraitUrl]);
 
@@ -265,7 +263,7 @@ export function HeistboardEditorProof() {
 
     setAttribution(result.attribution);
     setLockedCamera(result.camera);
-    dispatch({ type: "retry" });
+    dispatch({ type: "reset-for-map-base" });
     journeyDispatch({ type: "lock-territory" });
   }, []);
 
@@ -277,7 +275,7 @@ export function HeistboardEditorProof() {
     setMapBaseUrl(SAMPLE_MAP_BASE_URL);
     setAttribution(SAMPLE_MAP_ATTRIBUTION);
     setIsSampleMap(true);
-    dispatch({ type: "retry" });
+    dispatch({ type: "reset-for-map-base" });
     journeyDispatch({ type: "lock-territory" });
   }, []);
 
@@ -313,8 +311,6 @@ export function HeistboardEditorProof() {
     if (stage !== "dossier" || !annotatedMap) return;
 
     let active = true;
-    setIsComposingDossier(true);
-
     composeDossierCanvas({
       annotatedMapUrl: annotatedMap.previewUrl,
       resolution: selectedResolution,
@@ -731,7 +727,12 @@ export function HeistboardEditorProof() {
                     <button
                       type="button"
                       className={`res-btn ${selectedResolution === "4k" ? "active" : ""}`}
-                      onClick={() => setSelectedResolution("4k")}
+                      onClick={() => {
+                        if (selectedResolution === "4k") return;
+                        setIsComposingDossier(true);
+                        setDossierError(null);
+                        setSelectedResolution("4k");
+                      }}
                       title="Switch to 4K Ultra-HD (3840 × 2160)"
                       disabled={isComposingDossier}
                     >
@@ -740,7 +741,12 @@ export function HeistboardEditorProof() {
                     <button
                       type="button"
                       className={`res-btn ${selectedResolution === "2k" ? "active" : ""}`}
-                      onClick={() => setSelectedResolution("2k")}
+                      onClick={() => {
+                        if (selectedResolution === "2k") return;
+                        setIsComposingDossier(true);
+                        setDossierError(null);
+                        setSelectedResolution("2k");
+                      }}
                       title="Switch to 2K Quad-HD (2560 × 1440)"
                       disabled={isComposingDossier}
                     >

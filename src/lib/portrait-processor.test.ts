@@ -5,42 +5,48 @@ import {
   type PortraitCropOptions,
 } from "./portrait-processor";
 
+function createMockContext() {
+  const dummyImageData = {
+    data: new Uint8ClampedArray(512 * 512 * 4).fill(128),
+    width: 512,
+    height: 512,
+  };
+
+  return {
+    save: vi.fn(),
+    restore: vi.fn(),
+    drawImage: vi.fn(),
+    fillRect: vi.fn(),
+    getImageData: vi.fn(() => dummyImageData),
+    putImageData: vi.fn(),
+    createRadialGradient: vi.fn(() => ({
+      addColorStop: vi.fn(),
+    })),
+    fillStyle: "",
+  };
+}
+
+function createMockCanvas(mockCtx: ReturnType<typeof createMockContext>) {
+  return {
+    width: 512,
+    height: 512,
+    getContext: vi.fn(() => mockCtx),
+    toDataURL: vi.fn(() => "data:image/png;base64,mockPortrait"),
+    toBlob: vi.fn((callback: (blob: Blob | null) => void) => {
+      callback(new Blob(["mock-portrait-bytes"], { type: "image/png" }));
+    }),
+  };
+}
+
 describe("Portrait Processor Engine", () => {
   const originalDocument = globalThis.document;
 
-  let mockCtx: any;
-  let mockCanvas: any;
+  let mockCtx: ReturnType<typeof createMockContext>;
+  let mockCanvas: ReturnType<typeof createMockCanvas>;
 
   beforeEach(() => {
-    // 512x512 dummy RGBA image data
-    const dummyImageData = {
-      data: new Uint8ClampedArray(512 * 512 * 4).fill(128),
-      width: 512,
-      height: 512,
-    };
-
-    mockCtx = {
-      save: vi.fn(),
-      restore: vi.fn(),
-      drawImage: vi.fn(),
-      fillRect: vi.fn(),
-      getImageData: vi.fn(() => dummyImageData),
-      putImageData: vi.fn(),
-      createRadialGradient: vi.fn(() => ({
-        addColorStop: vi.fn(),
-      })),
-      fillStyle: "",
-    };
-
-    mockCanvas = {
-      width: 512,
-      height: 512,
-      getContext: vi.fn(() => mockCtx),
-      toDataURL: vi.fn(() => "data:image/png;base64,mockPortrait"),
-      toBlob: vi.fn((callback: (blob: Blob | null) => void) => {
-        callback(new Blob(["mock-portrait-bytes"], { type: "image/png" }));
-      }),
-    };
+    mockCtx = createMockContext();
+    mockCanvas = createMockCanvas(mockCtx);
 
     const mockDocument = {
       createElement: vi.fn((tag: string) => {
@@ -51,8 +57,7 @@ describe("Portrait Processor Engine", () => {
       }),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    globalThis.document = mockDocument as any;
+    globalThis.document = mockDocument as unknown as Document;
   });
 
   afterEach(() => {
@@ -86,7 +91,7 @@ describe("Portrait Processor Engine", () => {
   });
 
   it("applies surveillance filter with scanlines and cyan-green tint", () => {
-    applyPortraitFilter(mockCtx, 512, 512, "surveillance");
+    applyPortraitFilter(mockCtx as unknown as CanvasRenderingContext2D, 512, 512, "surveillance");
     expect(mockCtx.getImageData).toHaveBeenCalledWith(0, 0, 512, 512);
     expect(mockCtx.putImageData).toHaveBeenCalled();
     // Scanlines and vignette call fillRect
@@ -94,20 +99,20 @@ describe("Portrait Processor Engine", () => {
   });
 
   it("applies film-noir filter with high-contrast grayscale", () => {
-    applyPortraitFilter(mockCtx, 512, 512, "film-noir");
+    applyPortraitFilter(mockCtx as unknown as CanvasRenderingContext2D, 512, 512, "film-noir");
     expect(mockCtx.getImageData).toHaveBeenCalledWith(0, 0, 512, 512);
     expect(mockCtx.putImageData).toHaveBeenCalled();
     expect(mockCtx.createRadialGradient).toHaveBeenCalled();
   });
 
   it("applies petrol duotone mapping to Heistboard palette", () => {
-    applyPortraitFilter(mockCtx, 512, 512, "duotone-petrol");
+    applyPortraitFilter(mockCtx as unknown as CanvasRenderingContext2D, 512, 512, "duotone-petrol");
     expect(mockCtx.getImageData).toHaveBeenCalledWith(0, 0, 512, 512);
     expect(mockCtx.putImageData).toHaveBeenCalled();
   });
 
   it("bypasses pixel manipulation for raw filter", () => {
-    applyPortraitFilter(mockCtx, 512, 512, "raw");
+    applyPortraitFilter(mockCtx as unknown as CanvasRenderingContext2D, 512, 512, "raw");
     expect(mockCtx.getImageData).not.toHaveBeenCalled();
     expect(mockCtx.putImageData).not.toHaveBeenCalled();
   });

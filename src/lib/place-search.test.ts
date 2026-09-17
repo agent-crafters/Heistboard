@@ -100,6 +100,42 @@ describe("PlaceSearchService", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("coalesces duplicate searches while the first request is still in flight", async () => {
+    let releaseResponse: (() => void) | undefined;
+    const responseGate = new Promise<void>((resolve) => {
+      releaseResponse = resolve;
+    });
+    const fetchMock = vi.fn().mockImplementation(async () => {
+      await responseGate;
+      return {
+        ok: true,
+        json: async () => [
+          {
+            place_id: 202,
+            display_name: "Shared Result, Test City",
+            lat: "40.7",
+            lon: "-74.0",
+          },
+        ],
+      };
+    });
+    const service = new PlaceSearchService({
+      endpoint: "https://example.com/search-in-flight",
+      fetchFn: fetchMock,
+      minIntervalMs: 0,
+    });
+
+    const first = service.search("same query");
+    const second = service.search("SAME QUERY");
+    releaseResponse?.();
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      expect.any(Array),
+      expect.any(Array),
+    ]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("handles 429 rate limit errors with descriptive message", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
@@ -114,5 +150,44 @@ describe("PlaceSearchService", () => {
     await expect(service.search("Rush Hour")).rejects.toThrow(
       /rate limit reached/i,
     );
+  });
+
+  it("serializes concurrent requests through the application-wide throttle", async () => {
+    const requestTimes: number[] = [];
+    const fetchMock = vi.fn().mockImplementation(async () => {
+      requestTimes.push(Date.now());
+      return { ok: true, json: async () => [] };
+    });
+    const service = new PlaceSearchService({
+      endpoint: "https://example.com/search-concurrent",
+      fetchFn: fetchMock,
+      minIntervalMs: 20,
+    });
+
+    await Promise.all([service.search("first"), service.search("second")]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(requestTimes[1]! - requestTimes[0]!).toBeGreaterThanOrEqual(15);
+  });
+
+  it("drops malformed coordinates returned by the provider", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          place_id: 301,
+          display_name: "Invalid Place",
+          lat: "not-a-latitude",
+          lon: "12.4",
+        },
+      ],
+    });
+    const service = new PlaceSearchService({
+      endpoint: "https://example.com/search-invalid-coordinate",
+      fetchFn: fetchMock,
+      minIntervalMs: 0,
+    });
+
+    await expect(service.search("invalid")).resolves.toEqual([]);
   });
 });

@@ -2,8 +2,6 @@
 
 import {
   type BgLayerConfig,
-  type GtaStyleId,
-  type GradientPresetId,
   type GradientDirection,
   type GradientBlendMode,
   GTA_VI_STYLES,

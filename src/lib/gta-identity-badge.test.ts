@@ -244,7 +244,7 @@ describe("GTA VI Identity Badge Renderer", () => {
     const eventListener = vi.fn();
     const origWindow = (globalThis as unknown as { window?: unknown }).window;
     const mockWindow = {
-      addEventListener: vi.fn((event: string, fn: () => void) => {
+      addEventListener: vi.fn((event: string) => {
         if (event === "heistboard:open-identity-tool") {
           eventListener();
         }

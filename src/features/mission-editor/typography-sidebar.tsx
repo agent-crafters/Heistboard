@@ -11,7 +11,7 @@ import {
   changeFabricTextFont,
   ensureFontsLoaded,
 } from "@/lib/gta-fonts";
-import { findFabricCanvas, type FabricCanvasLike } from "@/lib/sticker-canvas-importer";
+import { findFabricCanvas } from "@/lib/sticker-canvas-importer";
 
 interface TypographySidebarProps {
   editorContainerRef?: React.RefObject<HTMLElement | null>;

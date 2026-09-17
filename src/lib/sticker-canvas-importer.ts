@@ -172,7 +172,7 @@ export async function importStickerToCanvas(
     };
 
     img.onerror = () => {
-      console.error(`Failed to load sticker image from ${stickerUrl}`);
+      console.error("Failed to load sticker image.");
       resolve(false);
     };
 
