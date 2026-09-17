@@ -33,11 +33,22 @@ import {
 import {
   type GtaBadgeOptions,
   DEFAULT_GTA_BADGE_OPTIONS,
+  placeOrUpdateBadgeOnFabricCanvas,
 } from "@/lib/gta-identity-badge";
 import {
   type BgLayerConfig,
   DEFAULT_BG_LAYER_CONFIG,
+  applyBgLayerToFabricCanvas,
 } from "@/lib/bg-layer-processor";
+import {
+  findFabricCanvas,
+  importStickerToCanvas,
+  type FabricCanvasLike,
+} from "@/lib/sticker-canvas-importer";
+import {
+  composeDossierCanvas,
+  type ComposedDossierResult,
+} from "@/lib/dossier-composer";
 import type { CustomEditorTool } from "./mission-editor";
 import { CinematicReveal } from "./cinematic-reveal";
 
