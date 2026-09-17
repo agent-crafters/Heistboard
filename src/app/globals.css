@@ -299,11 +299,11 @@ a:focus-visible {
   font-size: 0.64rem;
 }
 
-.workspace {
-  display: grid;
-  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
-  gap: clamp(1.25rem, 3vw, 3rem);
-  padding: clamp(1.5rem, 4vw, 4rem) 0 2rem;
+.workspace,
+.workspace-editor-full {
+  display: block;
+  width: 100%;
+  padding: clamp(1.2rem, 3vw, 3rem) 0 2rem;
 }
 
 .briefing {
@@ -443,6 +443,7 @@ a:focus-visible {
 
 .editor-column {
   min-width: 0;
+  width: 100%;
 }
 
 .editor-heading,
@@ -451,7 +452,36 @@ a:focus-visible {
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.editor-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.change-territory-btn {
+  padding: 0.45rem 0.95rem;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #cfc2e4;
+  background: rgba(22, 13, 44, 0.75);
+  border: 1px solid rgba(255, 113, 206, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.change-territory-btn:hover {
+  background: rgba(255, 0, 127, 0.22);
+  border-color: #ff007f;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(255, 0, 127, 0.4);
 }
 
 .editor-heading .section-label,
@@ -491,7 +521,8 @@ a:focus-visible {
 
 .editor-frame {
   position: relative;
-  min-height: min(680px, 72vh);
+  min-height: min(740px, 80vh);
+  width: 100%;
   overflow: hidden;
   border: 1px solid rgba(255, 113, 206, 0.45);
   border-radius: 12px;

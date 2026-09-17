@@ -29,42 +29,21 @@ import { TerritoryView, type TerritoryLockedResult } from "@/features/territory/
 import {
   type IdentityState,
   DEFAULT_IDENTITY_STATE,
-  getSilhouetteArchetype,
 } from "@/domain/identity";
 import {
   type GtaBadgeOptions,
   DEFAULT_GTA_BADGE_OPTIONS,
-  placeOrUpdateBadgeOnFabricCanvas,
 } from "@/lib/gta-identity-badge";
 import {
   type BgLayerConfig,
   DEFAULT_BG_LAYER_CONFIG,
-  applyBgLayerToFabricCanvas,
 } from "@/lib/bg-layer-processor";
-import { findFabricCanvas, importStickerToCanvas } from "@/lib/sticker-canvas-importer";
-import {
-  composeDossierCanvas,
-} from "@/lib/dossier-composer";
-import { IdentityControls } from "./identity-controls";
-import { CinematicReveal } from "./cinematic-reveal";
 import type { CustomEditorTool } from "./mission-editor";
+import { CinematicReveal } from "./cinematic-reveal";
 
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
 export type HeistStage = OperationStage;
-
-/** Each step maps to a native editor tool button's data-testid, or null for save. */
-const MISSION_STEPS: ReadonlyArray<{
-  id: string;
-  title: string;
-  detail: string;
-  nativeTool: string | null;
-}> = [
-  { id: "01", title: "Draw the route", detail: "Use Draw to trace a bold path across the neighborhood.", nativeTool: "native-tool-draw" },
-  { id: "02", title: "Mark two locations", detail: "Use Shapes for the pickup point and the getaway.", nativeTool: "native-tool-shapes" },
-  { id: "03", title: "Leave one note", detail: "Use Text to add a short courier instruction.", nativeTool: "native-tool-text" },
-  { id: "04", title: "Save the plan", detail: "Use the editor's Save action when the route reads clearly.", nativeTool: null },
-];
 
 async function normalizeSaveResultToPng(
   result: ImageEditorSaveResult,
@@ -147,7 +126,6 @@ export function HeistboardEditorProof() {
   const [isComposingDossier, setIsComposingDossier] = useState<boolean>(false);
   const [dossierError, setDossierError] = useState<string | null>(null);
   const [isRevealing, setIsRevealing] = useState<boolean>(false);
-  const [isMobileBriefOpen, setIsMobileBriefOpen] = useState<boolean>(false);
   const dossierBlobUrlRef = useRef<string | null>(null);
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
@@ -417,36 +395,6 @@ export function HeistboardEditorProof() {
     journeyDispatch({ type: "request-change-territory" });
   }, []);
 
-  /** Programmatically click the native editor tool button matching a mission step. */
-  const activateNativeTool = useCallback((nativeTool: string | null) => {
-    journeyDispatch({ type: "record-mission-edit" });
-    if (!editorFrameRef.current) return;
-    if (nativeTool) {
-      // Steps 01-03: click the native Draw / Shapes / Text tool button
-      const btn = editorFrameRef.current.querySelector<HTMLButtonElement>(
-        `button[data-testid="${nativeTool}"]`,
-      );
-      btn?.click();
-    } else {
-      // Step 04 (Save): click the editor's save button
-      const saveBtn = editorFrameRef.current.querySelector<HTMLButtonElement>(
-        'button[data-testid="save-button"]',
-      );
-      if (saveBtn) {
-        saveBtn.click();
-      } else {
-        // Fallback: try finding a save button by accessible name
-        const buttons = editorFrameRef.current.querySelectorAll<HTMLButtonElement>('button');
-        for (const b of buttons) {
-          if (/save/i.test(b.textContent ?? '') || /save/i.test(b.getAttribute('aria-label') ?? '')) {
-            b.click();
-            break;
-          }
-        }
-      }
-    }
-  }, []);
-
   const editorVisible =
     (stage === "mission-plan" || stage === "dossier") &&
     (workflow.phase === "loading-editor" ||
@@ -608,7 +556,7 @@ export function HeistboardEditorProof() {
       {/* Stage 03: Mission Editor (preserved in DOM across preview to maintain active Fabric objects) */}
       {(stage === "mission-plan" || stage === "dossier") && (
         <section
-          className="workspace"
+          className="workspace workspace-editor-full"
           aria-labelledby="workspace-title"
           style={{ display: stage === "mission-plan" ? undefined : "none" }}
         >
@@ -616,108 +564,27 @@ export function HeistboardEditorProof() {
             Skip to Mission Plan Editor Canvas
           </a>
 
-          <button
-            type="button"
-            className="briefing-mobile-toggle"
-            onClick={() => setIsMobileBriefOpen((prev) => !prev)}
-            aria-expanded={isMobileBriefOpen}
-            aria-controls="mission-briefing-aside"
-            aria-label={isMobileBriefOpen ? "Collapse mission briefing panel" : "Expand mission briefing panel"}
-          >
-            <span>📋 Mission Briefing &amp; Steps ({isMobileBriefOpen ? "Hide" : "Show"})</span>
-            <span aria-hidden="true">{isMobileBriefOpen ? "▲" : "▼"}</span>
-          </button>
-
-          <aside
-            id="mission-briefing-aside"
-            className={`briefing ${isMobileBriefOpen ? "mobile-expanded" : "mobile-collapsed"}`}
-          >
-            <p className="section-label">Mission brief</p>
-            <h2 id="workspace-title">Package before sunrise</h2>
-            <p>
-              The target area is locked. Trace your delivery route, mark safe locations,
-              and record the primary rendezvous point.
-            </p>
-
-            {/* Operative Callsign & Identity Badge in Briefing */}
-            <div className="brief-operative-card">
-              <div className="brief-operative-avatar">
-                {identity.portraitSource === "custom" && identity.portraitUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={identity.portraitUrl} alt={identity.alias} />
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d={getSilhouetteArchetype(identity.silhouetteId).svgPath} />
-                  </svg>
-                )}
-              </div>
-              <div className="brief-operative-meta">
-                <span className="brief-operative-tag">OPERATIVE / CALLSIGN</span>
-                <strong className="brief-operative-alias">{identity.alias}</strong>
-                <small className="brief-operative-role">
-                  {identity.portraitSource === "silhouette"
-                    ? getSilhouetteArchetype(identity.silhouetteId).role
-                    : "Field Agent"}
-                </small>
-              </div>
-              <button
-                type="button"
-                className="brief-edit-identity-btn"
-                onClick={() => setRequestedEditorTool("identity")}
-                title="Open Operative Identity in Editor"
-              >
-                Edit
-              </button>
-            </div>
-
-            <ol className="mission-steps">
-              {MISSION_STEPS.map((step) => (
-                <li key={step.id}>
-                  <button
-                    type="button"
-                    className="mission-step-btn"
-                    onClick={() => activateNativeTool(step.nativeTool)}
-                    title={step.nativeTool ? `Activate ${step.title}` : step.title}
-                  >
-                    <span className="mission-step-num">{step.id}</span>
-                    <div>
-                      <strong>{step.title}</strong>
-                      <p>{step.detail}</p>
-                    </div>
-                    <span className="mission-step-arrow" aria-hidden="true">→</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-
-            <div className="territory-source-tag">
-              <small>
-                Map Source:{" "}
-                <strong>
-                  {isSampleMap ? "Fictional Sample Map" : "OpenFreeMap 3D Vector Shot"}
-                </strong>
-              </small>
-            </div>
-            <button
-              type="button"
-              className="action-button tertiary"
-              onClick={handleReturnToTerritory}
-            >
-              ← Change Territory (resets plan)
-            </button>
-          </aside>
-
           <div className="editor-column">
             <div className="editor-heading">
               <div>
                 <p className="section-label">
                   Map Base / {isSampleMap ? "Southbank District (Sample)" : "3D Territory"}
                 </p>
-                <h2>Mission Plan editor</h2>
+                <h2 id="workspace-title">Mission Plan editor</h2>
               </div>
-              <span className={`phase phase-${workflow.phase}`} aria-live="polite">
-                {phaseLabel(workflow.phase)}
-              </span>
+              <div className="editor-heading-actions">
+                <button
+                  type="button"
+                  className="action-button tertiary change-territory-btn"
+                  onClick={handleReturnToTerritory}
+                  title="Return to 3D Territory selection (resets plan)"
+                >
+                  ← Change Territory (resets plan)
+                </button>
+                <span className={`phase phase-${workflow.phase}`} aria-live="polite">
+                  {phaseLabel(workflow.phase)}
+                </span>
+              </div>
             </div>
 
             {workflow.phase === "checking-map" && (
