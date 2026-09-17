@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ImageEditor, {
   type ImageEditorInstance,
   type ImageEditorOptions,
@@ -11,13 +11,20 @@ import {
   type BgLayerConfig,
   applyBgLayerToFabricCanvas,
 } from "@/lib/bg-layer-processor";
-import { findFabricCanvas, type FabricCanvasLike } from "@/lib/sticker-canvas-importer";
+import {
+  findFabricCanvas,
+  type FabricCanvasLike,
+  type FabricObjectLike,
+} from "@/lib/sticker-canvas-importer";
 import { ensureFontsLoaded, setupNativeFontMenuObserver } from "@/lib/gta-fonts";
 import { BgLayerControls } from "./bg-layer-controls";
 import { TypographySidebar } from "./typography-sidebar";
 import { IdentityControls } from "./identity-controls";
 import { StickerSidebar } from "./sticker-sidebar";
-import { type GtaBadgeOptions } from "@/lib/gta-identity-badge";
+import {
+  type GtaBadgeOptions,
+  FABRIC_IDENTITY_BADGE_TAG,
+} from "@/lib/gta-identity-badge";
 import { type IdentityState } from "@/domain/identity";
 
 const MISSION_TOOL_OPTIONS: ImageEditorOptions = {
@@ -84,15 +91,23 @@ export function MissionEditor({
   const [isGtaFontsOpen, setIsGtaFontsOpen] = useState(false);
   const [isStickersOpen, setIsStickersOpen] = useState(false);
   const [isBgStylesOpen, setIsBgStylesOpen] = useState(false);
-  // Handle programmatic tool open requests (e.g. clicking "Edit" in mission briefing)
+  const openIdentityDrawer = useCallback(() => {
+    const canvas = findFabricCanvas(containerRef.current);
+    if (canvas && (canvas as unknown as { isDrawingMode?: boolean }).isDrawingMode) {
+      (canvas as unknown as { isDrawingMode: boolean }).isDrawingMode = false;
+    }
+    setIsIdentityOpen(true);
+    setIsGtaFontsOpen(false);
+    setIsStickersOpen(false);
+    setIsBgStylesOpen(false);
+  }, []);
+
+  // Handle programmatic tool open requests (e.g. clicking "Edit" in mission briefing or preview)
   useEffect(() => {
     if (!requestedTool) return;
     queueMicrotask(() => {
       if (requestedTool === "identity") {
-        setIsIdentityOpen(true);
-        setIsGtaFontsOpen(false);
-        setIsStickersOpen(false);
-        setIsBgStylesOpen(false);
+        openIdentityDrawer();
       } else if (requestedTool === "stickers") {
         setIsStickersOpen(true);
         setIsIdentityOpen(false);
@@ -111,7 +126,48 @@ export function MissionEditor({
       }
       onToolHandled?.();
     });
-  }, [requestedTool, onToolHandled]);
+  }, [requestedTool, onToolHandled, openIdentityDrawer]);
+
+  // Listen for custom event whenever the identity badge on canvas is clicked or selected
+  useEffect(() => {
+    const handleOpenIdentity = () => {
+      openIdentityDrawer();
+    };
+    window.addEventListener("heistboard:open-identity-tool", handleOpenIdentity);
+    return () => {
+      window.removeEventListener("heistboard:open-identity-tool", handleOpenIdentity);
+    };
+  }, [openIdentityDrawer]);
+
+  // Intercept click & pointerdown on the canvas container to automatically open identity edit drawer when badge is clicked
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleCanvasPointer = (e: MouseEvent) => {
+      const canvas = findFabricCanvas(container);
+      if (!canvas) return;
+
+      const target =
+        canvas.findTarget?.(e) ??
+        canvas.getActiveObject?.();
+
+      if (
+        target &&
+        (target as unknown as Record<string, unknown>)[FABRIC_IDENTITY_BADGE_TAG] === true
+      ) {
+        openIdentityDrawer();
+      }
+    };
+
+    container.addEventListener("click", handleCanvasPointer, true);
+    container.addEventListener("pointerdown", handleCanvasPointer, true);
+
+    return () => {
+      container.removeEventListener("click", handleCanvasPointer, true);
+      container.removeEventListener("pointerdown", handleCanvasPointer, true);
+    };
+  }, [openIdentityDrawer]);
 
   // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts, Identity, Stickers, and BG Styles
   useEffect(() => {

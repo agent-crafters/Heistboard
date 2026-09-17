@@ -934,12 +934,46 @@ export async function placeOrUpdateBadgeOnFabricCanvas(
           badgeObject.scale(scale);
           (badgeObject as unknown as Record<string, unknown>)[FABRIC_IDENTITY_BADGE_TAG] = true;
 
+          // Dispatch event to open identity editing drawer whenever badge is clicked or selected on canvas
+          const triggerOpenIdentityDrawer = () => {
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("heistboard:open-identity-tool"));
+            }
+          };
+
+          (badgeObject as unknown as { on?(e: string, fn: () => void): void }).on?.("mousedown", triggerOpenIdentityDrawer);
+          (badgeObject as unknown as { on?(e: string, fn: () => void): void }).on?.("selected", triggerOpenIdentityDrawer);
+          (badgeObject as unknown as { on?(e: string, fn: () => void): void }).on?.("mouseup", triggerOpenIdentityDrawer);
+
           if (typeof badgeObject.setCoords === "function") {
             badgeObject.setCoords();
           }
 
           fabricCanvas.add(badgeObject);
           fabricCanvas.setActiveObject(badgeObject);
+
+          // Attach canvas-level selection/click handler to ensure identity badge clicks always open identity tool
+          if (!fabricCanvas.__heistboardBadgeListenerAttached) {
+            fabricCanvas.__heistboardBadgeListenerAttached = true;
+            fabricCanvas.on?.("mouse:down", (e: Record<string, unknown>) => {
+              const target = e?.target;
+              if (target && (target as Record<string, unknown>)[FABRIC_IDENTITY_BADGE_TAG] === true) {
+                triggerOpenIdentityDrawer();
+              }
+            });
+            fabricCanvas.on?.("selection:created", (e: Record<string, unknown>) => {
+              const target = e?.target ?? (e?.selected as unknown[])?.[0];
+              if (target && (target as Record<string, unknown>)[FABRIC_IDENTITY_BADGE_TAG] === true) {
+                triggerOpenIdentityDrawer();
+              }
+            });
+            fabricCanvas.on?.("selection:updated", (e: Record<string, unknown>) => {
+              const target = e?.target ?? (e?.selected as unknown[])?.[0];
+              if (target && (target as Record<string, unknown>)[FABRIC_IDENTITY_BADGE_TAG] === true) {
+                triggerOpenIdentityDrawer();
+              }
+            });
+          }
 
           fabricCanvas.fire?.("object:added", { target: badgeObject });
           fabricCanvas.fire?.("object:modified", { target: badgeObject });

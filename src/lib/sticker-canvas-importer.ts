@@ -26,10 +26,15 @@ export interface FabricCanvasLike {
   getObjects(): FabricObjectLike[];
   add(obj: FabricObjectLike): void;
   setActiveObject(obj: FabricObjectLike): void;
+  getActiveObject?(): FabricObjectLike | null;
+  findTarget?(e: MouseEvent): FabricObjectLike | null;
   requestRenderAll(): void;
   calcOffset?(): void;
   fire?(eventName: string, options?: Record<string, unknown>): void;
+  on?(event: string, handler: (e: Record<string, unknown>) => void): void;
+  off?(event: string, handler: (e: Record<string, unknown>) => void): void;
   getPointer?(event: MouseEvent | DragEvent): { x: number; y: number };
+  __heistboardBadgeListenerAttached?: boolean;
 }
 
 interface ReactFiberNode {

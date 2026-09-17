@@ -204,4 +204,79 @@ describe("GTA VI Identity Badge Renderer", () => {
       globalThis.Image = OriginalImage;
     }
   });
+
+  it("attaches click and selection event handlers to open identity edit section when badge is clicked", async () => {
+    class MockFabricImageWithEvents {
+      left = 250;
+      top = 180;
+      scale = vi.fn();
+      setCoords = vi.fn();
+      on = vi.fn();
+      constructor(public el: unknown, public opts: unknown) {}
+    }
+
+    const mockBaseObj = {
+      constructor: MockFabricImageWithEvents,
+    };
+
+    const canvasHandlers: Record<string, (e: Record<string, unknown>) => void> = {};
+    const mockCanvasInstance: FabricCanvasLike = {
+      getWidth: () => 1200,
+      getHeight: () => 800,
+      getObjects: () => [mockBaseObj as unknown as FabricObjectLike],
+      add: vi.fn(),
+      setActiveObject: vi.fn(),
+      requestRenderAll: vi.fn(),
+      on: vi.fn((event: string, handler: (e: Record<string, unknown>) => void) => {
+        canvasHandlers[event] = handler;
+      }),
+    };
+
+    const OriginalImage = globalThis.Image;
+    globalThis.Image = class {
+      onload: (() => void) | null = null;
+      src = "";
+      constructor() {
+        setTimeout(() => this.onload?.(), 10);
+      }
+    } as unknown as typeof Image;
+
+    const eventListener = vi.fn();
+    const origWindow = (globalThis as unknown as { window?: unknown }).window;
+    const mockWindow = {
+      addEventListener: vi.fn((event: string, fn: () => void) => {
+        if (event === "heistboard:open-identity-tool") {
+          eventListener();
+        }
+      }),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn((event: CustomEvent) => {
+        if (event.type === "heistboard:open-identity-tool") {
+          eventListener();
+        }
+        return true;
+      }),
+    };
+    (globalThis as unknown as { window: unknown }).window = mockWindow;
+
+    try {
+      const placed = await placeOrUpdateBadgeOnFabricCanvas(
+        mockCanvasInstance,
+        DEFAULT_GTA_BADGE_OPTIONS,
+      );
+
+      expect(placed).toBe(true);
+      expect(mockCanvasInstance.on).toHaveBeenCalledWith("mouse:down", expect.any(Function));
+
+      // Simulate clicking on the identity badge on canvas
+      canvasHandlers["mouse:down"]?.({
+        target: { [FABRIC_IDENTITY_BADGE_TAG]: true },
+      });
+
+      expect(eventListener).toHaveBeenCalled();
+    } finally {
+      (globalThis as unknown as { window?: unknown }).window = origWindow;
+      globalThis.Image = OriginalImage;
+    }
+  });
 });
