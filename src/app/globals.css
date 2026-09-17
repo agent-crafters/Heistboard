@@ -489,12 +489,86 @@ a:focus-visible {
   text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
 }
 
+.editor-hud-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  padding: 0.65rem 1.1rem;
+  background: linear-gradient(90deg, rgba(24, 14, 46, 0.9) 0%, rgba(16, 9, 32, 0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 113, 206, 0.38);
+  border-bottom: 1px solid rgba(0, 245, 212, 0.25);
+  border-radius: 12px 12px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  box-shadow: 0 8px 24px rgba(4, 2, 12, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+.editor-hud-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.editor-hud-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00f5d4;
+  box-shadow: 0 0 10px #00f5d4;
+  animation: pulseGlow 1.6s infinite ease-in-out;
+}
+
+.editor-hud-channel {
+  color: #ff71ce;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 113, 206, 0.4);
+}
+
+.editor-hud-coords {
+  color: #a698c4;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+.editor-hud-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.editor-hud-engine {
+  color: #ffd166;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(255, 209, 102, 0.12);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 209, 102, 0.3);
+}
+
+.editor-hud-res {
+  color: #00f5d4;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .editor-frame {
   position: relative;
   min-height: min(680px, 72vh);
   overflow: hidden;
   border: 1px solid rgba(255, 113, 206, 0.45);
-  border-radius: 12px;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
   background: #0d071d;
   box-shadow: 0 28px 80px rgba(4, 2, 12, 0.75), 0 0 35px rgba(255, 0, 127, 0.22);
 }
@@ -503,13 +577,13 @@ a:focus-visible {
 .editor-frame::after {
   content: "";
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   pointer-events: none;
   z-index: 10;
   border-color: #00f5d4;
   border-style: solid;
-  filter: drop-shadow(0 0 6px rgba(0, 245, 212, 0.7));
+  filter: drop-shadow(0 0 8px rgba(0, 245, 212, 0.8));
 }
 
 .editor-frame::before {
@@ -522,6 +596,45 @@ a:focus-visible {
   bottom: 10px;
   right: 10px;
   border-width: 0 2px 2px 0;
+}
+
+.editor-hud-footer-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  padding: 0.65rem 1rem;
+  margin-top: 0.65rem;
+  background: rgba(18, 10, 36, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 113, 206, 0.28);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.shortcut-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #cfc2e4;
+  letter-spacing: 0.04em;
+}
+
+.shortcut-pill kbd {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.3) 0%, rgba(157, 78, 221, 0.3) 100%);
+  border: 1px solid rgba(255, 0, 127, 0.55);
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(255, 0, 127, 0.25);
 }
 
 .editor-overlay {
@@ -2787,11 +2900,11 @@ a:focus-visible {
   align-items: center !important;
   justify-content: center !important;
   gap: 0.25rem !important;
-  padding: 0.5rem 0.25rem !important;
-  border-radius: 0.375rem !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  color: #d1d5db !important;
+  padding: 0.55rem 0.3rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid rgba(255, 208, 0, 0.25) !important;
+  background: rgba(22, 13, 44, 0.75) !important;
+  color: #ffd000 !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   width: 100% !important;
@@ -2799,16 +2912,18 @@ a:focus-visible {
 }
 
 .native-tool-gta-fonts-btn:hover {
-  background-color: #374151 !important;
+  background: rgba(255, 208, 0, 0.2) !important;
   color: #ffffff !important;
-  border-color: rgba(255, 208, 0, 0.3) !important;
+  border-color: #ffd000 !important;
+  box-shadow: 0 0 14px rgba(255, 208, 0, 0.45) !important;
+  transform: scale(1.05) !important;
 }
 
 .native-tool-gta-fonts-btn.active {
-  background-color: #374151 !important;
+  background: linear-gradient(135deg, rgba(255, 208, 0, 0.35) 0%, rgba(255, 0, 127, 0.35) 100%) !important;
   color: #ffffff !important;
   border-color: #ffd000 !important;
-  box-shadow: 0 0 12px rgba(255, 208, 0, 0.35) !important;
+  box-shadow: 0 0 16px rgba(255, 208, 0, 0.6) !important;
 }
 
 /* In-Editor Native Tool Rail Operative Identity Button (Placed below GTA Fonts) */
@@ -2818,11 +2933,11 @@ a:focus-visible {
   align-items: center !important;
   justify-content: center !important;
   gap: 0.25rem !important;
-  padding: 0.5rem 0.25rem !important;
-  border-radius: 0.375rem !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  color: #d1d5db !important;
+  padding: 0.55rem 0.3rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid rgba(255, 0, 127, 0.3) !important;
+  background: rgba(22, 13, 44, 0.75) !important;
+  color: #ff007f !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   width: 100% !important;
@@ -2830,16 +2945,18 @@ a:focus-visible {
 }
 
 .native-tool-operative-identity-btn:hover {
-  background-color: #374151 !important;
+  background: rgba(255, 0, 127, 0.2) !important;
   color: #ffffff !important;
-  border-color: rgba(247, 37, 133, 0.4) !important;
+  border-color: #ff007f !important;
+  box-shadow: 0 0 14px rgba(255, 0, 127, 0.45) !important;
+  transform: scale(1.05) !important;
 }
 
 .native-tool-operative-identity-btn.active {
-  background-color: #374151 !important;
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.35) 0%, rgba(157, 78, 221, 0.35) 100%) !important;
   color: #ffffff !important;
-  border-color: #f72585 !important;
-  box-shadow: 0 0 12px rgba(247, 37, 133, 0.4) !important;
+  border-color: #ff007f !important;
+  box-shadow: 0 0 16px rgba(255, 0, 127, 0.6) !important;
 }
 
 /* In-Editor Mission Wrapper */
@@ -2871,14 +2988,15 @@ a:focus-visible {
   left: auto;
   width: min(390px, calc(100% - var(--native-tool-rail-width, 72px)));
   z-index: 45;
-  background: rgba(17, 21, 22, 0.98);
-  backdrop-filter: blur(16px);
-  border-left: 2px solid #f72585;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(18, 10, 36, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 2px solid #ff007f;
+  border-right: 1px solid rgba(255, 113, 206, 0.2);
   border-top: none;
   border-bottom: none;
   border-radius: 0;
-  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.7), 0 0 20px rgba(247, 37, 133, 0.2);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 0, 127, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2890,44 +3008,48 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: rgba(12, 15, 16, 0.95);
-  border-bottom: 1px solid rgba(247, 37, 133, 0.3);
+  padding: 0.85rem 1.15rem;
+  background: linear-gradient(90deg, rgba(255, 0, 127, 0.2) 0%, rgba(157, 78, 221, 0.15) 100%);
+  border-bottom: 1px solid rgba(255, 0, 127, 0.35);
 }
 
 .editor-identity-panel-header .panel-badge {
-  background: linear-gradient(135deg, #f72585, #7209b7);
+  background: linear-gradient(135deg, #ff007f, #9d4edd);
   color: #ffffff;
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.15rem 0.4rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
 }
 
 .editor-identity-panel-header .panel-title {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .editor-identity-panel-header .panel-close-btn {
   background: transparent;
   border: none;
-  color: #9ba39a;
+  color: #cfc2e4;
   cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.45rem;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
   line-height: 1;
   border-radius: 4px;
   transition: all 0.15s ease;
 }
 
 .editor-identity-panel-header .panel-close-btn:hover {
-  color: #f72585;
-  background: rgba(247, 37, 133, 0.15);
+  color: #ff007f;
+  background: rgba(255, 0, 127, 0.18);
+  transform: rotate(90deg);
 }
 
 .editor-identity-panel-scroll {
@@ -2938,7 +3060,7 @@ a:focus-visible {
   overflow-x: hidden;
   padding: 0.85rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(247, 37, 133, 0.4) transparent;
+  scrollbar-color: rgba(255, 0, 127, 0.4) transparent;
 }
 
 /* In-Editor GTA Fonts Drawer Panel (Docked full-height like native Draw/Text/Shapes) */
@@ -2951,14 +3073,15 @@ a:focus-visible {
   left: auto;
   width: min(390px, calc(100% - var(--native-tool-rail-width, 72px)));
   z-index: 45;
-  background: rgba(17, 21, 22, 0.98);
-  backdrop-filter: blur(16px);
-  border-left: 2px solid #ffd000;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(18, 10, 36, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 2px solid #ffaa00;
+  border-right: 1px solid rgba(255, 170, 0, 0.2);
   border-top: none;
   border-bottom: none;
   border-radius: 0;
-  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 208, 0, 0.15);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 170, 0, 0.25);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2970,44 +3093,48 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: rgba(12, 15, 16, 0.95);
-  border-bottom: 1px solid rgba(255, 208, 0, 0.25);
+  padding: 0.85rem 1.15rem;
+  background: linear-gradient(90deg, rgba(255, 170, 0, 0.2) 0%, rgba(255, 0, 127, 0.15) 100%);
+  border-bottom: 1px solid rgba(255, 170, 0, 0.35);
 }
 
 .editor-gta-fonts-panel-header .panel-badge {
-  background: linear-gradient(135deg, #ffd000, #ff9f43);
-  color: #111516;
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.62rem;
+  background: linear-gradient(135deg, #ffaa00, #ff8a00);
+  color: #110a24;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.15rem 0.4rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
 }
 
 .editor-gta-fonts-panel-header .panel-title {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .editor-gta-fonts-panel-header .panel-close-btn {
   background: transparent;
   border: none;
-  color: #9ba39a;
+  color: #cfc2e4;
   cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.45rem;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
   line-height: 1;
   border-radius: 4px;
   transition: all 0.15s ease;
 }
 
 .editor-gta-fonts-panel-header .panel-close-btn:hover {
-  color: #ffd000;
-  background: rgba(255, 208, 0, 0.15);
+  color: #ffaa00;
+  background: rgba(255, 170, 0, 0.18);
+  transform: rotate(90deg);
 }
 
 .editor-gta-fonts-panel-scroll {
@@ -3018,7 +3145,7 @@ a:focus-visible {
   overflow-x: hidden;
   padding: 0.85rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 208, 0, 0.35) transparent;
+  scrollbar-color: rgba(255, 170, 0, 0.4) transparent;
 }
 
 /* In-Editor Native Tool Rail Tactical Stickers Button (Placed below Identity) */
@@ -3028,11 +3155,11 @@ a:focus-visible {
   align-items: center !important;
   justify-content: center !important;
   gap: 0.25rem !important;
-  padding: 0.5rem 0.25rem !important;
-  border-radius: 0.375rem !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  color: #d1d5db !important;
+  padding: 0.55rem 0.3rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid rgba(0, 245, 212, 0.3) !important;
+  background: rgba(22, 13, 44, 0.75) !important;
+  color: #00f5d4 !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   width: 100% !important;
@@ -3040,16 +3167,18 @@ a:focus-visible {
 }
 
 .native-tool-tactical-stickers-btn:hover {
-  background-color: #374151 !important;
+  background: rgba(0, 245, 212, 0.2) !important;
   color: #ffffff !important;
-  border-color: rgba(0, 240, 255, 0.4) !important;
+  border-color: #00f5d4 !important;
+  box-shadow: 0 0 14px rgba(0, 245, 212, 0.45) !important;
+  transform: scale(1.05) !important;
 }
 
 .native-tool-tactical-stickers-btn.active {
-  background-color: #374151 !important;
+  background: linear-gradient(135deg, rgba(0, 245, 212, 0.35) 0%, rgba(1, 205, 254, 0.35) 100%) !important;
   color: #ffffff !important;
-  border-color: #00f0ff !important;
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.4) !important;
+  border-color: #00f5d4 !important;
+  box-shadow: 0 0 16px rgba(0, 245, 212, 0.6) !important;
 }
 
 /* In-Editor Native Tool Rail BG Layer & Styles Button (Placed below Stickers) */
@@ -3059,11 +3188,11 @@ a:focus-visible {
   align-items: center !important;
   justify-content: center !important;
   gap: 0.25rem !important;
-  padding: 0.5rem 0.25rem !important;
-  border-radius: 0.375rem !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  color: #d1d5db !important;
+  padding: 0.55rem 0.3rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid rgba(255, 138, 0, 0.3) !important;
+  background: rgba(22, 13, 44, 0.75) !important;
+  color: #ff8a00 !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   width: 100% !important;
@@ -3071,18 +3200,18 @@ a:focus-visible {
 }
 
 .native-tool-bg-styles-btn:hover {
-  background-color: #374151 !important;
+  background: rgba(255, 138, 0, 0.2) !important;
   color: #ffffff !important;
-  border-color: rgba(255, 128, 0, 0.4) !important;
+  border-color: #ff8a00 !important;
+  box-shadow: 0 0 14px rgba(255, 138, 0, 0.45) !important;
+  transform: scale(1.05) !important;
 }
 
 .native-tool-bg-styles-btn.active {
-  background-color: #374151 !important;
+  background: linear-gradient(135deg, rgba(255, 138, 0, 0.35) 0%, rgba(255, 0, 127, 0.35) 100%) !important;
   color: #ffffff !important;
-  border-color: #ff8000 !important;
-  box-shadow: 0 0 12px rgba(255, 128, 0, 0.4) !important;
-}
-
+  border-color: #ff8a00 !important;
+  box-shadow: 0 0 16px rgba(255, 138, 0, 0.6) !important;
 /* In-Editor Tactical Stickers Drawer Panel (Docked full-height like native Draw/Text/Shapes) */
 .editor-stickers-panel-overlay {
   position: absolute;
@@ -3093,14 +3222,15 @@ a:focus-visible {
   left: auto;
   width: min(390px, calc(100% - var(--native-tool-rail-width, 72px)));
   z-index: 45;
-  background: rgba(17, 21, 22, 0.98);
-  backdrop-filter: blur(16px);
-  border-left: 2px solid #00f0ff;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(18, 10, 36, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 2px solid #00f5d4;
+  border-right: 1px solid rgba(0, 245, 212, 0.2);
   border-top: none;
   border-bottom: none;
   border-radius: 0;
-  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.18);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 245, 212, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3112,44 +3242,48 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: rgba(12, 15, 16, 0.95);
-  border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+  padding: 0.85rem 1.15rem;
+  background: linear-gradient(90deg, rgba(0, 245, 212, 0.2) 0%, rgba(1, 205, 254, 0.15) 100%);
+  border-bottom: 1px solid rgba(0, 245, 212, 0.35);
 }
 
 .editor-stickers-panel-header .panel-badge {
-  background: linear-gradient(135deg, #00f0ff, #0072ff);
-  color: #111516;
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.62rem;
+  background: linear-gradient(135deg, #00f5d4, #00b4d8);
+  color: #061922;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.15rem 0.4rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.4);
 }
 
 .editor-stickers-panel-header .panel-title {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .editor-stickers-panel-header .panel-close-btn {
   background: transparent;
   border: none;
-  color: #9ba39a;
+  color: #cfc2e4;
   cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.45rem;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
   line-height: 1;
   border-radius: 4px;
   transition: all 0.15s ease;
 }
 
 .editor-stickers-panel-header .panel-close-btn:hover {
-  color: #00f0ff;
-  background: rgba(0, 240, 255, 0.15);
+  color: #00f5d4;
+  background: rgba(0, 245, 212, 0.18);
+  transform: rotate(90deg);
 }
 
 .editor-stickers-panel-scroll {
@@ -3160,7 +3294,7 @@ a:focus-visible {
   overflow-x: hidden;
   padding: 0.85rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 240, 255, 0.35) transparent;
+  scrollbar-color: rgba(0, 245, 212, 0.4) transparent;
 }
 
 /* In-Editor BG Layer & GTA VI Styles Drawer Panel (Docked full-height like native Draw/Text/Shapes) */
@@ -3173,14 +3307,15 @@ a:focus-visible {
   left: auto;
   width: min(390px, calc(100% - var(--native-tool-rail-width, 72px)));
   z-index: 45;
-  background: rgba(17, 21, 22, 0.98);
-  backdrop-filter: blur(16px);
-  border-left: 2px solid #ff8000;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(18, 10, 36, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 2px solid #ff8a00;
+  border-right: 1px solid rgba(255, 138, 0, 0.2);
   border-top: none;
   border-bottom: none;
   border-radius: 0;
-  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 128, 0, 0.18);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 138, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3192,44 +3327,48 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: rgba(12, 15, 16, 0.95);
-  border-bottom: 1px solid rgba(255, 128, 0, 0.25);
+  padding: 0.85rem 1.15rem;
+  background: linear-gradient(90deg, rgba(255, 138, 0, 0.2) 0%, rgba(255, 0, 127, 0.15) 100%);
+  border-bottom: 1px solid rgba(255, 138, 0, 0.35);
 }
 
 .editor-bg-styles-panel-header .panel-badge {
-  background: linear-gradient(135deg, #ff8000, #ff0055);
+  background: linear-gradient(135deg, #ff8a00, #ff007f);
   color: #ffffff;
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.15rem 0.4rem;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 138, 0, 0.4);
 }
 
 .editor-bg-styles-panel-header .panel-title {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  text-transform: uppercase;
 }
 
 .editor-bg-styles-panel-header .panel-close-btn {
   background: transparent;
   border: none;
-  color: #9ba39a;
+  color: #cfc2e4;
   cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.25rem 0.45rem;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
   line-height: 1;
   border-radius: 4px;
   transition: all 0.15s ease;
 }
 
 .editor-bg-styles-panel-header .panel-close-btn:hover {
-  color: #ff8000;
-  background: rgba(255, 128, 0, 0.15);
+  color: #ff8a00;
+  background: rgba(255, 138, 0, 0.18);
+  transform: rotate(90deg);
 }
 
 .editor-bg-styles-panel-scroll {
@@ -3240,7 +3379,7 @@ a:focus-visible {
   overflow-x: hidden;
   padding: 0.85rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 128, 0, 0.35) transparent;
+  scrollbar-color: rgba(255, 138, 0, 0.4) transparent;
 }
 
 /* ==========================================================================
@@ -3946,26 +4085,34 @@ a:focus-visible {
 .brief-operative-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 208, 0, 0.25);
-  border-radius: 6px;
-  padding: 0.65rem 0.85rem;
-  margin: 0.65rem 0;
+  gap: 0.85rem;
+  background: linear-gradient(135deg, rgba(28, 17, 52, 0.92) 0%, rgba(16, 10, 32, 0.95) 100%);
+  border: 1px solid rgba(255, 113, 206, 0.4);
+  border-radius: 8px;
+  padding: 0.75rem 0.95rem;
+  margin: 0.85rem 0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), 0 0 14px rgba(255, 0, 127, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brief-operative-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 0, 127, 0.35);
 }
 
 .brief-operative-avatar {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   overflow: hidden;
-  background: #0a2228;
-  border: 1px solid #ffd000;
+  background: #090514;
+  border: 2px solid #00f5d4;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffd000;
+  color: #00f5d4;
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
 }
 
 .brief-operative-avatar img {
@@ -3975,8 +4122,8 @@ a:focus-visible {
 }
 
 .brief-operative-avatar svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .brief-operative-meta {
@@ -3987,41 +4134,52 @@ a:focus-visible {
 }
 
 .brief-operative-tag {
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.6rem;
-  color: #ffd000;
-  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: #00f5d4;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  text-shadow: 0 0 6px rgba(0, 245, 212, 0.4);
 }
 
 .brief-operative-alias {
-  font-size: 0.95rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
   color: #ffffff;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: linear-gradient(135deg, #ffffff 0%, #ffd166 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .brief-operative-role {
-  font-size: 0.68rem;
-  color: #9ba39a;
+  font-size: 0.7rem;
+  color: #cfc2e4;
 }
 
 .brief-edit-identity-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(240, 234, 220, 0.2);
-  color: var(--paper);
+  background: rgba(255, 0, 127, 0.18);
+  border: 1px solid rgba(255, 0, 127, 0.45);
+  color: #ff71ce;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
-  padding: 0.25rem 0.55rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .brief-edit-identity-btn:hover {
-  background: rgba(255, 208, 0, 0.2);
-  border-color: #ffd000;
-  color: #fff;
+  background: rgba(255, 0, 127, 0.35);
+  border-color: #ff007f;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 0, 127, 0.5);
 }
 
 /* Dossier Preview Operative Strip */

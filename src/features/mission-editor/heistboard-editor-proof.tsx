@@ -725,47 +725,73 @@ export function HeistboardEditorProof() {
             )}
 
             {editorVisible && (
-              <div
-                id="editor-frame-container"
-                ref={editorFrameRef}
-                className="editor-frame"
-                aria-busy={workflow.phase !== "editing"}
-                onDragOver={handleDragOver}
-                onDrop={(e) => void handleDrop(e)}
-              >
-                {workflow.phase === "loading-editor" && (
-                  <div className="editor-overlay">
-                    <EditorLoading label="Loading React Image Editor…" />
+              <>
+                {/* Tactical HUD Header Bar for Unlayer Editor */}
+                <div className="editor-hud-header-bar" aria-hidden="true">
+                  <div className="editor-hud-left">
+                    <span className="editor-hud-live-dot" />
+                    <span className="editor-hud-channel">SAT-RECON CH-06 // VICE CITY DOWNTOWN &amp; SHORE</span>
+                    <span className="editor-hud-coords">GRID: 25°46'N 80°11'W</span>
                   </div>
-                )}
-                <MissionEditor
-                  image={mapBaseUrl}
-                  retryKey={workflow.retryKey}
-                  onLoad={handleEditorLoad}
-                  onSave={(result) => void handleSave(result)}
-                  onCancel={() => dispatch({ type: "cancelled" })}
-                  onImageError={() =>
-                    dispatch({
-                      type: "image-failed",
-                      message: "The Map Base could not be loaded into the editor.",
-                    })
-                  }
-                  onEditorError={(error) =>
-                    dispatch({
-                      type: "editor-failed",
-                      message: `React Image Editor could not start: ${error.message}`,
-                    })
-                  }
-                  bgConfig={bgLayerConfig}
-                  onBgConfigChange={handleBgLayerChange}
-                  identityOptions={gtaBadgeOptions}
-                  onIdentityChange={setGtaBadgeOptions}
-                  identityState={identity}
-                  onIdentityStateChange={setIdentity}
-                  requestedTool={requestedEditorTool}
-                  onToolHandled={() => setRequestedEditorTool(null)}
-                />
-              </div>
+                  <div className="editor-hud-right">
+                    <span className="editor-hud-engine">UNLAYER REACT IMAGE EDITOR</span>
+                    <span className="editor-hud-res">2400 × 1600 VECTOR HUD</span>
+                  </div>
+                </div>
+
+                <div
+                  id="editor-frame-container"
+                  ref={editorFrameRef}
+                  className="editor-frame"
+                  aria-busy={workflow.phase !== "editing"}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => void handleDrop(e)}
+                >
+                  {workflow.phase === "loading-editor" && (
+                    <div className="editor-overlay">
+                      <EditorLoading label="Loading React Image Editor…" />
+                    </div>
+                  )}
+                  <MissionEditor
+                    image={mapBaseUrl}
+                    retryKey={workflow.retryKey}
+                    onLoad={handleEditorLoad}
+                    onSave={(result) => void handleSave(result)}
+                    onCancel={() => dispatch({ type: "cancelled" })}
+                    onImageError={() =>
+                      dispatch({
+                        type: "image-failed",
+                        message: "The Map Base could not be loaded into the editor.",
+                      })
+                    }
+                    onEditorError={(error) =>
+                      dispatch({
+                        type: "editor-failed",
+                        message: `React Image Editor could not start: ${error.message}`,
+                      })
+                    }
+                    bgConfig={bgLayerConfig}
+                    onBgConfigChange={handleBgLayerChange}
+                    identityOptions={gtaBadgeOptions}
+                    onIdentityChange={setGtaBadgeOptions}
+                    identityState={identity}
+                    onIdentityStateChange={setIdentity}
+                    requestedTool={requestedEditorTool}
+                    onToolHandled={() => setRequestedEditorTool(null)}
+                  />
+                </div>
+
+                {/* Tactical Shortcuts & Feature Bar for Unlayer Editor */}
+                <div className="editor-hud-footer-bar" aria-label="Editor quick shortcuts and tools">
+                  <span className="shortcut-pill"><kbd>Draw</kbd> Freehand Vector Routes</span>
+                  <span className="shortcut-pill"><kbd>Text</kbd> Tactical Intel Notes</span>
+                  <span className="shortcut-pill"><kbd>Shapes</kbd> Target Zones &amp; Polygons</span>
+                  <span className="shortcut-pill"><kbd>Display</kbd> GTA VI Display Fonts</span>
+                  <span className="shortcut-pill"><kbd>Identity</kbd> Operative ID Badge</span>
+                  <span className="shortcut-pill"><kbd>Stickers</kbd> 30 Heist Markers</span>
+                  <span className="shortcut-pill"><kbd>BG Styles</kbd> Vice City Filters</span>
+                </div>
+              </>
             )}
 
             {workflow.phase === "saving" && (
