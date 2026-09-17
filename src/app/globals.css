@@ -1008,32 +1008,168 @@ a:focus-visible {
   color: var(--paper);
 }
 
-.selected-territory-banner {
-  padding: 0.65rem 0.85rem;
-  background: rgba(25, 65, 72, 0.4);
-  border: 1px solid rgba(82, 196, 172, 0.3);
+/* GTA VI Hotspots Bar & Quick Switcher */
+.gta-hotspots-bar {
+  background: linear-gradient(135deg, rgba(255, 113, 206, 0.12) 0%, rgba(1, 205, 254, 0.08) 100%);
+  border: 1px solid rgba(255, 113, 206, 0.35);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(255, 113, 206, 0.08);
+}
+
+.gta-hotspots-bar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.random-gta-hotspot-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(135deg, #ff71ce 0%, #b942e8 50%, #01cdfe 100%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 113, 206, 0.45), 0 0 20px rgba(1, 205, 254, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.random-gta-hotspot-btn:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 6px 20px rgba(255, 113, 206, 0.6), 0 0 28px rgba(1, 205, 254, 0.4);
+  filter: brightness(1.08);
+}
+
+.random-gta-hotspot-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+}
+
+.random-gta-hotspot-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.random-gta-hotspot-btn .dice-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.random-gta-hotspot-btn .btn-badge {
+  background: rgba(0, 0, 0, 0.35);
+  color: #05ffa1;
+  font-size: 0.65rem;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
+  border: 1px solid rgba(5, 255, 161, 0.4);
+  margin-left: auto;
+}
+
+.gta-hotspots-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.gta-hotspots-meta .meta-highlight {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ff71ce;
+  font-weight: 700;
+}
+
+.gta-hotspots-meta .meta-text {
+  color: #a49bb5;
+}
+
+.selected-territory-banner {
+  padding: 0.75rem 0.95rem;
+  background: linear-gradient(135deg, rgba(26, 17, 52, 0.9) 0%, rgba(17, 35, 54, 0.85) 100%);
+  border: 1px solid rgba(1, 205, 254, 0.4);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35), inset 0 0 10px rgba(1, 205, 254, 0.08);
+}
+
+.selected-territory-info {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .selected-territory-banner .territory-tag {
   font-size: 0.65rem;
   font-family: "SFMono-Regular", Consolas, monospace;
   text-transform: uppercase;
-  color: #52c4ac;
+  color: #05ffa1;
   letter-spacing: 0.08em;
+  font-weight: 700;
 }
 
 .selected-territory-banner strong {
   font-size: 0.95rem;
-  color: var(--paper);
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .selected-territory-banner small {
   font-size: 0.75rem;
-  color: var(--muted);
+  color: #c9bede;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shuffle-mini-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(255, 113, 206, 0.15);
+  border: 1px solid rgba(255, 113, 206, 0.4);
+  border-radius: 5px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.shuffle-mini-btn:hover:not(:disabled) {
+  background: rgba(255, 113, 206, 0.3);
+  border-color: #ff71ce;
+  box-shadow: 0 0 12px rgba(255, 113, 206, 0.4);
+  transform: translateY(-1px);
+}
+
+.shuffle-mini-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Camera Inspector & Fine Sliders */

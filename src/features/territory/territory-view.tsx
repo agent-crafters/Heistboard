@@ -12,9 +12,14 @@ import {
   getCategoryLabel,
   type MapLayerMode,
   type PlaceCandidate,
+  type PlaceCategory,
   type TerritoryAttribution,
   type TerritoryCameraState,
 } from "@/domain/territory";
+import {
+  getRandomGtaLocation,
+  type GtaLocationHotspot,
+} from "@/domain/gta-locations";
 import { defaultPlaceSearchService } from "@/lib/place-search";
 import {
   captureTerritoryShot,
@@ -38,19 +43,45 @@ export interface TerritoryViewProps {
   initialCamera?: TerritoryCameraState;
 }
 
+function hotspotToCandidate(hotspot: GtaLocationHotspot): PlaceCandidate {
+  const category: PlaceCategory =
+    hotspot.category === "city"
+      ? "city"
+      : hotspot.category === "neighborhood"
+        ? "neighborhood"
+        : "landmark";
+
+  return {
+    id: `gta-${hotspot.id}`,
+    name: hotspot.name,
+    displayName: `${hotspot.name}, ${hotspot.subtitle}`,
+    subtitle: `${hotspot.codename} • ${hotspot.subtitle}`,
+    category,
+    lon: hotspot.camera.center[0],
+    lat: hotspot.camera.center[1],
+  };
+}
+
 export function TerritoryView({
   onLockTerritory,
   onSelectSampleFallback,
-  initialCamera = DEFAULT_TERRITORY_CAMERA,
+  initialCamera,
 }: TerritoryViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<MapLibreMap | null>(null);
 
-  const [camera, setCamera] = useState<TerritoryCameraState>(initialCamera);
+  // Default to a random iconic GTA VI / Leonida hotspot when no custom camera is passed
+  const [initialGtaHotspot] = useState<GtaLocationHotspot>(() => getRandomGtaLocation());
+  const activeInitialCamera = initialCamera ?? initialGtaHotspot.camera;
+
+  const [camera, setCamera] = useState<TerritoryCameraState>(activeInitialCamera);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PlaceCandidate[]>([]);
-  const [selectedPlace, setSelectedPlace] = useState<PlaceCandidate | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceCandidate | null>(() => {
+    if (initialCamera) return null;
+    return hotspotToCandidate(initialGtaHotspot);
+  });
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const [searchError, setSearchError] = useState<string | null>(null);
 
@@ -106,10 +137,10 @@ export function TerritoryView({
         map = new maplibregl.Map({
           container: mapContainerRef.current,
           style: OPENFREEMAP_LIBERTY_STYLE,
-          center: initialCamera.center,
-          zoom: initialCamera.zoom,
-          pitch: initialCamera.pitch,
-          bearing: initialCamera.bearing,
+          center: activeInitialCamera.center,
+          zoom: activeInitialCamera.zoom,
+          pitch: activeInitialCamera.pitch,
+          bearing: activeInitialCamera.bearing,
           attributionControl: false,
           fadeDuration: 0,
         });
@@ -173,7 +204,28 @@ export function TerritoryView({
         mapInstanceRef.current = null;
       }
     };
-  }, [initialCamera]);
+  }, [activeInitialCamera]);
+
+  const handleRandomizeGtaLocation = () => {
+    const currentId = selectedPlace?.id?.startsWith("gta-")
+      ? selectedPlace.id.replace(/^gta-/, "")
+      : undefined;
+    const nextHotspot = getRandomGtaLocation(currentId);
+    setSelectedPlace(hotspotToCandidate(nextHotspot));
+    setSearchResults([]);
+    setSearchError(null);
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.flyTo({
+        center: nextHotspot.camera.center,
+        zoom: nextHotspot.camera.zoom,
+        pitch: nextHotspot.camera.pitch,
+        bearing: nextHotspot.camera.bearing,
+        essential: true,
+        duration: 1600,
+      });
+    }
+  };
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -353,6 +405,27 @@ export function TerritoryView({
           </p>
         </div>
 
+        {/* GTA VI Random Location Bar */}
+        <div className="gta-hotspots-bar" role="region" aria-label="GTA VI Hotspots Quick Switcher">
+          <div className="gta-hotspots-bar-content">
+            <button
+              type="button"
+              className="random-gta-hotspot-btn"
+              onClick={handleRandomizeGtaLocation}
+              disabled={isSearching || isCapturing}
+              title="Shuffle to another iconic GTA VI / Leonida sector"
+            >
+              <span className="dice-icon" aria-hidden="true">🎲</span>
+              <span className="btn-label">Random GTA VI Location</span>
+              <span className="btn-badge">LEONIDA</span>
+            </button>
+            <div className="gta-hotspots-meta">
+              <span className="meta-highlight">GTA VI • State of Leonida</span>
+              <span className="meta-text">Defaulting to random hotspot • Pan, tilt, zoom, or search any world location below</span>
+            </div>
+          </div>
+        </div>
+
         {/* Place Search */}
         <div className="search-container" onKeyDown={handleKeyDown}>
           <form className="territory-search-form" onSubmit={handleSearchSubmit}>
@@ -443,9 +516,20 @@ export function TerritoryView({
         {/* Selected Territory Indicator */}
         {selectedPlace && (
           <div className="selected-territory-banner">
-            <span className="territory-tag">Target Locked:</span>
-            <strong>{selectedPlace.name}</strong>
-            <small>{selectedPlace.subtitle}</small>
+            <div className="selected-territory-info">
+              <span className="territory-tag">Target Locked:</span>
+              <strong>{selectedPlace.name}</strong>
+              <small>{selectedPlace.subtitle}</small>
+            </div>
+            <button
+              type="button"
+              className="shuffle-mini-btn"
+              onClick={handleRandomizeGtaLocation}
+              title="Shuffle to another iconic GTA VI hotspot"
+              disabled={isSearching || isCapturing}
+            >
+              🎲 Next GTA VI Sector
+            </button>
           </div>
         )}
 
