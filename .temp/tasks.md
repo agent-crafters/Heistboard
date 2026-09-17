@@ -264,3 +264,18 @@ This is the single authoritative project task list. Status is encoded by the che
   - The root layout imports `tailwind.css`; `globals.css` no longer exists.
   - The stylesheet rename does not silently introduce Tailwind tooling or alter existing visual rules.
   - The completed diff passes standards and issue-fidelity review.
+
+## HB-019 — Group custom editor tools under GTA-VI rail section
+
+- Target: 2026-09-17
+- Priority: P0
+- Status: [x] DONE
+- Outcome: Keep the eight native editor tools consecutive and place the four custom tools in one labeled rail group.
+- Dependencies: HB-018
+- GitHub issue: #19
+- Acceptance criteria:
+  - Filter, Crop, Resize, Draw, Text, Shapes, Stickers, and Frame remain one uninterrupted native-tool sequence.
+  - Display, Identity, custom Stickers, and BG Layers live inside one visibly bounded `GTA-VI` group after the native tools.
+  - Custom panels, active states, accessible names, and click targets continue to work.
+  - Editor DOM mutations do not duplicate the group or its buttons.
+  - Lint, typecheck, tests, and production build pass.

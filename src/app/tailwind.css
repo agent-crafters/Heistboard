@@ -3313,8 +3313,40 @@ a:focus-visible {
   color: #ffd000;
 }
 
-/* In-Editor Native Tool Rail GTA Fonts Button (Placed below Shapes) */
-/* In-Editor Native Tool Rail GTA Fonts Button (Placed below Shapes) */
+/* Custom editor tools grouped after the eight native tools. */
+.native-tool-gta-vi-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.35rem !important;
+  width: calc(100% - 0.35rem) !important;
+  box-sizing: border-box !important;
+  margin: 0.45rem auto 0 !important;
+  padding: 0.35rem 0.25rem 0.3rem !important;
+  border: 1px solid rgba(255, 208, 0, 0.55) !important;
+  border-radius: 0.65rem !important;
+  background: linear-gradient(180deg, rgba(34, 18, 55, 0.96), rgba(15, 20, 34, 0.96)) !important;
+  box-shadow: 0 0 18px rgba(255, 113, 206, 0.16) !important;
+}
+
+.native-tool-gta-vi-label {
+  display: block !important;
+  color: #ffd000 !important;
+  font-family: var(--font-mono), monospace !important;
+  font-size: 0.52rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.09em !important;
+  text-align: center !important;
+}
+
+.native-tool-gta-vi-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.3rem !important;
+  width: 100% !important;
+}
+
+/* Display button */
 .native-tool-gta-fonts-btn {
   display: flex !important;
   flex-direction: column !important;

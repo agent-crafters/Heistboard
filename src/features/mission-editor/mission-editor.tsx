@@ -34,14 +34,14 @@ const MISSION_TOOL_OPTIONS: ImageEditorOptions = {
     imageEditor: {
       enabled: true,
       tools: {
-        crop: false,
-        resize: false,
-        filter: false,
+        filter: true,
+        crop: true,
+        resize: true,
         draw: true,
         text: true,
         shapes: true,
-        stickers: false,
-        frame: false,
+        stickers: true,
+        frame: true,
       },
     },
   },
@@ -168,7 +168,7 @@ export function MissionEditor({
     };
   }, [openIdentityDrawer]);
 
-  // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts, Identity, Stickers, and BG Styles
+  // Keep native tools consecutive, then mount the four custom tools in one GTA-VI group.
   useEffect(() => {
     ensureFontsLoaded();
     const disconnectNativeMenu = setupNativeFontMenuObserver(containerRef.current);
@@ -180,8 +180,35 @@ export function MissionEditor({
       );
       if (!shapesBtn || !shapesBtn.parentElement) return;
 
-      // 1. Inject GTA Fonts button after Shapes
-      let gtaBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+      const toolRail = shapesBtn.parentElement;
+      const frameBtn = toolRail.querySelector<HTMLButtonElement>(
+        'button[data-testid="native-tool-frame"]',
+      );
+      if (!frameBtn) return;
+
+      let customToolsGroup = toolRail.querySelector<HTMLDivElement>(
+        '[data-testid="native-tool-gta-vi-group"]',
+      );
+      if (!customToolsGroup) {
+        customToolsGroup = document.createElement("div");
+        customToolsGroup.className = "native-tool-gta-vi-group";
+        customToolsGroup.setAttribute("data-testid", "native-tool-gta-vi-group");
+        customToolsGroup.setAttribute("role", "group");
+        customToolsGroup.setAttribute("aria-label", "GTA-VI custom tools");
+        customToolsGroup.innerHTML = `
+          <span class="native-tool-gta-vi-label" aria-hidden="true">GTA-VI</span>
+          <div class="native-tool-gta-vi-actions"></div>
+        `;
+      }
+      frameBtn.after(customToolsGroup);
+
+      const customToolsList = customToolsGroup.querySelector<HTMLDivElement>(
+        ".native-tool-gta-vi-actions",
+      );
+      if (!customToolsList) return;
+
+      // 1. Display
+      let gtaBtn = toolRail.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-gta-fonts"]',
       );
 
@@ -189,6 +216,7 @@ export function MissionEditor({
         gtaBtn = document.createElement("button");
         gtaBtn.type = "button";
         gtaBtn.setAttribute("data-testid", "native-tool-gta-fonts");
+        gtaBtn.setAttribute("aria-label", "Display tools");
         gtaBtn.className =
           "native-tool-gta-fonts-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
         gtaBtn.title = "Tactical Display Fonts";
@@ -208,12 +236,11 @@ export function MissionEditor({
           setIsStickersOpen(false);
           setIsBgStylesOpen(false);
         };
-
-        shapesBtn.after(gtaBtn);
       }
+      customToolsList.append(gtaBtn);
 
-      // 2. Inject Operative Identity button right below GTA Fonts
-      let identityBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+      // 2. Identity
+      let identityBtn = toolRail.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-operative-identity"]',
       );
 
@@ -221,6 +248,7 @@ export function MissionEditor({
         identityBtn = document.createElement("button");
         identityBtn.type = "button";
         identityBtn.setAttribute("data-testid", "native-tool-operative-identity");
+        identityBtn.setAttribute("aria-label", "Identity tools");
         identityBtn.className =
           "native-tool-operative-identity-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
         identityBtn.title = "Establish Your Operative Identity (GTA VI)";
@@ -241,12 +269,11 @@ export function MissionEditor({
           setIsStickersOpen(false);
           setIsBgStylesOpen(false);
         };
-
-        gtaBtn.after(identityBtn);
       }
+      if (identityBtn) customToolsList.append(identityBtn);
 
-      // 3. Inject Tactical Stickers button right below Identity
-      let stickersBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+      // 3. Custom Stickers
+      let stickersBtn = toolRail.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-tactical-stickers"]',
       );
 
@@ -254,6 +281,7 @@ export function MissionEditor({
         stickersBtn = document.createElement("button");
         stickersBtn.type = "button";
         stickersBtn.setAttribute("data-testid", "native-tool-tactical-stickers");
+        stickersBtn.setAttribute("aria-label", "GTA-VI sticker tools");
         stickersBtn.className =
           "native-tool-tactical-stickers-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
         stickersBtn.title = "Tactical Stickers (30 Heist Markers)";
@@ -278,12 +306,11 @@ export function MissionEditor({
           setIsGtaFontsOpen(false);
           setIsBgStylesOpen(false);
         };
-
-        identityBtn.after(stickersBtn);
       }
+      if (stickersBtn) customToolsList.append(stickersBtn);
 
-      // 4. Inject BG Layer & Styles button right below Stickers
-      let bgStylesBtn = shapesBtn.parentElement.querySelector<HTMLButtonElement>(
+      // 4. Background Layers
+      let bgStylesBtn = toolRail.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-bg-styles"]',
       );
 
@@ -291,6 +318,7 @@ export function MissionEditor({
         bgStylesBtn = document.createElement("button");
         bgStylesBtn.type = "button";
         bgStylesBtn.setAttribute("data-testid", "native-tool-bg-styles");
+        bgStylesBtn.setAttribute("aria-label", "Background layers");
         bgStylesBtn.className =
           "native-tool-bg-styles-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
         bgStylesBtn.title = "Background Layer & GTA VI Styles";
@@ -300,7 +328,7 @@ export function MissionEditor({
             <polyline points="2 17 12 22 22 17"/>
             <polyline points="2 12 12 17 22 12"/>
           </svg>
-          <span class="truncate max-w-full" style="font-size: 9px; font-weight: 700; letter-spacing: 0.02em; color: #ff8000; line-height: 1.1;">BG Styles</span>
+          <span class="truncate max-w-full" style="font-size: 9px; font-weight: 700; letter-spacing: 0.02em; color: #ff8000; line-height: 1.1;">BG Layers</span>
         `;
 
         bgStylesBtn.onclick = (e) => {
@@ -312,12 +340,11 @@ export function MissionEditor({
           setIsGtaFontsOpen(false);
           setIsStickersOpen(false);
         };
-
-        stickersBtn.after(bgStylesBtn);
       }
+      if (bgStylesBtn) customToolsList.append(bgStylesBtn);
 
       // Keep native tool rail width updated for seamless drawer docking
-      const railEl = shapesBtn.parentElement;
+      const railEl = toolRail;
       if (railEl && containerRef.current) {
         const railRect = railEl.getBoundingClientRect();
         if (railRect.width > 0) {
@@ -335,9 +362,20 @@ export function MissionEditor({
         }
       };
 
-      // Close custom panels when Draw, Text, or Shapes is clicked
-      const nativeToolBtns = shapesBtn.parentElement.querySelectorAll<HTMLButtonElement>(
-        'button[data-testid="native-tool-draw"], button[data-testid="native-tool-text"], button[data-testid="native-tool-shapes"]',
+      // Close custom panels when any of the eight native tools is clicked.
+      const nativeToolBtns = toolRail.querySelectorAll<HTMLButtonElement>(
+        [
+          "filter",
+          "crop",
+          "resize",
+          "draw",
+          "text",
+          "shapes",
+          "stickers",
+          "frame",
+        ]
+          .map((tool) => `button[data-testid="native-tool-${tool}"]`)
+          .join(", "),
       );
 
       nativeToolBtns.forEach((btn) => {
