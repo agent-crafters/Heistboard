@@ -7,17 +7,29 @@ import {
 
 describe("GTA VI Locations Domain", () => {
   it("provides an extensive pool of curated GTA VI locations", () => {
-    expect(GTA_LOCATIONS_POOL.length).toBeGreaterThanOrEqual(10);
+    expect(GTA_LOCATIONS_POOL.length).toBeGreaterThanOrEqual(18);
     for (const loc of GTA_LOCATIONS_POOL) {
       expect(loc.id).toBeTruthy();
       expect(loc.name).toBeTruthy();
-      expect(loc.codename).toMatch(/^LEONIDA SECTOR \d+/);
+      expect(loc.codename).toMatch(/^LEONIDA (SECTOR|VENUE|LANDMARK|RESORT|ARENA|ENCLAVE)/);
       expect(loc.camera.center[0]).toBeLessThan(0); // Longitude in Americas (FL)
       expect(loc.camera.center[1]).toBeGreaterThan(20); // Latitude in Florida
       expect(loc.camera.zoom).toBeGreaterThan(12);
       expect(loc.camera.pitch).toBeGreaterThanOrEqual(0);
       expect(loc.camera.bearing).toBeDefined();
     }
+
+    // Verify key user-requested iconic landmarks exist
+    const names = GTA_LOCATIONS_POOL.map((l) => l.name);
+    expect(names).toContain("Ocean Beach");
+    expect(names).toContain("Little Cuba");
+    expect(names).toContain("Tisha-Wocka");
+    expect(names).toContain("VC Port");
+    expect(names).toContain("Southside");
+    expect(names).toContain("Vice Beach");
+    expect(names).toContain("The Malibu Club");
+    expect(names).toContain("Ocean View Hotel");
+    expect(names).toContain("Jack of Hearts Strip Club");
   });
 
   it("returns a valid random location from the pool", () => {
