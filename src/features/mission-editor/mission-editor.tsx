@@ -363,6 +363,18 @@ export function MissionEditor({
         applyBgLayerToFabricCanvas(canvas, bgConfig, originalImageRef.current);
       }
     }
+
+    // Automatically trigger fit to screen once full layout settles so map fills the screen
+    const triggerFit = () => {
+      const fitBtn = containerRef.current?.querySelector<HTMLButtonElement>(
+        'button[title*="Fit"], button[title*="screen"], button[title*="pantalla"], button[title*="anpassen"], button[title*="Adatta"], button[title*="Ajustar"]'
+      );
+      fitBtn?.click();
+    };
+    requestAnimationFrame(triggerFit);
+    setTimeout(triggerFit, 150);
+    setTimeout(triggerFit, 500);
+
     onLoad(editor);
   };
 
@@ -622,14 +634,14 @@ export function MissionEditor({
         key={retryKey}
         editorId={`heistboard-mission-editor-${retryKey}`}
         image={image}
-        minHeight="calc(100vh - 140px)"
+        minHeight="100%"
         options={MISSION_TOOL_OPTIONS}
         onLoad={handleEditorLoaded}
         onSave={onSave}
         onCancel={onCancel}
         onLoadError={onImageError}
         onError={onEditorError}
-        style={{ width: "100%", height: "100%", background: "#171b1c" }}
+        style={{ width: "100%", height: "100%", flex: 1, background: "#171b1c" }}
       />
     </div>
   );
