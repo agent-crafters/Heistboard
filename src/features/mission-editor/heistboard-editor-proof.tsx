@@ -432,7 +432,15 @@ export function HeistboardEditorProof() {
   return (
     <main className="shell">
       <header className="masthead">
-        <div>
+        <div className="masthead-banner-backdrop" aria-hidden="true">
+          <img
+            src="/banner/1.jpg"
+            alt=""
+            className="masthead-banner-image"
+          />
+          <div className="masthead-banner-overlay" />
+        </div>
+        <div className="masthead-content">
           <div className="masthead-badge-row">
             <span className="eyebrow">VICE CITY // TACTICAL MISSION COMMAND · LEONIDA</span>
             <span className="unlayer-hackathon-badge">
@@ -501,14 +509,6 @@ export function HeistboardEditorProof() {
       {/* Stage 01: Case File Briefing */}
       {stage === "file" && (
         <section className="case-file-panel" aria-labelledby="case-file-title">
-          <div className="case-file-banner-frame">
-            <img
-              src="/banner/1.jpg"
-              alt="Operation Case File Briefing Banner"
-              className="case-file-banner-img"
-            />
-          </div>
-
           <div className="case-file-header">
             <div>
               <span className="case-file-eyebrow">Operation Case File // 01</span>
