@@ -49,6 +49,19 @@ import { composeDossierCanvas } from "@/lib/dossier-composer";
 import type { CustomEditorTool } from "./mission-editor";
 import { CinematicReveal } from "./cinematic-reveal";
 
+const BANNER_SLIDES = [
+  "/banner/1.jpg",
+  "/banner/2.jpg",
+  "/banner/3.jpg",
+  "/banner/4.jpg",
+  "/banner/5.jpg",
+  "/banner/6.jpg",
+  "/banner/7.jpg",
+  "/banner/8.jpg",
+  "/banner/9.jpg",
+  "/banner/10.jpg",
+] as const;
+
 const EDITOR_LOAD_TIMEOUT_MS = 20_000;
 
 export type HeistStage = OperationStage;
@@ -138,7 +151,24 @@ export function HeistboardEditorProof() {
   const [isComposingDossier, setIsComposingDossier] = useState<boolean>(false);
   const [dossierError, setDossierError] = useState<string | null>(null);
   const [isRevealing, setIsRevealing] = useState<boolean>(false);
+  const [activeBannerIndex, setActiveBannerIndex] = useState<number>(0);
   const dossierBlobUrlRef = useRef<string | null>(null);
+
+  // 5-second random slideshow for the header banner
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveBannerIndex((prev) => {
+        if (BANNER_SLIDES.length <= 1) return 0;
+        let next = Math.floor(Math.random() * BANNER_SLIDES.length);
+        while (next === prev) {
+          next = Math.floor(Math.random() * BANNER_SLIDES.length);
+        }
+        return next;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const resourceOwner = useRef<AnnotatedMapResourceOwner | null>(null);
   const mapBaseBlobUrlRef = useRef<string | null>(null);
@@ -433,11 +463,15 @@ export function HeistboardEditorProof() {
     <main className="shell">
       <header className="masthead">
         <div className="masthead-banner-backdrop" aria-hidden="true">
-          <img
-            src="/banner/1.jpg"
-            alt=""
-            className="masthead-banner-image"
-          />
+          {BANNER_SLIDES.map((src, i) => (
+            <img
+              key={src}
+              src={src}
+              alt=""
+              className={`masthead-banner-image ${i === activeBannerIndex ? "active" : ""}`}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          ))}
           <div className="masthead-banner-overlay" />
         </div>
         <div className="masthead-content">
