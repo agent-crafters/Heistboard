@@ -3859,7 +3859,7 @@ a:focus-visible {
   height: 100% !important;
   position: relative !important;
   flex: 1 1 100% !important;
-  transition: margin-right 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: margin-right 200ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* Prevent GTA Edits Drawer from overlapping the image editor canvas area */
@@ -3891,7 +3891,7 @@ a:focus-visible {
 @keyframes toolDrawerSlideIn {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(16px);
   }
 
   to {
@@ -3999,7 +3999,7 @@ a:focus-visible {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: toolDrawerSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: toolDrawerSlideIn 200ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 @media (max-width: 1040px) {
@@ -4027,7 +4027,7 @@ a:focus-visible {
   font-weight: 800;
   letter-spacing: 0.08em;
   padding: 0.15rem 0.4rem;
-  border-radius: 3px;
+  border-radius: 4px;
   box-shadow: 0 0 10px rgba(255, 208, 0, 0.4);
 }
 
@@ -4047,15 +4047,24 @@ a:focus-visible {
   cursor: pointer;
   font-size: 0.9rem;
   padding: 0.2rem 0.4rem;
+  min-width: 28px;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
   border-radius: 4px;
-  transition: all 0.15s ease;
+  transition: color 150ms ease, background-color 150ms ease, transform 150ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .editor-gta-edits-panel-header .panel-close-btn:hover {
   color: #ffd000;
   background: rgba(255, 208, 0, 0.18);
   transform: rotate(90deg);
+}
+
+.editor-gta-edits-panel-header .panel-close-btn:active {
+  transform: rotate(90deg) scale(0.96);
 }
 
 /* Quick 4-Tool Switcher Tabs inside GTA Edits Drawer */
@@ -4083,13 +4092,17 @@ a:focus-visible {
   font-size: 0.66rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms cubic-bezier(0.2, 0, 0, 1);
   white-space: nowrap;
 }
 
 .gta-edits-tab-btn:hover {
   background: rgba(255, 255, 255, 0.09);
   color: #ffffff;
+}
+
+.gta-edits-tab-btn:active {
+  transform: scale(0.96);
 }
 
 .gta-edits-tab-btn.active {
@@ -4116,8 +4129,9 @@ a:focus-visible {
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 200ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease, border-color 200ms ease, box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
   text-align: left;
   width: 100%;
 }
@@ -4136,7 +4150,11 @@ a:focus-visible {
 .gta-edits-tool-card:hover {
   transform: translateX(-3px);
   background: rgba(255, 255, 255, 0.07);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.gta-edits-tool-card:active {
+  transform: translateX(-3px) scale(0.96);
 }
 
 .gta-edits-tool-card.tool-card-display:hover {

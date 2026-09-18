@@ -231,7 +231,7 @@ export function MissionEditor({
         gtaEditsBtn.setAttribute("data-testid", "native-tool-gta-edits");
         gtaEditsBtn.setAttribute("aria-label", "GTA Edits");
         gtaEditsBtn.className =
-          "native-tool-gta-edits-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
+          "native-tool-gta-edits-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-all duration-150 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white active:scale-[0.96]";
         gtaEditsBtn.title = "GTA Edits (GTA-VI Inspired Tools)";
         gtaEditsBtn.innerHTML = `
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -463,7 +463,7 @@ export function MissionEditor({
               className={`gta-edits-tab-btn ${activeGtaTool === "display" ? "active" : ""}`}
               onClick={() => setActiveGtaTool("display")}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" fillOpacity="0.2" />
               </svg>
               <span>Display</span>
@@ -475,7 +475,7 @@ export function MissionEditor({
               className={`gta-edits-tab-btn ${activeGtaTool === "identity" ? "active" : ""}`}
               onClick={() => setActiveGtaTool("identity")}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" fill="currentColor" fillOpacity="0.2" />
               </svg>
@@ -488,7 +488,7 @@ export function MissionEditor({
               className={`gta-edits-tab-btn ${activeGtaTool === "stickers" ? "active" : ""}`}
               onClick={() => setActiveGtaTool("stickers")}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.2" />
                 <circle cx="12" cy="12" r="3" fill="currentColor" />
                 <line x1="12" y1="2" x2="12" y2="6" />
@@ -505,7 +505,7 @@ export function MissionEditor({
               className={`gta-edits-tab-btn ${activeGtaTool === "bg-styles" ? "active" : ""}`}
               onClick={() => setActiveGtaTool("bg-styles")}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="12 2 2 7 12 12 22 7 12 2" fill="currentColor" fillOpacity="0.2" />
                 <polyline points="2 17 12 22 22 17" />
                 <polyline points="2 12 12 17 22 12" />
