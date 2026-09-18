@@ -3,7 +3,7 @@
 @font-face {
   font-family: 'Pricedown';
   src: url('/fonts/pricedown.otf') format('opentype'),
-       url('/fonts/Pricedown%20Bl.otf') format('opentype');
+    url('/fonts/Pricedown%20Bl.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -181,8 +181,18 @@ a:focus-visible {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.45; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 12px #00f5d4; }
+
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+    box-shadow: 0 0 12px #00f5d4;
+  }
 }
 
 .brand-heading {
@@ -362,7 +372,7 @@ a:focus-visible {
   letter-spacing: 0.03em;
 }
 
-.briefing > p:not(.section-label, .privacy-note) {
+.briefing>p:not(.section-label, .privacy-note) {
   margin: 1rem 0 1.5rem;
   line-height: 1.6;
   color: #cfc2e2;
@@ -599,7 +609,7 @@ a:focus-visible {
 }
 
 .preview-copy p:not(.section-label),
-.recovery-panel > p:not(.section-label) {
+.recovery-panel>p:not(.section-label) {
   max-width: 620px;
   margin: 0.55rem 0 0;
 }
@@ -1058,12 +1068,10 @@ a:focus-visible {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    60deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(60deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 70%);
   transform: rotate(25deg) translateY(-100%);
   transition: transform 0.6s ease;
   pointer-events: none;
@@ -2276,6 +2284,7 @@ a:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -2374,8 +2383,15 @@ a:focus-visible {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sticker-search-row {
@@ -3087,6 +3103,7 @@ a:focus-visible {
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -3778,7 +3795,7 @@ a:focus-visible {
   flex-direction: column !important;
 }
 
-.mission-editor-wrapper > div {
+.mission-editor-wrapper>div {
   width: 100% !important;
   height: 100% !important;
   min-height: 100% !important;
@@ -3806,7 +3823,7 @@ a:focus-visible {
   flex-direction: column !important;
 }
 
-.editor-frame .image-editor-root > div {
+.editor-frame .image-editor-root>div {
   width: 100% !important;
   height: 100% !important;
   min-height: 100% !important;
@@ -3838,10 +3855,31 @@ a:focus-visible {
 }
 
 /* Left/Center Canvas area (Block 1): stretch all the way to bottom border */
-.editor-frame [data-testid="native-editor"] > div.flex-1 {
+.editor-frame [data-testid="native-editor"]>div.flex-1 {
   height: 100% !important;
   position: relative !important;
   flex: 1 1 100% !important;
+  transition: margin-right 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Prevent GTA Edits Drawer from overlapping the image editor canvas area */
+.editor-frame .mission-editor-wrapper.gta-edits-drawer-open [data-testid="native-editor"]>div.flex-1,
+.editor-frame .mission-editor-wrapper:has(.editor-gta-edits-panel-overlay) [data-testid="native-editor"]>div.flex-1 {
+  margin-right: max(25%, 260px) !important;
+}
+
+@media (max-width: 1040px) {
+  .editor-frame .mission-editor-wrapper.gta-edits-drawer-open [data-testid="native-editor"]>div.flex-1,
+  .editor-frame .mission-editor-wrapper:has(.editor-gta-edits-panel-overlay) [data-testid="native-editor"]>div.flex-1 {
+    margin-right: 260px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .editor-frame .mission-editor-wrapper.gta-edits-drawer-open [data-testid="native-editor"]>div.flex-1,
+  .editor-frame .mission-editor-wrapper:has(.editor-gta-edits-panel-overlay) [data-testid="native-editor"]>div.flex-1 {
+    margin-right: calc(100% - 4.5rem) !important;
+  }
 }
 
 .editor-frame .canvas-container {
@@ -3855,6 +3893,7 @@ a:focus-visible {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -3936,7 +3975,7 @@ a:focus-visible {
   transform: rotate(90deg);
 }
 
-/* In-Editor GTA Edits Consolidated Drawer Panel (Matches official Unlayer sidebar w-72 size: 18rem / 288px) */
+/* In-Editor GTA Edits Consolidated Drawer Panel (Constrained to max 25% width with min-width) */
 .editor-gta-edits-panel-overlay {
   position: absolute;
   top: 49px;
@@ -3944,8 +3983,9 @@ a:focus-visible {
   height: calc(100% - 49px);
   right: 4.5rem;
   left: auto;
-  width: 18rem;
-  max-width: calc(100% - 4.5rem);
+  width: 25%;
+  min-width: 260px;
+  max-width: 25%;
   z-index: 40;
   background: rgba(18, 10, 36, 0.98);
   backdrop-filter: blur(20px);
@@ -3960,6 +4000,13 @@ a:focus-visible {
   flex-direction: column;
   overflow: hidden;
   animation: toolDrawerSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 1040px) {
+  .editor-gta-edits-panel-overlay {
+    width: 260px;
+    max-width: calc(100% - 4.5rem);
+  }
 }
 
 .editor-gta-edits-panel-header {
@@ -5321,13 +5368,11 @@ a:focus-visible {
   inset: 0;
   pointer-events: none;
   z-index: 2;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 6px,
-    rgba(255, 255, 255, 0.14) 6px,
-    rgba(255, 255, 255, 0.14) 7px
-  );
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 6px,
+      rgba(255, 255, 255, 0.14) 6px,
+      rgba(255, 255, 255, 0.14) 7px);
 }
 
 .corner-avatar-img {
@@ -5391,10 +5436,13 @@ a:focus-visible {
 }
 
 @keyframes pulseCornerDot {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.45;
     transform: scale(0.8);
@@ -5485,17 +5533,15 @@ a:focus-visible {
   display: inline-block;
   width: 48px;
   height: 10px;
-  background: repeating-linear-gradient(
-    90deg,
-    #ffffff,
-    #ffffff 2px,
-    transparent 2px,
-    transparent 4px,
-    #ffffff 4px,
-    #ffffff 5px,
-    transparent 5px,
-    transparent 7px
-  );
+  background: repeating-linear-gradient(90deg,
+      #ffffff,
+      #ffffff 2px,
+      transparent 2px,
+      transparent 4px,
+      #ffffff 4px,
+      #ffffff 5px,
+      transparent 5px,
+      transparent 7px);
   opacity: 0.75;
 }
 
@@ -5739,7 +5785,7 @@ a:focus-visible {
   font-size: 1.5rem;
   font-weight: 900;
   line-height: 1;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   pointer-events: none;
   letter-spacing: 0.05em;
 }
@@ -6073,13 +6119,16 @@ a:focus-visible {
     padding: 0.6rem 0.75rem;
     max-width: calc(100% - 16px);
   }
+
   .corner-avatar-frame {
     width: 48px;
     height: 48px;
   }
+
   .corner-callsign {
     font-size: 1.05rem;
   }
+
   .gta-pricedown-title {
     font-size: 1.3rem !important;
   }
@@ -6364,6 +6413,7 @@ a:focus-visible {
     opacity: 0;
     transform: scale(0.96) translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -6466,8 +6516,15 @@ a:focus-visible {
 }
 
 @keyframes pulse-dot {
-  from { opacity: 0.6; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1.1); }
+  from {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 .reveal-skip-btn {
@@ -6537,6 +6594,7 @@ a:focus-visible {
     transform: scale(1.65) translate(-6%, -4%);
     filter: brightness(1.15) contrast(1.05);
   }
+
   100% {
     transform: scale(1) translate(0, 0);
     filter: brightness(1) contrast(1);
@@ -7034,4 +7092,3 @@ textarea:focus-visible,
   right: 12px;
   border-width: 0 2px 2px 0;
 }
-

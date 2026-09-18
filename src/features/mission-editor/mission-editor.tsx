@@ -136,6 +136,20 @@ export function MissionEditor({
     };
   }, [openIdentityDrawer]);
 
+  // Trigger canvas fit-to-screen recalculation when GTA Edits drawer opens or closes
+  useEffect(() => {
+    const triggerResize = () => {
+      window.dispatchEvent(new Event("resize"));
+    };
+    triggerResize();
+    const t1 = setTimeout(triggerResize, 60);
+    const t2 = setTimeout(triggerResize, 220);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isGtaEditsOpen]);
+
   // Intercept click & pointerdown on the canvas container to automatically open identity edit drawer when badge is clicked
   useEffect(() => {
     const container = containerRef.current;
@@ -230,6 +244,12 @@ export function MissionEditor({
           e.preventDefault();
           e.stopPropagation();
           disableCanvasDrawing();
+          const nativeCloseBtn = containerRef.current?.querySelector<HTMLButtonElement>(
+            'button[data-testid="native-tool-options-close"]',
+          );
+          if (nativeCloseBtn) {
+            nativeCloseBtn.click();
+          }
           setIsGtaEditsOpen((prev) => !prev);
         };
 
@@ -391,7 +411,10 @@ export function MissionEditor({
   };
 
   return (
-    <div ref={containerRef} className="mission-editor-wrapper">
+    <div
+      ref={containerRef}
+      className={`mission-editor-wrapper ${isGtaEditsOpen ? "gta-edits-drawer-open" : ""}`}
+    >
       {/* Docked GTA Edits Drawer (Opens at 9th tool click) */}
       {isGtaEditsOpen && (
         <div
@@ -406,12 +429,12 @@ export function MissionEditor({
                 {activeGtaTool === "display"
                   ? "Display Fonts"
                   : activeGtaTool === "identity"
-                  ? "Operative Identity"
-                  : activeGtaTool === "stickers"
-                  ? "Tactical Stickers"
-                  : activeGtaTool === "bg-styles"
-                  ? "BG Layer & Styles"
-                  : "GTA Edits"}
+                    ? "Operative Identity"
+                    : activeGtaTool === "stickers"
+                      ? "Tactical Stickers"
+                      : activeGtaTool === "bg-styles"
+                        ? "BG Layer & Styles"
+                        : "GTA Edits"}
               </span>
             </div>
             <button
@@ -441,7 +464,7 @@ export function MissionEditor({
               onClick={() => setActiveGtaTool("display")}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" fillOpacity="0.2"/>
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" fillOpacity="0.2" />
               </svg>
               <span>Display</span>
             </button>
@@ -466,12 +489,12 @@ export function MissionEditor({
               onClick={() => setActiveGtaTool("stickers")}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.2"/>
-                <circle cx="12" cy="12" r="3" fill="currentColor"/>
-                <line x1="12" y1="2" x2="12" y2="6"/>
-                <line x1="12" y1="18" x2="12" y2="22"/>
-                <line x1="2" y1="12" x2="6" y2="12"/>
-                <line x1="18" y1="12" x2="22" y2="12"/>
+                <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.2" />
+                <circle cx="12" cy="12" r="3" fill="currentColor" />
+                <line x1="12" y1="2" x2="12" y2="6" />
+                <line x1="12" y1="18" x2="12" y2="22" />
+                <line x1="2" y1="12" x2="6" y2="12" />
+                <line x1="18" y1="12" x2="22" y2="12" />
               </svg>
               <span>Stickers</span>
             </button>
@@ -483,9 +506,9 @@ export function MissionEditor({
               onClick={() => setActiveGtaTool("bg-styles")}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="currentColor" fillOpacity="0.2"/>
-                <polyline points="2 17 12 22 22 17"/>
-                <polyline points="2 12 12 17 22 12"/>
+                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="currentColor" fillOpacity="0.2" />
+                <polyline points="2 17 12 22 22 17" />
+                <polyline points="2 12 12 17 22 12" />
               </svg>
               <span>BG</span>
             </button>
@@ -506,7 +529,7 @@ export function MissionEditor({
               >
                 <div className="tool-card-icon text-[#ffd000]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(255,208,0,0.2)"/>
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(255,208,0,0.2)" />
                   </svg>
                 </div>
                 <div className="tool-card-info flex-1 min-w-0">
@@ -549,12 +572,12 @@ export function MissionEditor({
               >
                 <div className="tool-card-icon text-[#00f5d4]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="9" fill="rgba(0,245,212,0.2)"/>
-                    <circle cx="12" cy="12" r="3" fill="currentColor"/>
-                    <line x1="12" y1="2" x2="12" y2="6"/>
-                    <line x1="12" y1="18" x2="12" y2="22"/>
-                    <line x1="2" y1="12" x2="6" y2="12"/>
-                    <line x1="18" y1="12" x2="22" y2="12"/>
+                    <circle cx="12" cy="12" r="9" fill="rgba(0,245,212,0.2)" />
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                    <line x1="12" y1="2" x2="12" y2="6" />
+                    <line x1="12" y1="18" x2="12" y2="22" />
+                    <line x1="2" y1="12" x2="6" y2="12" />
+                    <line x1="18" y1="12" x2="22" y2="12" />
                   </svg>
                 </div>
                 <div className="tool-card-info flex-1 min-w-0">
@@ -575,9 +598,9 @@ export function MissionEditor({
               >
                 <div className="tool-card-icon text-[#ff8000]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2" fill="rgba(255,128,0,0.2)"/>
-                    <polyline points="2 17 12 22 22 17"/>
-                    <polyline points="2 12 12 17 22 12"/>
+                    <polygon points="12 2 2 7 12 12 22 7 12 2" fill="rgba(255,128,0,0.2)" />
+                    <polyline points="2 17 12 22 22 17" />
+                    <polyline points="2 12 12 17 22 12" />
                   </svg>
                 </div>
                 <div className="tool-card-info flex-1 min-w-0">
