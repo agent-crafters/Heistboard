@@ -3861,25 +3861,26 @@ a:focus-visible {
   }
 }
 
-/* In-Editor Operative Identity Drawer Panel (Docked full-height like native Draw/Text/Shapes) */
+/* In-Editor Operative Identity Drawer Panel (Matches official Unlayer sidebar w-72 size) */
 .editor-identity-panel-overlay {
   position: absolute;
-  top: 0;
+  top: 49px;
   bottom: 0;
-  height: 100%;
-  right: var(--native-tool-rail-width, 72px);
+  height: calc(100% - 49px);
+  right: 4.5rem;
   left: auto;
-  width: min(390px, calc(100% - var(--native-tool-rail-width, 72px)));
-  z-index: 45;
-  background: rgba(18, 10, 36, 0.96);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-left: 2px solid #ff007f;
+  width: 18rem;
+  max-width: calc(100% - 4.5rem);
+  z-index: 40;
+  background: rgba(18, 10, 36, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(255, 0, 127, 0.4);
   border-right: 1px solid rgba(255, 113, 206, 0.2);
   border-top: none;
   border-bottom: none;
   border-radius: 0;
-  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 0, 127, 0.3);
+  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.75), 0 0 20px rgba(255, 0, 127, 0.15);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3891,7 +3892,7 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.85rem 1.15rem;
+  padding: 0.55rem 0.85rem;
   background: linear-gradient(90deg, rgba(255, 0, 127, 0.2) 0%, rgba(157, 78, 221, 0.15) 100%);
   border-bottom: 1px solid rgba(255, 0, 127, 0.35);
 }
@@ -3900,16 +3901,16 @@ a:focus-visible {
   background: linear-gradient(135deg, #ff007f, #9d4edd);
   color: #ffffff;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
   box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
 }
 
 .editor-identity-panel-header .panel-title {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: 0.04em;
@@ -3922,8 +3923,8 @@ a:focus-visible {
   border: none;
   color: #cfc2e4;
   cursor: pointer;
-  font-size: 0.95rem;
-  padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
   line-height: 1;
   border-radius: 4px;
   transition: all 0.15s ease;
@@ -3935,36 +3936,26 @@ a:focus-visible {
   transform: rotate(90deg);
 }
 
-.editor-identity-panel-scroll {
-  flex: 1;
-  min-height: 0;
-  max-height: none;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0.85rem;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 0, 127, 0.4) transparent;
-}
-
-/* In-Editor GTA Edits Consolidated Drawer Panel (Docked full-height alongside native tool rail) */
+/* In-Editor GTA Edits Consolidated Drawer Panel (Matches official Unlayer sidebar w-72 size: 18rem / 288px) */
 .editor-gta-edits-panel-overlay {
   position: absolute;
-  top: 0;
+  top: 49px;
   bottom: 0;
-  height: 100%;
-  right: var(--native-tool-rail-width, 72px);
+  height: calc(100% - 49px);
+  right: 4.5rem;
   left: auto;
-  width: min(420px, calc(100% - var(--native-tool-rail-width, 72px)));
-  z-index: 45;
-  background: rgba(18, 10, 36, 0.96);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-left: 2px solid #ffd000;
+  width: 18rem;
+  max-width: calc(100% - 4.5rem);
+  z-index: 40;
+  background: rgba(18, 10, 36, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(255, 208, 0, 0.4);
   border-right: 1px solid rgba(255, 208, 0, 0.2);
   border-top: none;
   border-bottom: none;
   border-radius: 0;
-  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 208, 0, 0.25);
+  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.75), 0 0 20px rgba(255, 208, 0, 0.15);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3976,7 +3967,7 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.85rem 1.15rem;
+  padding: 0.55rem 0.85rem;
   background: linear-gradient(90deg, rgba(255, 208, 0, 0.2) 0%, rgba(255, 0, 127, 0.15) 100%);
   border-bottom: 1px solid rgba(255, 208, 0, 0.35);
 }
@@ -3985,19 +3976,19 @@ a:focus-visible {
   background: linear-gradient(135deg, #ffd000, #ff8a00);
   color: #110a24;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
   box-shadow: 0 0 10px rgba(255, 208, 0, 0.4);
 }
 
 .editor-gta-edits-panel-header .panel-title {
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: #ffffff;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   font-family: var(--font-display);
   text-transform: uppercase;
 }
@@ -4007,8 +3998,8 @@ a:focus-visible {
   border: none;
   color: #cfc2e4;
   cursor: pointer;
-  font-size: 0.95rem;
-  padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
   line-height: 1;
   border-radius: 4px;
   transition: all 0.15s ease;
@@ -4023,9 +4014,9 @@ a:focus-visible {
 /* Quick 4-Tool Switcher Tabs inside GTA Edits Drawer */
 .gta-edits-subtool-nav {
   display: flex;
-  gap: 0.35rem;
-  padding: 0.5rem 0.75rem;
-  background: rgba(11, 7, 24, 0.85);
+  gap: 0.2rem;
+  padding: 0.35rem 0.45rem;
+  background: rgba(11, 7, 24, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
   overflow-x: auto;
@@ -4036,13 +4027,13 @@ a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: 6px;
+  gap: 0.2rem;
+  padding: 0.3rem 0.25rem;
+  border-radius: 4px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #a0aec0;
-  font-size: 0.75rem;
+  font-size: 0.66rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -4058,30 +4049,41 @@ a:focus-visible {
   background: rgba(255, 208, 0, 0.15);
   border-color: #ffd000;
   color: #ffd000;
-  box-shadow: 0 0 10px rgba(255, 208, 0, 0.3);
+  box-shadow: 0 0 8px rgba(255, 208, 0, 0.25);
 }
 
 /* 4-Tool Menu List and Cards */
 .gta-edits-menu-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: 0.45rem;
+  padding: 0.65rem;
   overflow-y: auto;
 }
 
 .gta-edits-tool-card {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1rem;
-  border-radius: 0.65rem;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.09);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
   width: 100%;
+}
+
+.editor-gta-fonts-panel-scroll,
+.editor-identity-panel-scroll,
+.editor-stickers-panel-scroll,
+.editor-bg-styles-panel-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.65rem;
 }
 
 .gta-edits-tool-card:hover {
