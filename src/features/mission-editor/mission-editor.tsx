@@ -34,9 +34,9 @@ const MISSION_TOOL_OPTIONS: ImageEditorOptions = {
     imageEditor: {
       enabled: true,
       tools: {
-        filter: true,
         crop: true,
         resize: true,
+        filter: true,
         draw: true,
         text: true,
         shapes: true,
@@ -47,7 +47,12 @@ const MISSION_TOOL_OPTIONS: ImageEditorOptions = {
   },
 };
 
-export type CustomEditorTool = "identity" | "stickers" | "bg-styles" | "gta-fonts";
+export type CustomEditorTool =
+  | "identity"
+  | "stickers"
+  | "bg-styles"
+  | "gta-fonts"
+  | "gta-edits";
 
 interface MissionEditorProps {
   image: string;
@@ -55,8 +60,8 @@ interface MissionEditorProps {
   onLoad: (editor: ImageEditorInstance) => void;
   onSave: (result: ImageEditorSaveResult) => void;
   onCancel: () => void;
-  onImageError: () => void;
-  onEditorError: (error: Error) => void;
+  onImageError?: () => void;
+  onEditorError?: (error: Error) => void;
   bgConfig?: BgLayerConfig;
   onBgConfigChange?: (config: BgLayerConfig) => void;
   identityOptions?: GtaBadgeOptions;
@@ -86,19 +91,18 @@ export function MissionEditor({
 }: MissionEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const originalImageRef = useRef<HTMLImageElement | null>(null);
-  const [isIdentityOpen, setIsIdentityOpen] = useState(false);
-  const [isGtaFontsOpen, setIsGtaFontsOpen] = useState(false);
-  const [isStickersOpen, setIsStickersOpen] = useState(false);
-  const [isBgStylesOpen, setIsBgStylesOpen] = useState(false);
+  const [isGtaEditsOpen, setIsGtaEditsOpen] = useState(false);
+  const [activeGtaTool, setActiveGtaTool] = useState<
+    "display" | "identity" | "stickers" | "bg-styles" | null
+  >(null);
+
   const openIdentityDrawer = useCallback(() => {
     const canvas = findFabricCanvas(containerRef.current);
     if (canvas && (canvas as unknown as { isDrawingMode?: boolean }).isDrawingMode) {
       (canvas as unknown as { isDrawingMode: boolean }).isDrawingMode = false;
     }
-    setIsIdentityOpen(true);
-    setIsGtaFontsOpen(false);
-    setIsStickersOpen(false);
-    setIsBgStylesOpen(false);
+    setIsGtaEditsOpen(true);
+    setActiveGtaTool("identity");
   }, []);
 
   // Handle programmatic tool open requests (e.g. clicking "Edit" in mission briefing or preview)
@@ -108,20 +112,16 @@ export function MissionEditor({
       if (requestedTool === "identity") {
         openIdentityDrawer();
       } else if (requestedTool === "stickers") {
-        setIsStickersOpen(true);
-        setIsIdentityOpen(false);
-        setIsGtaFontsOpen(false);
-        setIsBgStylesOpen(false);
+        setIsGtaEditsOpen(true);
+        setActiveGtaTool("stickers");
       } else if (requestedTool === "bg-styles") {
-        setIsBgStylesOpen(true);
-        setIsIdentityOpen(false);
-        setIsGtaFontsOpen(false);
-        setIsStickersOpen(false);
+        setIsGtaEditsOpen(true);
+        setActiveGtaTool("bg-styles");
       } else if (requestedTool === "gta-fonts") {
-        setIsGtaFontsOpen(true);
-        setIsIdentityOpen(false);
-        setIsStickersOpen(false);
-        setIsBgStylesOpen(false);
+        setIsGtaEditsOpen(true);
+        setActiveGtaTool("display");
+      } else if (requestedTool === "gta-edits") {
+        setIsGtaEditsOpen(true);
       }
       onToolHandled?.();
     });
@@ -168,185 +168,83 @@ export function MissionEditor({
     };
   }, [openIdentityDrawer]);
 
-  // Keep native tools consecutive, then mount the four custom tools in one GTA-VI group.
+  // Preload GTA and stylish fonts, observe native font menu, and inject GTA Fonts, Identity, Stickers, and BG Styles
   useEffect(() => {
     ensureFontsLoaded();
     const disconnectNativeMenu = setupNativeFontMenuObserver(containerRef.current);
 
+    const disableCanvasDrawing = () => {
+      const canvas = findFabricCanvas(containerRef.current);
+      if (canvas && (canvas as unknown as { isDrawingMode?: boolean }).isDrawingMode) {
+        (canvas as unknown as { isDrawingMode: boolean }).isDrawingMode = false;
+      }
+    };
+
     const attachCustomToolButtons = () => {
       if (!containerRef.current) return;
-      const shapesBtn = containerRef.current.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-shapes"]',
-      );
-      if (!shapesBtn || !shapesBtn.parentElement) return;
 
-      const toolRail = shapesBtn.parentElement;
-      const frameBtn = toolRail.querySelector<HTMLButtonElement>(
+      // Find tool rail via Frame button (the 8th native tool) or fallback
+      const frameBtn = containerRef.current.querySelector<HTMLButtonElement>(
         'button[data-testid="native-tool-frame"]',
       );
-      if (!frameBtn) return;
-
-      let customToolsGroup = toolRail.querySelector<HTMLDivElement>(
-        '[data-testid="native-tool-gta-vi-group"]',
+      const anyNativeBtn = containerRef.current.querySelector<HTMLButtonElement>(
+        'button[data-testid^="native-tool-"]',
       );
-      if (!customToolsGroup) {
-        customToolsGroup = document.createElement("div");
-        customToolsGroup.className = "native-tool-gta-vi-group";
-        customToolsGroup.setAttribute("data-testid", "native-tool-gta-vi-group");
-        customToolsGroup.setAttribute("role", "group");
-        customToolsGroup.setAttribute("aria-label", "GTA-VI custom tools");
-        customToolsGroup.innerHTML = `
-          <span class="native-tool-gta-vi-label" aria-hidden="true">GTA-VI</span>
-          <div class="native-tool-gta-vi-actions"></div>
-        `;
-      }
-      frameBtn.after(customToolsGroup);
+      const toolRail = frameBtn?.parentElement || anyNativeBtn?.parentElement;
+      if (!toolRail) return;
 
-      const customToolsList = customToolsGroup.querySelector<HTMLDivElement>(
-        ".native-tool-gta-vi-actions",
-      );
-      if (!customToolsList) return;
+      // Clean up any legacy custom buttons or groups that were placed between native tools 1-8
+      const legacyTestIds = [
+        "native-tool-gta-fonts",
+        "native-tool-operative-identity",
+        "native-tool-tactical-stickers",
+        "native-tool-bg-styles",
+        "native-tool-gta-vi-group",
+      ];
+      legacyTestIds.forEach((id) => {
+        const legacyEl = toolRail.querySelector(`[data-testid="${id}"]`);
+        if (legacyEl) {
+          legacyEl.remove();
+        }
+      });
 
-      // 1. Display
-      let gtaBtn = toolRail.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-gta-fonts"]',
+      // Inject GTA Edits button as the 9th tool (immediately after tool 8 Frame)
+      let gtaEditsBtn = toolRail.querySelector<HTMLButtonElement>(
+        'button[data-testid="native-tool-gta-edits"]',
       );
 
-      if (!gtaBtn) {
-        gtaBtn = document.createElement("button");
-        gtaBtn.type = "button";
-        gtaBtn.setAttribute("data-testid", "native-tool-gta-fonts");
-        gtaBtn.setAttribute("aria-label", "Display tools");
-        gtaBtn.className =
-          "native-tool-gta-fonts-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
-        gtaBtn.title = "Tactical Display Fonts";
-        gtaBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4a338" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(212,163,56,0.25)"/>
+      if (!gtaEditsBtn) {
+        gtaEditsBtn = document.createElement("button");
+        gtaEditsBtn.type = "button";
+        gtaEditsBtn.setAttribute("data-testid", "native-tool-gta-edits");
+        gtaEditsBtn.setAttribute("aria-label", "GTA Edits");
+        gtaEditsBtn.className =
+          "native-tool-gta-edits-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
+        gtaEditsBtn.title = "GTA Edits (GTA-VI Inspired Tools)";
+        gtaEditsBtn.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(255,208,0,0.25)"/>
           </svg>
-          <span class="truncate max-w-full" style="font-family: var(--font-sans), sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; color: #d4a338; line-height: 1.1;">Display</span>
+          <span class="truncate max-w-full" style="font-family: var(--font-sans), sans-serif; font-size: 9px; font-weight: 800; letter-spacing: 0.03em; color: #ffd000; line-height: 1.1;">GTA Edits</span>
         `;
 
-        gtaBtn.onclick = (e) => {
+        gtaEditsBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
           disableCanvasDrawing();
-          setIsGtaFontsOpen((prev) => !prev);
-          setIsIdentityOpen(false);
-          setIsStickersOpen(false);
-          setIsBgStylesOpen(false);
+          setIsGtaEditsOpen((prev) => !prev);
         };
+
+        if (frameBtn) {
+          frameBtn.after(gtaEditsBtn);
+        } else {
+          toolRail.appendChild(gtaEditsBtn);
+        }
       }
-      customToolsList.append(gtaBtn);
-
-      // 2. Identity
-      let identityBtn = toolRail.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-operative-identity"]',
-      );
-
-      if (!identityBtn && gtaBtn) {
-        identityBtn = document.createElement("button");
-        identityBtn.type = "button";
-        identityBtn.setAttribute("data-testid", "native-tool-operative-identity");
-        identityBtn.setAttribute("aria-label", "Identity tools");
-        identityBtn.className =
-          "native-tool-operative-identity-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
-        identityBtn.title = "Establish Your Operative Identity (GTA VI)";
-        identityBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f72585" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" fill="rgba(247,37,133,0.3)" />
-          </svg>
-          <span class="truncate max-w-full" style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em; color: #f72585; line-height: 1.1;">Identity</span>
-        `;
-
-        identityBtn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          disableCanvasDrawing();
-          setIsIdentityOpen((prev) => !prev);
-          setIsGtaFontsOpen(false);
-          setIsStickersOpen(false);
-          setIsBgStylesOpen(false);
-        };
-      }
-      if (identityBtn) customToolsList.append(identityBtn);
-
-      // 3. Custom Stickers
-      let stickersBtn = toolRail.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-tactical-stickers"]',
-      );
-
-      if (!stickersBtn && identityBtn) {
-        stickersBtn = document.createElement("button");
-        stickersBtn.type = "button";
-        stickersBtn.setAttribute("data-testid", "native-tool-tactical-stickers");
-        stickersBtn.setAttribute("aria-label", "GTA-VI sticker tools");
-        stickersBtn.className =
-          "native-tool-tactical-stickers-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
-        stickersBtn.title = "Tactical Stickers (30 Heist Markers)";
-        stickersBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9" fill="rgba(0, 240, 255, 0.25)"/>
-            <circle cx="12" cy="12" r="3" fill="#00f0ff"/>
-            <line x1="12" y1="2" x2="12" y2="6"/>
-            <line x1="12" y1="18" x2="12" y2="22"/>
-            <line x1="2" y1="12" x2="6" y2="12"/>
-            <line x1="18" y1="12" x2="22" y2="12"/>
-          </svg>
-          <span class="truncate max-w-full" style="font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em; color: #00f0ff; line-height: 1.1;">Stickers</span>
-        `;
-
-        stickersBtn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          disableCanvasDrawing();
-          setIsStickersOpen((prev) => !prev);
-          setIsIdentityOpen(false);
-          setIsGtaFontsOpen(false);
-          setIsBgStylesOpen(false);
-        };
-      }
-      if (stickersBtn) customToolsList.append(stickersBtn);
-
-      // 4. Background Layers
-      let bgStylesBtn = toolRail.querySelector<HTMLButtonElement>(
-        'button[data-testid="native-tool-bg-styles"]',
-      );
-
-      if (!bgStylesBtn && stickersBtn) {
-        bgStylesBtn = document.createElement("button");
-        bgStylesBtn.type = "button";
-        bgStylesBtn.setAttribute("data-testid", "native-tool-bg-styles");
-        bgStylesBtn.setAttribute("aria-label", "Background layers");
-        bgStylesBtn.className =
-          "native-tool-bg-styles-btn flex flex-col items-center gap-1 px-1 py-2 rounded-md text-[10px] font-medium cursor-pointer transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700 hover:text-white";
-        bgStylesBtn.title = "Background Layer & GTA VI Styles";
-        bgStylesBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff8000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 2 7 12 12 22 7 12 2" fill="rgba(255, 128, 0, 0.25)"/>
-            <polyline points="2 17 12 22 22 17"/>
-            <polyline points="2 12 12 17 22 12"/>
-          </svg>
-          <span class="truncate max-w-full" style="font-size: 9px; font-weight: 700; letter-spacing: 0.02em; color: #ff8000; line-height: 1.1;">BG Layers</span>
-        `;
-
-        bgStylesBtn.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          disableCanvasDrawing();
-          setIsBgStylesOpen((prev) => !prev);
-          setIsIdentityOpen(false);
-          setIsGtaFontsOpen(false);
-          setIsStickersOpen(false);
-        };
-      }
-      if (bgStylesBtn) customToolsList.append(bgStylesBtn);
 
       // Keep native tool rail width updated for seamless drawer docking
-      const railEl = toolRail;
-      if (railEl && containerRef.current) {
-        const railRect = railEl.getBoundingClientRect();
+      if (containerRef.current) {
+        const railRect = toolRail.getBoundingClientRect();
         if (railRect.width > 0) {
           containerRef.current.style.setProperty(
             "--native-tool-rail-width",
@@ -355,14 +253,7 @@ export function MissionEditor({
         }
       }
 
-      const disableCanvasDrawing = () => {
-        const canvas = findFabricCanvas(containerRef.current);
-        if (canvas && (canvas as unknown as { isDrawingMode?: boolean }).isDrawingMode) {
-          (canvas as unknown as { isDrawingMode: boolean }).isDrawingMode = false;
-        }
-      };
-
-      // Close custom panels when any of the eight native tools is clicked.
+      // Close custom panels when any of the 8 native tools is clicked
       const nativeToolBtns = toolRail.querySelectorAll<HTMLButtonElement>(
         [
           "filter",
@@ -382,10 +273,7 @@ export function MissionEditor({
         if (!btn.getAttribute("data-custom-tool-listener")) {
           btn.setAttribute("data-custom-tool-listener", "true");
           btn.addEventListener("click", () => {
-            setIsGtaFontsOpen(false);
-            setIsIdentityOpen(false);
-            setIsStickersOpen(false);
-            setIsBgStylesOpen(false);
+            setIsGtaEditsOpen(false);
           });
         }
       });
@@ -407,30 +295,21 @@ export function MissionEditor({
     };
   }, []);
 
-  // Synchronize active state styling and aria-pressed on the injected custom tool buttons
+  // Synchronize active state styling and aria-pressed on the injected GTA Edits button
   useEffect(() => {
     if (!containerRef.current) return;
-    const tools = [
-      { id: "native-tool-gta-fonts", active: isGtaFontsOpen },
-      { id: "native-tool-operative-identity", active: isIdentityOpen },
-      { id: "native-tool-tactical-stickers", active: isStickersOpen },
-      { id: "native-tool-bg-styles", active: isBgStylesOpen },
-    ];
-
-    for (const { id, active } of tools) {
-      const btn = containerRef.current.querySelector<HTMLButtonElement>(
-        `button[data-testid="${id}"]`,
-      );
-      if (btn) {
-        btn.setAttribute("aria-pressed", String(active));
-        if (active) {
-          btn.classList.add("active");
-        } else {
-          btn.classList.remove("active");
-        }
+    const btn = containerRef.current.querySelector<HTMLButtonElement>(
+      'button[data-testid="native-tool-gta-edits"]',
+    );
+    if (btn) {
+      btn.setAttribute("aria-pressed", String(isGtaEditsOpen));
+      if (isGtaEditsOpen) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
       }
     }
-  }, [isGtaFontsOpen, isIdentityOpen, isStickersOpen, isBgStylesOpen]);
+  }, [isGtaEditsOpen]);
 
   const bgConfigRef = useRef(bgConfig);
   useEffect(() => {
@@ -503,118 +382,241 @@ export function MissionEditor({
 
   return (
     <div ref={containerRef} className="mission-editor-wrapper">
-      {/* In-Editor GTA Fonts Panel (Opened right from below Shapes tool) */}
-      {isGtaFontsOpen && (
+      {/* Docked GTA Edits Drawer (Opens at 9th tool click) */}
+      {isGtaEditsOpen && (
         <div
-          className="editor-gta-fonts-panel-overlay"
-          aria-label="GTA Fonts Tool Panel"
+          className="editor-gta-edits-panel-overlay"
+          aria-label="GTA Edits Command Panel"
         >
-          <div className="editor-gta-fonts-panel-header">
+          {/* Header */}
+          <div className="editor-gta-edits-panel-header">
             <div className="flex items-center gap-2">
-              <span className="panel-badge">★ ROCKSTAR</span>
-              <span className="panel-title">GTA Fonts &amp; Typography</span>
+              <span className="panel-badge">★ GTA-VI</span>
+              <span className="panel-title">
+                {activeGtaTool === "display"
+                  ? "Display Fonts"
+                  : activeGtaTool === "identity"
+                  ? "Operative Identity"
+                  : activeGtaTool === "stickers"
+                  ? "Tactical Stickers"
+                  : activeGtaTool === "bg-styles"
+                  ? "BG Layer & Styles"
+                  : "GTA Edits"}
+              </span>
             </div>
             <button
               type="button"
               className="panel-close-btn"
-              onClick={() => setIsGtaFontsOpen(false)}
-              title="Close GTA Fonts panel"
+              onClick={() => {
+                setIsGtaEditsOpen(false);
+                setActiveGtaTool(null);
+              }}
+              title="Close GTA Edits"
             >
               ✕
             </button>
           </div>
-          <div className="editor-gta-fonts-panel-scroll">
-            <TypographySidebar editorContainerRef={containerRef} compact />
-          </div>
-        </div>
-      )}
 
-      {/* In-Editor Operative Identity Panel (Opened right from below GTA Fonts tool) */}
-      {isIdentityOpen && (
-        <div
-          className="editor-identity-panel-overlay"
-          aria-label="Operative Identity Tool Panel"
-        >
-          <div className="editor-identity-panel-header">
-            <div className="flex items-center gap-2">
-              <span className="panel-badge">★ GTA VI RECORD</span>
-              <span className="panel-title">Operative Identity</span>
-            </div>
+          {/* 4-Tool Quick Navigation Tabs */}
+          <div
+            className="gta-edits-subtool-nav"
+            role="tablist"
+            aria-label="GTA Edits Tools"
+          >
             <button
               type="button"
-              className="panel-close-btn"
-              onClick={() => setIsIdentityOpen(false)}
-              title="Close Operative Identity panel"
+              role="tab"
+              aria-selected={activeGtaTool === "display"}
+              className={`gta-edits-tab-btn ${activeGtaTool === "display" ? "active" : ""}`}
+              onClick={() => setActiveGtaTool("display")}
             >
-              ✕
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" fillOpacity="0.2"/>
+              </svg>
+              <span>Display</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeGtaTool === "identity"}
+              className={`gta-edits-tab-btn ${activeGtaTool === "identity" ? "active" : ""}`}
+              onClick={() => setActiveGtaTool("identity")}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" fill="currentColor" fillOpacity="0.2" />
+              </svg>
+              <span>Identity</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeGtaTool === "stickers"}
+              className={`gta-edits-tab-btn ${activeGtaTool === "stickers" ? "active" : ""}`}
+              onClick={() => setActiveGtaTool("stickers")}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.2"/>
+                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                <line x1="12" y1="2" x2="12" y2="6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="22" y2="12"/>
+              </svg>
+              <span>Stickers</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeGtaTool === "bg-styles"}
+              className={`gta-edits-tab-btn ${activeGtaTool === "bg-styles" ? "active" : ""}`}
+              onClick={() => setActiveGtaTool("bg-styles")}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" fill="currentColor" fillOpacity="0.2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+              <span>BG Styles</span>
             </button>
           </div>
-          <div className="editor-identity-panel-scroll">
-            <IdentityControls
-              initialOptions={identityOptions}
-              identityState={identityState}
-              onIdentityStateChange={onIdentityStateChange}
-              editorContainerRef={containerRef}
-              onChange={onIdentityChange}
-              compact
-            />
-          </div>
-        </div>
-      )}
 
-      {/* In-Editor Tactical Stickers Panel (Opened right from below Identity tool) */}
-      {isStickersOpen && (
-        <div
-          className="editor-stickers-panel-overlay"
-          aria-label="Tactical Stickers Tool Panel"
-        >
-          <div className="editor-stickers-panel-header">
-            <div className="flex items-center gap-2">
-              <span className="panel-badge">★ 30 STICKERS</span>
-              <span className="panel-title">Tactical Stickers</span>
-            </div>
-            <button
-              type="button"
-              className="panel-close-btn"
-              onClick={() => setIsStickersOpen(false)}
-              title="Close Tactical Stickers panel"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="editor-stickers-panel-scroll">
-            <StickerSidebar editorContainerRef={containerRef} />
-          </div>
-        </div>
-      )}
+          {/* Tool Overview (when no specific tool tab is open) */}
+          {activeGtaTool === null && (
+            <div className="gta-edits-menu-list">
+              <div className="text-[11px] font-mono text-gray-400 tracking-wider mb-0.5 px-1 uppercase">
+                GTA-VI Inspired Edits // 4 Tools
+              </div>
 
-      {/* In-Editor BG Layer & GTA VI Styles Panel (Opened right from below Stickers tool) */}
-      {isBgStylesOpen && (
-        <div
-          className="editor-bg-styles-panel-overlay"
-          aria-label="Background Layer & GTA VI Styles Tool Panel"
-        >
-          <div className="editor-bg-styles-panel-header">
-            <div className="flex items-center gap-2">
-              <span className="panel-badge">★ GTA VI STYLES</span>
-              <span className="panel-title">BG Layer &amp; Styles</span>
+              {/* 1. Display */}
+              <button
+                type="button"
+                className="gta-edits-tool-card tool-card-display"
+                onClick={() => setActiveGtaTool("display")}
+              >
+                <div className="tool-card-icon text-[#ffd000]">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(255,208,0,0.2)"/>
+                  </svg>
+                </div>
+                <div className="tool-card-info flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="tool-card-title text-sm font-bold text-white">Display</span>
+                    <span className="tool-card-tag text-[9.5px] font-mono text-[#ffd000] bg-[#ffd000]/10 px-1.5 py-0.5 rounded border border-[#ffd000]/30 font-bold">FONTS</span>
+                  </div>
+                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Rockstar Display Fonts &amp; Typography</p>
+                </div>
+                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+              </button>
+
+              {/* 2. Identity */}
+              <button
+                type="button"
+                className="gta-edits-tool-card tool-card-identity"
+                onClick={() => setActiveGtaTool("identity")}
+              >
+                <div className="tool-card-icon text-[#ff007f]">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" fill="rgba(255,0,127,0.2)" />
+                  </svg>
+                </div>
+                <div className="tool-card-info flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="tool-card-title text-sm font-bold text-white">Identity</span>
+                    <span className="tool-card-tag text-[9.5px] font-mono text-[#ff007f] bg-[#ff007f]/10 px-1.5 py-0.5 rounded border border-[#ff007f]/30 font-bold">BADGE</span>
+                  </div>
+                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Operative ID Badge, Callsign &amp; Archetype</p>
+                </div>
+                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+              </button>
+
+              {/* 3. Stickers */}
+              <button
+                type="button"
+                className="gta-edits-tool-card tool-card-stickers"
+                onClick={() => setActiveGtaTool("stickers")}
+              >
+                <div className="tool-card-icon text-[#00f5d4]">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="9" fill="rgba(0,245,212,0.2)"/>
+                    <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    <line x1="12" y1="2" x2="12" y2="6"/>
+                    <line x1="12" y1="18" x2="12" y2="22"/>
+                    <line x1="2" y1="12" x2="6" y2="12"/>
+                    <line x1="18" y1="12" x2="22" y2="12"/>
+                  </svg>
+                </div>
+                <div className="tool-card-info flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="tool-card-title text-sm font-bold text-white">Stickers</span>
+                    <span className="tool-card-tag text-[9.5px] font-mono text-[#00f5d4] bg-[#00f5d4]/10 px-1.5 py-0.5 rounded border border-[#00f5d4]/30 font-bold">30 ICONS</span>
+                  </div>
+                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Tactical Markers, Targets &amp; Waypoints</p>
+                </div>
+                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+              </button>
+
+              {/* 4. BG Styles */}
+              <button
+                type="button"
+                className="gta-edits-tool-card tool-card-bg-styles"
+                onClick={() => setActiveGtaTool("bg-styles")}
+              >
+                <div className="tool-card-icon text-[#ff8000]">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2" fill="rgba(255,128,0,0.2)"/>
+                    <polyline points="2 17 12 22 22 17"/>
+                    <polyline points="2 12 12 17 22 12"/>
+                  </svg>
+                </div>
+                <div className="tool-card-info flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="tool-card-title text-sm font-bold text-white">BG Styles</span>
+                    <span className="tool-card-tag text-[9.5px] font-mono text-[#ff8000] bg-[#ff8000]/10 px-1.5 py-0.5 rounded border border-[#ff8000]/30 font-bold">STYLES</span>
+                  </div>
+                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Atmospheric Color Wash, Grain &amp; Effects</p>
+                </div>
+                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+              </button>
             </div>
-            <button
-              type="button"
-              className="panel-close-btn"
-              onClick={() => setIsBgStylesOpen(false)}
-              title="Close Background Layer & Styles panel"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="editor-bg-styles-panel-scroll">
-            <BgLayerControls
-              config={bgConfig}
-              onChange={handleConfigChange}
-              compact
-            />
-          </div>
+          )}
+
+          {/* Active Tool Views */}
+          {activeGtaTool === "display" && (
+            <div className="editor-gta-fonts-panel-scroll">
+              <TypographySidebar editorContainerRef={containerRef} compact />
+            </div>
+          )}
+
+          {activeGtaTool === "identity" && (
+            <div className="editor-identity-panel-scroll">
+              <IdentityControls
+                initialOptions={identityOptions}
+                identityState={identityState}
+                onIdentityStateChange={onIdentityStateChange}
+                editorContainerRef={containerRef}
+                onChange={onIdentityChange}
+                compact
+              />
+            </div>
+          )}
+
+          {activeGtaTool === "stickers" && (
+            <div className="editor-stickers-panel-scroll">
+              <StickerSidebar editorContainerRef={containerRef} />
+            </div>
+          )}
+
+          {activeGtaTool === "bg-styles" && (
+            <div className="editor-bg-styles-panel-scroll">
+              <BgLayerControls
+                config={bgConfig}
+                onChange={handleConfigChange}
+                compact
+              />
+            </div>
+          )}
         </div>
       )}
 
