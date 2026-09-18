@@ -348,7 +348,6 @@ export function TerritoryView({
 
     const container = mapContainerRef.current;
     const containerWidth = container?.clientWidth || 1200;
-    const containerHeight = container?.clientHeight || 800;
 
     // Use crisp 16:9 cinematic widescreen capture ratio so the map fills the full screen editor without side pillarboxing
     const scale = Math.min(2, Math.max(1, 1600 / containerWidth));

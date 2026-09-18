@@ -464,6 +464,7 @@ export function HeistboardEditorProof() {
       <header className="masthead">
         <div className="masthead-banner-backdrop" aria-hidden="true">
           {BANNER_SLIDES.map((src, i) => (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               key={src}
               src={src}
