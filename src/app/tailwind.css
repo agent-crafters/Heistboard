@@ -1370,40 +1370,31 @@ a:focus-visible {
   color: #00f5d4;
 }
 
-/* Territory Workspace: Stacked Layout (Toolbar on Top, Preview Map Below) */
+/* Territory Workspace */
 .territory-workspace {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(340px, 420px) 1fr;
+  gap: 2rem;
   margin-top: 1.5rem;
-  width: 100%;
+  align-items: start;
 }
 
 .territory-control-panel {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.25rem;
-  padding: 1.5rem 1.75rem;
-  background: linear-gradient(155deg, rgba(26, 17, 52, 0.9) 0%, rgba(17, 11, 34, 0.95) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 113, 206, 0.35);
-  border-left: 4px solid #00f5d4;
-  border-radius: 12px;
-  box-shadow: 0 16px 45px rgba(6, 3, 16, 0.7), 0 0 25px rgba(0, 245, 212, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-  width: 100%;
-}
-
-.territory-heading {
-  grid-column: 1 / -1;
-  border-bottom: 1px solid rgba(255, 113, 206, 0.2);
-  padding-bottom: 0.85rem;
-  margin-bottom: 0.25rem;
+  padding: 1.75rem;
+  background: linear-gradient(155deg, rgba(26, 17, 52, 0.85) 0%, rgba(17, 11, 34, 0.9) 100%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 113, 206, 0.32);
+  border-radius: 10px;
+  box-shadow: 0 20px 50px rgba(6, 3, 16, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.12);
 }
 
 .territory-heading h2 {
-  font-size: 1.75rem;
-  margin: 0.25rem 0 0.4rem;
+  font-size: 1.65rem;
+  margin: 0.25rem 0 0.5rem;
   color: #ffffff;
   letter-spacing: 0.02em;
 }
@@ -1413,36 +1404,6 @@ a:focus-visible {
   color: #c9bede;
   font-size: 0.92rem;
   line-height: 1.55;
-  max-width: 900px;
-}
-
-.territory-control-panel .camera-inspector {
-  grid-column: span 1;
-}
-
-.territory-control-panel .territory-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.territory-control-panel .territory-actions .lock-button {
-  flex: 2;
-}
-
-.territory-control-panel .territory-actions .fallback-button {
-  flex: 1;
-}
-
-@media (max-width: 768px) {
-  .territory-control-panel .territory-actions {
-    flex-direction: column;
-  }
 }
 
 /* Search Form */
@@ -2110,20 +2071,18 @@ a:focus-visible {
   color: var(--paper);
 }
 
-/* Territory Map Column: Positioned directly below top toolbar */
+/* Territory Map Column */
 .territory-map-column {
   position: relative;
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 113, 206, 0.4);
+  border-radius: 8px;
+  border: 1px solid var(--line);
   overflow: hidden;
-  background: #090614;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 0, 127, 0.15);
+  background: #111516;
 }
 
 .territory-map-canvas-container {
   width: 100%;
-  height: clamp(520px, 68vh, 720px);
+  height: 620px;
   min-height: 480px;
 }
 
