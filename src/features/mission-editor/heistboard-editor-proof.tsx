@@ -501,6 +501,14 @@ export function HeistboardEditorProof() {
       {/* Stage 01: Case File Briefing */}
       {stage === "file" && (
         <section className="case-file-panel" aria-labelledby="case-file-title">
+          <div className="case-file-banner-frame">
+            <img
+              src="/banner/1.jpg"
+              alt="Operation Case File Briefing Banner"
+              className="case-file-banner-img"
+            />
+          </div>
+
           <div className="case-file-header">
             <div>
               <span className="case-file-eyebrow">Operation Case File // 01</span>
