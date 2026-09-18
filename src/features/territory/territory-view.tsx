@@ -350,10 +350,11 @@ export function TerritoryView({
     const containerWidth = container?.clientWidth || 1200;
     const containerHeight = container?.clientHeight || 800;
 
-    // Use full ratio of the map container, scaling to crisp high-DPI output
+    // Use crisp 16:9 cinematic widescreen capture ratio so the map fills the full screen editor without side pillarboxing
     const scale = Math.min(2, Math.max(1, 1600 / containerWidth));
-    const captureWidth = Math.round(containerWidth * scale);
-    const captureHeight = Math.round(containerHeight * scale);
+    const baseWidth = Math.max(1600, Math.round(containerWidth * scale));
+    const captureWidth = Math.min(1920, baseWidth);
+    const captureHeight = Math.round(captureWidth * (9 / 16));
 
     try {
       const result = await captureTerritoryShot(camera, {
@@ -385,7 +386,7 @@ export function TerritoryView({
     initializing: "Initializing WebGL capture surface…",
     "loading-tiles": "Fetching and loading vector tiles…",
     rendering: "Rendering 3D perspective & extrusions…",
-    encoding: "Encoding 3:2 raster PNG Blob…",
+    encoding: "Encoding 16:9 widescreen raster PNG Blob…",
     verifying: "Verifying decoded Map Base…",
   };
 
@@ -760,7 +761,7 @@ export function TerritoryView({
             <div className="reticle-corner bottom-left" />
             <div className="reticle-corner bottom-right" />
             <div className="reticle-crosshair" />
-            <div className="reticle-badge">Full Ratio Map Capture</div>
+            <div className="reticle-badge">16:9 Widescreen Map Capture</div>
           </div>
         </div>
 

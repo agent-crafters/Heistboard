@@ -622,14 +622,14 @@ export function MissionEditor({
         key={retryKey}
         editorId={`heistboard-mission-editor-${retryKey}`}
         image={image}
-        minHeight="min(680px, 72vh)"
+        minHeight="calc(100vh - 140px)"
         options={MISSION_TOOL_OPTIONS}
         onLoad={handleEditorLoaded}
         onSave={onSave}
         onCancel={onCancel}
         onLoadError={onImageError}
         onError={onEditorError}
-        style={{ width: "100%", background: "#171b1c" }}
+        style={{ width: "100%", height: "100%", background: "#171b1c" }}
       />
     </div>
   );
