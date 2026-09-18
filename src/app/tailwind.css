@@ -3513,47 +3513,6 @@ a:focus-visible {
   box-shadow: 0 0 16px rgba(255, 138, 0, 0.6) !important;
 }
 
-/* Enhanced Styling for Unlayer Native Tool Rail Buttons (Draw, Text, Shapes) */
-.editor-frame button[data-testid="native-tool-draw"],
-.editor-frame button[data-testid="native-tool-text"],
-.editor-frame button[data-testid="native-tool-shapes"] {
-  border-radius: 0.5rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  background: rgba(22, 13, 44, 0.75) !important;
-  color: #d1d5db !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.editor-frame button[data-testid="native-tool-draw"]:hover,
-.editor-frame button[data-testid="native-tool-draw"].active,
-.editor-frame button[data-testid="native-tool-draw"][aria-pressed="true"] {
-  background: rgba(255, 113, 206, 0.2) !important;
-  color: #ffffff !important;
-  border-color: #ff71ce !important;
-  box-shadow: 0 0 14px rgba(255, 113, 206, 0.45) !important;
-  transform: scale(1.04) !important;
-}
-
-.editor-frame button[data-testid="native-tool-text"]:hover,
-.editor-frame button[data-testid="native-tool-text"].active,
-.editor-frame button[data-testid="native-tool-text"][aria-pressed="true"] {
-  background: rgba(0, 245, 212, 0.2) !important;
-  color: #ffffff !important;
-  border-color: #00f5d4 !important;
-  box-shadow: 0 0 14px rgba(0, 245, 212, 0.45) !important;
-  transform: scale(1.04) !important;
-}
-
-.editor-frame button[data-testid="native-tool-shapes"]:hover,
-.editor-frame button[data-testid="native-tool-shapes"].active,
-.editor-frame button[data-testid="native-tool-shapes"][aria-pressed="true"] {
-  background: rgba(255, 209, 102, 0.2) !important;
-  color: #ffffff !important;
-  border-color: #ffd166 !important;
-  box-shadow: 0 0 14px rgba(255, 209, 102, 0.45) !important;
-  transform: scale(1.04) !important;
-}
-
 /* Enhanced Styling for Unlayer Top Action Bar (Save & Cancel Buttons) */
 .editor-frame button[data-testid="save-button"],
 .editor-frame button.save-button {
