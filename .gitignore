@@ -11,7 +11,6 @@ test-results/
 !.env.example
 *.log
 *.tsbuildinfo
-*.png
 downloads/
 
 # Disposable task working files; the ledger is intentionally versioned.
