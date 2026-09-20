@@ -8,11 +8,11 @@ import {
 import {
   MAX_SEARCH_CACHE_ENTRIES,
   PlaceSearchService,
-} from "./place-search";
+} from "@/lib/place-search";
 import {
   AnnotatedMapResourceOwner,
   type EditorSavePayload,
-} from "./annotated-map-resource";
+} from "@/lib/annotated-map-resource";
 
 describe("Hardening, Privacy, and Performance (HB-013)", () => {
   describe("Upload Bounds and Normalization", () => {

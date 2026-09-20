@@ -5,7 +5,7 @@ import {
   DEFAULT_CAPTURE_WIDTH,
   captureTerritoryShot,
   waitForMapIdle,
-} from "./territory-capture";
+} from "@/lib/territory-capture";
 
 describe("territory-capture", () => {
   afterEach(() => {

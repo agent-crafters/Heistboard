@@ -4,7 +4,7 @@ import {
   DOSSIER_WIDTH,
   composeDossierCanvas,
   type DossierCompositionInput,
-} from "./dossier-composer";
+} from "@/lib/dossier-composer";
 import { DEFAULT_IDENTITY_STATE } from "@/domain/identity";
 import { STANDARD_TERRITORY_ATTRIBUTION } from "@/domain/territory";
 

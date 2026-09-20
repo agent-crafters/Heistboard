@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   GTA_STICKERS,
   getStickersByCategory,
-} from "./gta-stickers";
+} from "@/lib/gta-stickers";
 
 describe("GTA Stickers Catalog", () => {
   it("contains all 30 sticker assets", () => {

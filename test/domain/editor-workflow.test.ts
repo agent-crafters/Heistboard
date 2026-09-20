@@ -6,7 +6,7 @@ import {
   initialJourneyState,
   operationJourneyReducer,
   type OperationJourneyState,
-} from "./editor-workflow";
+} from "@/domain/editor-workflow";
 
 describe("Mission Plan editor workflow", () => {
   it("reaches editing only after the Map Base and editor are ready", () => {

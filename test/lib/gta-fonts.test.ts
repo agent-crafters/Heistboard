@@ -6,8 +6,8 @@ import {
   renderStyledTextToCanvas,
   addStyledTextToFabricCanvas,
   changeFabricTextFont,
-} from "./gta-fonts";
-import type { FabricCanvasLike, FabricObjectLike } from "./sticker-canvas-importer";
+} from "@/lib/gta-fonts";
+import type { FabricCanvasLike, FabricObjectLike } from "@/lib/sticker-canvas-importer";
 
 describe("GTA Fonts & Typography", () => {
   const originalDocument = globalThis.document;

@@ -8,8 +8,8 @@ import {
   renderBgLayerToCanvas,
   applyBgLayerToFabricCanvas,
   type BgLayerConfig,
-} from "./bg-layer-processor";
-import type { FabricCanvasLike, FabricObjectLike } from "./sticker-canvas-importer";
+} from "@/lib/bg-layer-processor";
+import type { FabricCanvasLike, FabricObjectLike } from "@/lib/sticker-canvas-importer";
 
 describe("BG Layer Processor", () => {
   const originalDocument = globalThis.document;

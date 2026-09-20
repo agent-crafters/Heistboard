@@ -68,28 +68,28 @@ export function StickerSidebar({
   };
 
   return (
-    <div className="sticker-sidebar-panel" aria-label="Tactical Stickers Stash">
-      <div className="sticker-sidebar-header">
+    <div className="flex flex-col h-full bg-charcoal-900/95 border-l border-coral/30 text-paper overflow-hidden select-none" aria-label="Tactical Stickers Stash">
+      <div className="p-4 border-b border-coral/20 bg-charcoal-850/80 flex flex-col gap-3 shrink-0">
         <div className="flex items-center justify-between">
-          <h3 className="sticker-sidebar-title">Tactical Stickers</h3>
-          <span className="sticker-count-badge">
+          <h3 className="font-display text-lg tracking-wider text-white uppercase">Tactical Stickers</h3>
+          <span className="font-mono text-[11px] px-2 py-0.5 rounded-full bg-coral/20 text-coral font-bold">
             {filteredStickers.length} available
           </span>
         </div>
-        <p className="sticker-sidebar-subtitle">
+        <p className="text-xs text-paper-muted leading-tight">
           Click or drag onto map canvas to mark routes, targets, and safehouses.
         </p>
 
         {feedback && (
-          <div className="sticker-feedback-toast" role="status">
+          <div className="px-3 py-1.5 rounded-md bg-petrol/20 text-petrol font-mono text-xs font-bold border border-petrol/40 animate-pulse" role="status">
             ✓ {feedback}
           </div>
         )}
 
-        <div className="sticker-search-row">
+        <div className="relative flex items-center">
           <input
             type="text"
-            className="sticker-search-input"
+            className="w-full px-3 py-1.5 pl-3 pr-8 rounded-lg bg-charcoal-950 border border-coral/30 text-white placeholder:text-paper-muted/60 text-xs font-mono focus:outline-none focus:border-coral"
             placeholder="Search stickers (car, siren, 1...)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -97,7 +97,7 @@ export function StickerSidebar({
           {searchQuery && (
             <button
               type="button"
-              className="sticker-search-clear"
+              className="absolute right-2.5 text-paper-muted hover:text-white text-xs cursor-pointer"
               onClick={() => setSearchQuery("")}
               title="Clear search"
             >
@@ -106,15 +106,17 @@ export function StickerSidebar({
           )}
         </div>
 
-        <div className="sticker-category-tabs" role="tablist">
+        <div className="flex gap-1.5 overflow-x-auto pb-1" role="tablist">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               type="button"
               role="tab"
               aria-selected={activeCategory === cat.id}
-              className={`sticker-tab-btn ${
-                activeCategory === cat.id ? "active" : ""
+              className={`px-2.5 py-1 rounded-md text-xs font-mono font-medium transition-all whitespace-nowrap cursor-pointer ${
+                activeCategory === cat.id
+                  ? "bg-coral text-white font-bold shadow-sm shadow-coral/30"
+                  : "bg-charcoal-800 text-paper-muted hover:text-white hover:bg-charcoal-700"
               }`}
               onClick={() => setActiveCategory(cat.id)}
             >
@@ -124,34 +126,36 @@ export function StickerSidebar({
         </div>
       </div>
 
-      <div className="sticker-grid-container">
+      <div className="flex-1 overflow-y-auto p-4">
         {filteredStickers.length === 0 ? (
-          <div className="sticker-empty-message">
+          <div className="text-center py-8 text-xs text-paper-muted font-mono">
             No stickers found matching &quot;{searchQuery}&quot;
           </div>
         ) : (
-          <div className="sticker-grid">
+          <div className="grid grid-cols-3 gap-2.5">
             {filteredStickers.map((sticker) => (
               <button
                 key={sticker.id}
                 type="button"
-                className="sticker-card"
+                className="flex flex-col items-center gap-1.5 p-2 rounded-lg bg-charcoal-800/80 border border-white/5 hover:border-petrol/60 hover:bg-charcoal-700/80 hover:shadow-lg hover:shadow-petrol/10 transition-all cursor-pointer group text-left"
                 title={`Click to add "${sticker.name}" (or drag onto map)`}
                 onClick={() => handleAddSticker(sticker)}
                 draggable
                 onDragStart={(e) => handleDragStart(e, sticker)}
                 disabled={isImporting}
               >
-                <div className="sticker-thumb-wrapper">
+                <div className="w-12 h-12 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={sticker.url}
                     alt={sticker.name}
-                    className="sticker-thumb-img"
+                    className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform"
                     loading="lazy"
                   />
                 </div>
-                <span className="sticker-card-label">{sticker.name}</span>
+                <span className="text-[10px] font-mono text-paper-muted group-hover:text-white truncate w-full text-center">
+                  {sticker.name}
+                </span>
               </button>
             ))}
           </div>

@@ -6,7 +6,7 @@ import {
   skipReveal,
   startPullback,
   DEFAULT_REVEAL_DURATION_MS,
-} from "./reveal-controller";
+} from "@/lib/reveal-controller";
 
 describe("Cinematic Reveal state controller (HB-010)", () => {
   it("initializes to zoomed-in phase with default 2000ms duration", () => {

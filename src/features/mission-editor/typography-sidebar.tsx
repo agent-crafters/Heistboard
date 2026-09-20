@@ -96,38 +96,38 @@ export function TypographySidebar({
 
   return (
     <div
-      className={`typography-sidebar-panel ${compact ? "compact" : ""}`}
+      className={`flex flex-col h-full bg-charcoal-900/95 border-l border-coral/30 text-paper overflow-hidden select-none ${compact ? "w-full" : ""}`}
       aria-label="Rockstar & GTA Typography Tool"
     >
       {/* Header */}
-      <div className="typography-header">
+      <div className="p-4 border-b border-coral/20 bg-charcoal-850/80 flex flex-col gap-2 shrink-0">
         <div className="flex items-center gap-2">
-          <span className="typography-rockstar-badge">★ ROCKSTAR FONTS</span>
-          <h3 className="typography-title">GTA Typography</h3>
+          <span className="font-mono text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-mustard/20 text-mustard border border-mustard/40">★ ROCKSTAR FONTS</span>
+          <h3 className="font-display text-lg tracking-wider text-white uppercase">GTA Typography</h3>
         </div>
-        <p className="typography-subtitle">
+        <p className="text-xs text-paper-muted leading-tight">
           Legendary <strong>Pricedown</strong> and stylish tactical heist display fonts.
         </p>
 
         {feedback && (
-          <div className="typography-feedback-toast" role="status">
+          <div className="px-3 py-1.5 rounded-md bg-petrol/20 text-petrol font-mono text-xs font-bold border border-petrol/40 animate-pulse" role="status">
             ✓ {feedback}
           </div>
         )}
       </div>
 
-      <div className="typography-scroll-body">
+      <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Active Selection Changer */}
         {hasActiveCanvasText && (
-          <div className="active-text-selection-box">
-            <span className="selection-badge">Text Selected On Map</span>
-            <p className="selection-hint">Click any font below to instantly update selected text:</p>
-            <div className="quick-font-switch-chips">
+          <div className="p-3 rounded-lg bg-mustard/10 border border-mustard/40 space-y-2">
+            <span className="inline-block px-2 py-0.5 rounded bg-mustard text-ink font-mono text-[10px] font-black uppercase tracking-wider">Text Selected On Map</span>
+            <p className="text-xs text-mustard/90 font-medium">Click any font below to instantly update selected text:</p>
+            <div className="flex flex-wrap gap-1.5">
               {STYLISH_FONTS.map((font) => (
                 <button
                   key={font.id}
                   type="button"
-                  className="quick-font-btn"
+                  className="px-2.5 py-1 rounded bg-charcoal-800 hover:bg-mustard/20 hover:text-mustard text-xs text-white border border-white/10 transition-colors cursor-pointer"
                   style={{ fontFamily: `"${font.fontFamily}", sans-serif` }}
                   onClick={() => handleChangeActiveFont(font.fontFamily)}
                   title={`Change font to ${font.name}`}
@@ -140,16 +140,16 @@ export function TypographySidebar({
         )}
 
         {/* 1. TEXT INPUT & QUICK PRESETS */}
-        <section className="typography-section">
-          <div className="section-header-row">
-            <span className="section-number">01</span>
-            <h4>Enter Text</h4>
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 border-b border-white/10 pb-1.5">
+            <span className="font-mono text-xs font-bold text-coral">01</span>
+            <h4 className="font-display text-sm tracking-wide text-white uppercase">Enter Text</h4>
           </div>
 
-          <div className="text-input-row">
+          <div className="relative flex items-center">
             <input
               type="text"
-              className="typography-text-input"
+              className="w-full px-3 py-2 pl-3 pr-8 rounded-lg bg-charcoal-950 border border-coral/30 text-white placeholder:text-paper-muted/60 text-sm font-medium focus:outline-none focus:border-coral"
               placeholder="Enter heist text..."
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -158,7 +158,7 @@ export function TypographySidebar({
             {text && (
               <button
                 type="button"
-                className="clear-text-btn"
+                className="absolute right-2.5 text-paper-muted hover:text-white text-xs cursor-pointer"
                 onClick={() => setText("")}
                 title="Clear text"
               >
@@ -167,14 +167,18 @@ export function TypographySidebar({
             )}
           </div>
 
-          <div className="preset-phrases-row">
-            <span className="sublabel">Iconic Phrases:</span>
-            <div className="preset-phrase-chips">
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-mono text-paper-muted uppercase tracking-wider block">Iconic Phrases:</span>
+            <div className="flex flex-wrap gap-1.5">
               {GTA_PRESET_PHRASES.map((phrase) => (
                 <button
                   key={phrase}
                   type="button"
-                  className={`preset-phrase-chip ${text === phrase ? "active" : ""}`}
+                  className={`px-2 py-1 rounded text-xs font-mono font-medium transition-all cursor-pointer ${
+                    text === phrase
+                      ? "bg-coral text-white font-bold shadow-sm shadow-coral/30"
+                      : "bg-charcoal-800 text-paper-muted hover:text-white hover:bg-charcoal-700"
+                  }`}
                   onClick={() => setText(phrase)}
                 >
                   {phrase}
@@ -185,33 +189,41 @@ export function TypographySidebar({
         </section>
 
         {/* 2. FONT SELECTOR */}
-        <section className="typography-section">
-          <div className="section-header-row">
-            <span className="section-number">02</span>
-            <h4>Choose Font Family</h4>
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 border-b border-white/10 pb-1.5">
+            <span className="font-mono text-xs font-bold text-coral">02</span>
+            <h4 className="font-display text-sm tracking-wide text-white uppercase">Choose Font Family</h4>
           </div>
 
-          <div className="font-cards-list">
+          <div className="space-y-2">
             {STYLISH_FONTS.map((font) => {
               const isSelected = selectedFont.id === font.id;
               return (
                 <button
                   key={font.id}
                   type="button"
-                  className={`font-card ${isSelected ? "active" : ""}`}
+                  className={`w-full p-2.5 rounded-lg text-left transition-all cursor-pointer border ${
+                    isSelected
+                      ? "bg-charcoal-800 border-mustard shadow-lg shadow-mustard/10"
+                      : "bg-charcoal-800/60 border-white/5 hover:border-white/20 hover:bg-charcoal-800"
+                  }`}
                   onClick={() => setSelectedFont(font)}
                 >
-                  <div className="font-card-top">
-                    <strong className="font-name">{font.name}</strong>
-                    {font.badge && <span className="font-badge">{font.badge}</span>}
+                  <div className="flex items-center justify-between">
+                    <strong className="text-sm text-white font-bold">{font.name}</strong>
+                    {font.badge && (
+                      <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-mustard/20 text-mustard font-bold">
+                        {font.badge}
+                      </span>
+                    )}
                   </div>
                   <div
-                    className="font-preview-sample"
+                    className="text-base text-paper my-1 tracking-wide truncate"
                     style={{ fontFamily: `"${font.fontFamily}", sans-serif` }}
                   >
                     {font.previewText}
                   </div>
-                  <span className="font-tagline">{font.tagline}</span>
+                  <span className="text-[11px] text-paper-muted block">{font.tagline}</span>
                 </button>
               );
             })}
@@ -219,24 +231,28 @@ export function TypographySidebar({
         </section>
 
         {/* 3. GTA TEXT STYLES */}
-        <section className="typography-section">
-          <div className="section-header-row">
-            <span className="section-number">03</span>
-            <h4>GTA Visual Style</h4>
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 border-b border-white/10 pb-1.5">
+            <span className="font-mono text-xs font-bold text-coral">03</span>
+            <h4 className="font-display text-sm tracking-wide text-white uppercase">GTA Visual Style</h4>
           </div>
 
-          <div className="gta-text-styles-grid">
+          <div className="grid grid-cols-2 gap-2">
             {GTA_TEXT_STYLES.map((style) => {
               const isSelected = selectedStyle.id === style.id;
               return (
                 <button
                   key={style.id}
                   type="button"
-                  className={`text-style-card ${isSelected ? "active" : ""}`}
+                  className={`p-2.5 rounded-lg border text-center transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-charcoal-800 border-coral shadow-lg shadow-coral/10"
+                      : "bg-charcoal-800/60 border-white/5 hover:border-white/20"
+                  }`}
                   onClick={() => setSelectedStyle(style)}
                 >
                   <div
-                    className="style-sample-chip"
+                    className="text-xl font-bold py-1 select-none"
                     style={{
                       color: style.fill,
                       WebkitTextStroke: `${Math.min(style.strokeWidth, 2)}px ${style.stroke}`,
@@ -246,17 +262,17 @@ export function TypographySidebar({
                   >
                     GTA VI
                   </div>
-                  <span className="style-name">{style.name}</span>
+                  <span className="text-[11px] font-mono text-paper-muted block mt-1">{style.name}</span>
                 </button>
               );
             })}
           </div>
 
           {/* Font Size Slider */}
-          <div className="control-slider-group mt-3">
-            <div className="slider-label-row">
+          <div className="space-y-1.5 mt-3">
+            <div className="flex items-center justify-between text-xs font-mono text-paper-muted">
               <label htmlFor="font-size-slider">Font Size</label>
-              <span className="slider-value-badge">{fontSize}px</span>
+              <span className="text-petrol font-bold">{fontSize}px</span>
             </div>
             <input
               id="font-size-slider"
@@ -266,17 +282,16 @@ export function TypographySidebar({
               step="4"
               value={fontSize}
               onChange={(e) => setFontSize(parseInt(e.target.value, 10))}
-              className="heist-range-slider"
+              className="w-full accent-coral cursor-pointer"
             />
           </div>
         </section>
 
         {/* 4. LIVE PREVIEW & ACTION */}
-        <section className="typography-section live-preview-section">
-          <span className="sublabel">Map Preview:</span>
-          <div className="typography-live-preview-box">
+        <section className="space-y-3 pt-2 border-t border-white/10">
+          <span className="text-[11px] font-mono text-paper-muted uppercase tracking-wider block">Map Preview:</span>
+          <div className="p-4 rounded-lg bg-charcoal-950 border border-coral/30 flex items-center justify-center min-h-[70px] overflow-hidden text-center">
             <div
-              className="preview-rendered-text"
               style={{
                 fontFamily: `"${selectedFont.fontFamily}", sans-serif`,
                 fontSize: `${Math.min(fontSize * 0.75, 42)}px`,
@@ -291,7 +306,7 @@ export function TypographySidebar({
 
           <button
             type="button"
-            className="add-text-to-canvas-btn"
+            className="w-full py-2.5 px-4 rounded-lg bg-mustard hover:bg-mustard-subtle text-ink font-mono text-xs font-black uppercase tracking-wider transition-all shadow-lg hover:shadow-mustard/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddText}
             disabled={isAdding || !text.trim()}
           >

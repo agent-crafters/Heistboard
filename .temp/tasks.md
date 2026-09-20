@@ -279,3 +279,19 @@ This is the single authoritative project task list. Status is encoded by the che
   - Custom panels, active states, accessible names, and click targets continue to work.
   - Editor DOM mutations do not duplicate the group or its buttons.
   - Lint, typecheck, tests, and production build pass.
+
+## HB-020 — Migrate to inline Tailwind CSS and reorganize test files
+
+- Target: 2026-09-20
+- Priority: P0
+- Status: [x] DONE
+- Outcome: Reorganize tests into a dedicated `/test` folder, install and configure Tailwind CSS v4, convert custom classes to inline Tailwind utility classes across components, and retain only necessary custom classes in `tailwind.css`.
+- Dependencies: HB-019
+- GitHub issue: #20
+- Acceptance criteria:
+  - All test files are located in `/test/` and pass with 100% success.
+  - Tailwind CSS v4 is configured with the GTA-VI neon/synthwave palette and typography theme tokens.
+  - JSX components use inline Tailwind utility classes.
+  - Custom classes in `tailwind.css` are pruned, keeping only necessary third-party DOM / canvas / keyframe rules.
+  - Lint, typecheck, tests, and production build pass.
+

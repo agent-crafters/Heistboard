@@ -413,19 +413,19 @@ export function MissionEditor({
   return (
     <div
       ref={containerRef}
-      className={`mission-editor-wrapper ${isGtaEditsOpen ? "gta-edits-drawer-open" : ""}`}
+      className={`relative w-full h-full min-h-[620px] bg-charcoal-950 overflow-hidden select-none ${isGtaEditsOpen ? "gta-edits-drawer-open" : ""}`}
     >
       {/* Docked GTA Edits Drawer (Opens at 9th tool click) */}
       {isGtaEditsOpen && (
         <div
-          className="editor-gta-edits-panel-overlay"
+          className="absolute top-0 bottom-0 right-[72px] w-[390px] max-w-[calc(100%-72px)] z-40 bg-charcoal-900/95 backdrop-blur-xl border-l-2 border-mustard border-r border-mustard/20 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200"
           aria-label="GTA Edits Command Panel"
         >
           {/* Header */}
-          <div className="editor-gta-edits-panel-header">
+          <div className="p-3 bg-gradient-to-r from-mustard/15 to-coral/10 border-b border-mustard/30 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <span className="panel-badge">★ GTA-VI</span>
-              <span className="panel-title">
+              <span className="font-mono text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-mustard/20 text-mustard border border-mustard/40">★ GTA-VI</span>
+              <span className="font-display text-sm tracking-wider text-white uppercase">
                 {activeGtaTool === "display"
                   ? "Display Fonts"
                   : activeGtaTool === "identity"
@@ -439,7 +439,7 @@ export function MissionEditor({
             </div>
             <button
               type="button"
-              className="panel-close-btn"
+              className="w-6 h-6 rounded flex items-center justify-center text-paper-muted hover:text-white hover:bg-white/10 text-xs transition-colors cursor-pointer"
               onClick={() => {
                 setIsGtaEditsOpen(false);
                 setActiveGtaTool(null);
@@ -452,7 +452,7 @@ export function MissionEditor({
 
           {/* 4-Tool Quick Navigation Tabs */}
           <div
-            className="gta-edits-subtool-nav"
+            className="flex border-b border-white/10 bg-charcoal-950/60 shrink-0"
             role="tablist"
             aria-label="GTA Edits Tools"
           >
@@ -460,7 +460,9 @@ export function MissionEditor({
               type="button"
               role="tab"
               aria-selected={activeGtaTool === "display"}
-              className={`gta-edits-tab-btn ${activeGtaTool === "display" ? "active" : ""}`}
+              className={`flex-1 py-2 px-1 text-xs font-mono font-medium flex items-center justify-center gap-1 transition-all border-b-2 cursor-pointer ${
+                activeGtaTool === "display" ? "border-mustard text-mustard bg-mustard/5 font-bold" : "border-transparent text-paper-muted hover:text-white"
+              }`}
               onClick={() => setActiveGtaTool("display")}
             >
               <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -472,7 +474,9 @@ export function MissionEditor({
               type="button"
               role="tab"
               aria-selected={activeGtaTool === "identity"}
-              className={`gta-edits-tab-btn ${activeGtaTool === "identity" ? "active" : ""}`}
+              className={`flex-1 py-2 px-1 text-xs font-mono font-medium flex items-center justify-center gap-1 transition-all border-b-2 cursor-pointer ${
+                activeGtaTool === "identity" ? "border-coral text-coral bg-coral/5 font-bold" : "border-transparent text-paper-muted hover:text-white"
+              }`}
               onClick={() => setActiveGtaTool("identity")}
             >
               <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -485,7 +489,9 @@ export function MissionEditor({
               type="button"
               role="tab"
               aria-selected={activeGtaTool === "stickers"}
-              className={`gta-edits-tab-btn ${activeGtaTool === "stickers" ? "active" : ""}`}
+              className={`flex-1 py-2 px-1 text-xs font-mono font-medium flex items-center justify-center gap-1 transition-all border-b-2 cursor-pointer ${
+                activeGtaTool === "stickers" ? "border-petrol text-petrol bg-petrol/5 font-bold" : "border-transparent text-paper-muted hover:text-white"
+              }`}
               onClick={() => setActiveGtaTool("stickers")}
             >
               <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -502,7 +508,9 @@ export function MissionEditor({
               type="button"
               role="tab"
               aria-selected={activeGtaTool === "bg-styles"}
-              className={`gta-edits-tab-btn ${activeGtaTool === "bg-styles" ? "active" : ""}`}
+              className={`flex-1 py-2 px-1 text-xs font-mono font-medium flex items-center justify-center gap-1 transition-all border-b-2 cursor-pointer ${
+                activeGtaTool === "bg-styles" ? "border-mustard-dark text-mustard bg-mustard-dark/5 font-bold" : "border-transparent text-paper-muted hover:text-white"
+              }`}
               onClick={() => setActiveGtaTool("bg-styles")}
             >
               <svg className="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -516,61 +524,61 @@ export function MissionEditor({
 
           {/* Tool Overview (when no specific tool tab is open) */}
           {activeGtaTool === null && (
-            <div className="gta-edits-menu-list">
-              <div className="text-[11px] font-mono text-gray-400 tracking-wider mb-0.5 px-1 uppercase">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              <div className="text-[11px] font-mono text-paper-muted tracking-wider mb-0.5 px-1 uppercase">
                 GTA-VI Inspired Edits // 4 Tools
               </div>
 
               {/* 1. Display */}
               <button
                 type="button"
-                className="gta-edits-tool-card tool-card-display"
+                className="w-full p-3 rounded-lg bg-white/[0.03] border border-white/10 hover:border-mustard/45 hover:bg-white/[0.08] hover:shadow-lg flex items-center gap-3 transition-all cursor-pointer text-left group"
                 onClick={() => setActiveGtaTool("display")}
               >
-                <div className="tool-card-icon text-[#ffd000]">
+                <div className="text-[#ffd000]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(255,208,0,0.2)" />
                   </svg>
                 </div>
-                <div className="tool-card-info flex-1 min-w-0">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="tool-card-title text-sm font-bold text-white">Display</span>
-                    <span className="tool-card-tag text-[9.5px] font-mono text-[#ffd000] bg-[#ffd000]/10 px-1.5 py-0.5 rounded border border-[#ffd000]/30 font-bold">FONTS</span>
+                    <span className="text-sm font-bold text-white">Display</span>
+                    <span className="text-[9.5px] font-mono text-[#ffd000] bg-[#ffd000]/10 px-1.5 py-0.5 rounded border border-[#ffd000]/30 font-bold">FONTS</span>
                   </div>
-                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Rockstar Display Fonts &amp; Typography</p>
+                  <p className="text-xs text-paper-muted truncate mt-0.5">Rockstar Display Fonts &amp; Typography</p>
                 </div>
-                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+                <span className="text-paper-muted group-hover:text-white font-bold ml-1 text-sm">→</span>
               </button>
 
               {/* 2. Identity */}
               <button
                 type="button"
-                className="gta-edits-tool-card tool-card-identity"
+                className="w-full p-3 rounded-lg bg-white/[0.03] border border-white/10 hover:border-coral/45 hover:bg-white/[0.08] hover:shadow-lg flex items-center gap-3 transition-all cursor-pointer text-left group"
                 onClick={() => setActiveGtaTool("identity")}
               >
-                <div className="tool-card-icon text-[#ff007f]">
+                <div className="text-[#ff007f]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" fill="rgba(255,0,127,0.2)" />
                   </svg>
                 </div>
-                <div className="tool-card-info flex-1 min-w-0">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="tool-card-title text-sm font-bold text-white">Identity</span>
-                    <span className="tool-card-tag text-[9.5px] font-mono text-[#ff007f] bg-[#ff007f]/10 px-1.5 py-0.5 rounded border border-[#ff007f]/30 font-bold">BADGE</span>
+                    <span className="text-sm font-bold text-white">Identity</span>
+                    <span className="text-[9.5px] font-mono text-[#ff007f] bg-[#ff007f]/10 px-1.5 py-0.5 rounded border border-[#ff007f]/30 font-bold">BADGE</span>
                   </div>
-                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Operative ID Badge, Callsign &amp; Archetype</p>
+                  <p className="text-xs text-paper-muted truncate mt-0.5">Operative ID Badge, Callsign &amp; Archetype</p>
                 </div>
-                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+                <span className="text-paper-muted group-hover:text-white font-bold ml-1 text-sm">→</span>
               </button>
 
               {/* 3. Stickers */}
               <button
                 type="button"
-                className="gta-edits-tool-card tool-card-stickers"
+                className="w-full p-3 rounded-lg bg-white/[0.03] border border-white/10 hover:border-petrol/45 hover:bg-white/[0.08] hover:shadow-lg flex items-center gap-3 transition-all cursor-pointer text-left group"
                 onClick={() => setActiveGtaTool("stickers")}
               >
-                <div className="tool-card-icon text-[#00f5d4]">
+                <div className="text-[#00f5d4]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="9" fill="rgba(0,245,212,0.2)" />
                     <circle cx="12" cy="12" r="3" fill="currentColor" />
@@ -580,50 +588,50 @@ export function MissionEditor({
                     <line x1="18" y1="12" x2="22" y2="12" />
                   </svg>
                 </div>
-                <div className="tool-card-info flex-1 min-w-0">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="tool-card-title text-sm font-bold text-white">Stickers</span>
-                    <span className="tool-card-tag text-[9.5px] font-mono text-[#00f5d4] bg-[#00f5d4]/10 px-1.5 py-0.5 rounded border border-[#00f5d4]/30 font-bold">30 ICONS</span>
+                    <span className="text-sm font-bold text-white">Stickers</span>
+                    <span className="text-[9.5px] font-mono text-[#00f5d4] bg-[#00f5d4]/10 px-1.5 py-0.5 rounded border border-[#00f5d4]/30 font-bold">30 ICONS</span>
                   </div>
-                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Tactical Markers, Targets &amp; Waypoints</p>
+                  <p className="text-xs text-paper-muted truncate mt-0.5">Tactical Markers, Targets &amp; Waypoints</p>
                 </div>
-                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+                <span className="text-paper-muted group-hover:text-white font-bold ml-1 text-sm">→</span>
               </button>
 
               {/* 4. BG Styles */}
               <button
                 type="button"
-                className="gta-edits-tool-card tool-card-bg-styles"
+                className="w-full p-3 rounded-lg bg-white/[0.03] border border-white/10 hover:border-mustard-dark/45 hover:bg-white/[0.08] hover:shadow-lg flex items-center gap-3 transition-all cursor-pointer text-left group"
                 onClick={() => setActiveGtaTool("bg-styles")}
               >
-                <div className="tool-card-icon text-[#ff8000]">
+                <div className="text-[#ff8000]">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polygon points="12 2 2 7 12 12 22 7 12 2" fill="rgba(255,128,0,0.2)" />
                     <polyline points="2 17 12 22 22 17" />
                     <polyline points="2 12 12 17 22 12" />
                   </svg>
                 </div>
-                <div className="tool-card-info flex-1 min-w-0">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="tool-card-title text-sm font-bold text-white">BG Styles</span>
-                    <span className="tool-card-tag text-[9.5px] font-mono text-[#ff8000] bg-[#ff8000]/10 px-1.5 py-0.5 rounded border border-[#ff8000]/30 font-bold">STYLES</span>
+                    <span className="text-sm font-bold text-white">BG Styles</span>
+                    <span className="text-[9.5px] font-mono text-[#ff8000] bg-[#ff8000]/10 px-1.5 py-0.5 rounded border border-[#ff8000]/30 font-bold">STYLES</span>
                   </div>
-                  <p className="tool-card-desc text-xs text-gray-400 truncate mt-0.5">Atmospheric Color Wash, Grain &amp; Effects</p>
+                  <p className="text-xs text-paper-muted truncate mt-0.5">Atmospheric Color Wash, Grain &amp; Effects</p>
                 </div>
-                <span className="text-gray-400 font-bold ml-1 text-sm">→</span>
+                <span className="text-paper-muted group-hover:text-white font-bold ml-1 text-sm">→</span>
               </button>
             </div>
           )}
 
           {/* Active Tool Views */}
           {activeGtaTool === "display" && (
-            <div className="editor-gta-fonts-panel-scroll">
+            <div className="flex-1 overflow-y-auto">
               <TypographySidebar editorContainerRef={containerRef} compact />
             </div>
           )}
 
           {activeGtaTool === "identity" && (
-            <div className="editor-identity-panel-scroll">
+            <div className="flex-1 overflow-y-auto">
               <IdentityControls
                 initialOptions={identityOptions}
                 identityState={identityState}
@@ -636,13 +644,13 @@ export function MissionEditor({
           )}
 
           {activeGtaTool === "stickers" && (
-            <div className="editor-stickers-panel-scroll">
+            <div className="flex-1 overflow-y-auto">
               <StickerSidebar editorContainerRef={containerRef} />
             </div>
           )}
 
           {activeGtaTool === "bg-styles" && (
-            <div className="editor-bg-styles-panel-scroll">
+            <div className="flex-1 overflow-y-auto">
               <BgLayerControls
                 config={bgConfig}
                 onChange={handleConfigChange}

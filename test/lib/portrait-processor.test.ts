@@ -3,7 +3,7 @@ import {
   applyPortraitFilter,
   cropAndFilterPortrait,
   type PortraitCropOptions,
-} from "./portrait-processor";
+} from "@/lib/portrait-processor";
 
 function createMockContext() {
   const dummyImageData = {

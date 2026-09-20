@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   AnnotatedMapResourceOwner,
   ANNOTATED_MAP_FILE_NAME,
-} from "./annotated-map-resource";
+} from "@/lib/annotated-map-resource";
 
 const firstPayload = {
   dataUrl: "data:image/png;base64,Zmlyc3Q=",
