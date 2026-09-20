@@ -313,14 +313,14 @@ export function changeFabricTextFont(
     fabricCanvas as unknown as {
       getActiveObject?():
         | (FabricObjectLike & {
-            set?(props: Record<string, unknown>): void;
-            fontFamily?: string;
-            styles?: Record<string, Record<string, { fontFamily?: string }>>;
-            isEditing?: boolean;
-            exitEditing?(): void;
-            initDimensions?(): void;
-            setCoords?(): void;
-          })
+          set?(props: Record<string, unknown>): void;
+          fontFamily?: string;
+          styles?: Record<string, Record<string, { fontFamily?: string }>>;
+          isEditing?: boolean;
+          exitEditing?(): void;
+          initDimensions?(): void;
+          setCoords?(): void;
+        })
         | null;
     }
   ).getActiveObject?.();
@@ -385,10 +385,10 @@ function triggerUnlayerFontChange(fontMenu: HTMLElement, fontFamily: string): bo
 
     let fiber = (element as unknown as Record<string, unknown>)[fiberKey] as
       | {
-          memoizedProps?: { onChange?: (font: string) => void };
-          pendingProps?: { onChange?: (font: string) => void };
-          return?: unknown;
-        }
+        memoizedProps?: { onChange?: (font: string) => void };
+        pendingProps?: { onChange?: (font: string) => void };
+        return?: unknown;
+      }
       | undefined;
 
     let depth = 0;
@@ -416,7 +416,7 @@ function triggerUnlayerFontChange(fontMenu: HTMLElement, fontFamily: string): bo
  */
 export function setupNativeFontMenuObserver(rootElement?: HTMLElement | null): () => void {
   if (typeof window === "undefined" || typeof MutationObserver === "undefined") {
-    return () => {};
+    return () => { };
   }
 
   const container = rootElement ?? document.body;
@@ -455,7 +455,7 @@ export function setupNativeFontMenuObserver(rootElement?: HTMLElement | null): (
             const btn = document.createElement("button");
             btn.type = "button";
             btn.setAttribute("role", "option");
-            btn.className = "unlayer-custom-font-btn";
+            btn.className = "flex w-full items-center gap-2.5 px-3 py-1.5 cursor-pointer text-sm whitespace-nowrap text-left transition-colors duration-200 ease-in-out text-gray-300 hover:bg-gray-700";
             btn.style.fontFamily = `"${f.family}", sans-serif`;
             btn.textContent = f.name;
 
