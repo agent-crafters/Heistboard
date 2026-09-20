@@ -1,4 +1,8 @@
-import type { FabricCanvasLike, FabricObjectLike } from "@/lib/sticker-canvas-importer";
+import {
+  findFabricCanvas,
+  type FabricCanvasLike,
+  type FabricObjectLike,
+} from "@/lib/sticker-canvas-importer";
 
 export interface StylishFont {
   id: string;
@@ -305,19 +309,102 @@ export function changeFabricTextFont(
 ): boolean {
   if (!fabricCanvas) return false;
 
-  const active = (fabricCanvas as unknown as { getActiveObject?(): (FabricObjectLike & { set?(props: Record<string, unknown>): void; fontFamily?: string }) | null }).getActiveObject?.();
+  const active = (
+    fabricCanvas as unknown as {
+      getActiveObject?():
+        | (FabricObjectLike & {
+            set?(props: Record<string, unknown>): void;
+            fontFamily?: string;
+            styles?: Record<string, Record<string, { fontFamily?: string }>>;
+            isEditing?: boolean;
+            exitEditing?(): void;
+            initDimensions?(): void;
+            setCoords?(): void;
+          })
+        | null;
+    }
+  ).getActiveObject?.();
 
   if (!active) return false;
 
   try {
+    // If text is currently in inline edit mode, exit editing so font applies globally
+    if (active.isEditing && typeof active.exitEditing === "function") {
+      active.exitEditing();
+    }
+
+    // Clear character-level styles so object-level font family applies to all text
+    if (active.styles) {
+      for (const line of Object.keys(active.styles)) {
+        for (const char of Object.keys(active.styles[line] || {})) {
+          if (active.styles[line][char]?.fontFamily) {
+            delete active.styles[line][char].fontFamily;
+          }
+        }
+      }
+    }
+
     if (typeof active.set === "function") {
       active.set({ fontFamily });
+      if (typeof active.initDimensions === "function") {
+        active.initDimensions();
+      }
+      if (typeof active.setCoords === "function") {
+        active.setCoords();
+      }
       fabricCanvas.fire?.("object:modified", { target: active });
       fabricCanvas.requestRenderAll();
       return true;
     }
   } catch (e) {
     console.warn("Could not set fontFamily on active canvas object:", e);
+  }
+
+  return false;
+}
+
+/**
+ * Traverses React Fiber tree to locate and invoke Unlayer's native text onChange handler.
+ */
+function triggerUnlayerFontChange(fontMenu: HTMLElement, fontFamily: string): boolean {
+  const elementsToSearch: (HTMLElement | null | undefined)[] = [
+    fontMenu,
+    fontMenu.parentElement,
+    fontMenu.parentElement?.querySelector('button[data-testid="native-text-font"]'),
+    fontMenu.querySelector('button[role="option"]'),
+    fontMenu.parentElement?.parentElement,
+  ];
+
+  for (const element of elementsToSearch) {
+    if (!element) continue;
+
+    const fiberKey = Object.keys(element).find(
+      (k) => k.startsWith("__reactFiber$") || k.startsWith("__reactInternalInstance$"),
+    );
+    if (!fiberKey) continue;
+
+    let fiber = (element as unknown as Record<string, unknown>)[fiberKey] as
+      | {
+          memoizedProps?: { onChange?: (font: string) => void };
+          pendingProps?: { onChange?: (font: string) => void };
+          return?: unknown;
+        }
+      | undefined;
+
+    let depth = 0;
+    while (fiber && depth < 30) {
+      depth++;
+      const props = fiber.memoizedProps || fiber.pendingProps;
+      if (props && typeof props.onChange === "function") {
+        try {
+          props.onChange(fontFamily);
+          return true;
+        } catch (err) {
+          console.warn("[Heistboard] Error calling Unlayer font onChange:", err);
+        }
+      }
+      fiber = fiber.return as typeof fiber;
+    }
   }
 
   return false;
@@ -372,18 +459,61 @@ export function setupNativeFontMenuObserver(rootElement?: HTMLElement | null): (
             btn.style.fontFamily = `"${f.family}", sans-serif`;
             btn.textContent = f.name;
 
-            btn.onclick = (e) => {
+            btn.onmouseenter = () => {
+              void ensureFontsLoaded();
+            };
+
+            btn.onclick = async (e) => {
               e.stopPropagation();
               e.preventDefault();
 
-              // 1. Change font on the active Fabric text object
-              const canvas = (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike }).__heistboardFabricCanvas;
-              if (canvas) {
-                changeFabricTextFont(canvas, f.family);
+              // 1. Ensure the font is ready in document.fonts
+              await ensureFontsLoaded();
+              if (typeof document !== "undefined" && document.fonts?.load) {
+                try {
+                  await document.fonts.load(`48px "${f.family}"`);
+                } catch {
+                  // Fallback safely if network check errors
+                }
               }
 
-              // 2. Close dropdown if open
-              fontMenu.style.display = "none";
+              // 2. Trigger Unlayer's native React font onChange handler
+              triggerUnlayerFontChange(fontMenu, f.family);
+
+              // 3. Update active Fabric text object directly (dual guarantee)
+              const canvas =
+                (window as unknown as { __heistboardFabricCanvas?: FabricCanvasLike })
+                  .__heistboardFabricCanvas ?? findFabricCanvas(document.body);
+              if (canvas) {
+                changeFabricTextFont(canvas, f.family);
+                // Extra tick after font rendering metrics settle
+                setTimeout(() => {
+                  canvas.requestRenderAll();
+                }, 80);
+              }
+
+              // 4. Update the toggle button's visible label and close the dropdown cleanly
+              const toggleBtn = fontMenu.parentElement?.querySelector<HTMLButtonElement>(
+                'button[data-testid="native-text-font"]',
+              );
+              if (toggleBtn) {
+                toggleBtn.setAttribute("data-value", f.family);
+                const textSpan = toggleBtn.querySelector("span");
+                if (textSpan) {
+                  textSpan.textContent = f.name;
+                  textSpan.style.fontFamily = `"${f.family}", sans-serif`;
+                }
+                // Simulate click on toggle button to close the dropdown in React
+                toggleBtn.click();
+              } else {
+                fontMenu.style.display = "none";
+              }
+
+              // Also trigger outside click as fallback to ensure dropdown closes
+              setTimeout(() => {
+                document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+                document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+              }, 30);
             };
 
             header.after(btn);
@@ -397,3 +527,4 @@ export function setupNativeFontMenuObserver(rootElement?: HTMLElement | null): (
 
   return () => observer.disconnect();
 }
+
