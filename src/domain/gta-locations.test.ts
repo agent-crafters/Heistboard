@@ -3,7 +3,7 @@ import {
   GTA_LOCATIONS_POOL,
   getRandomGtaLocation,
   getGtaLocationById,
-} from "@/domain/gta-locations";
+} from "./gta-locations";
 
 describe("GTA VI Locations Domain", () => {
   it("provides an extensive pool of curated GTA VI locations", () => {

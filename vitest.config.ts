@@ -9,7 +9,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["test/**/*.test.ts"],
+    include: ["src/**/*.test.ts"],
     coverage: {
       reporter: ["text", "html"],
     },

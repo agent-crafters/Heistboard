@@ -179,44 +179,42 @@ export function IdentityView({
   const activeSilhouette = getSilhouetteArchetype(silhouetteId);
 
   return (
-    <div className="min-h-[calc(100vh-64px)] p-4 sm:p-6 lg:p-8 bg-ink text-paper flex flex-col items-center justify-center" aria-label="Operative Identity Creation">
-      <div className="max-w-6xl w-full mx-auto space-y-6">
+    <div className="identity-workspace" aria-label="Operative Identity Creation">
+      <div className="identity-container">
         {/* Stage Header */}
-        <div className="border-b border-coral/20 pb-4">
+        <div className="identity-header">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded bg-coral/20 text-coral border border-coral/40">STAGE 02 / IDENTITY</span>
-            <span className="font-mono text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded bg-petrol/20 text-petrol border border-petrol/40">🔒 CLIENT-SIDE LOCAL ENCRYPTED</span>
+            <span className="identity-stage-badge">STAGE 02 / IDENTITY</span>
+            <span className="identity-secure-tag">🔒 CLIENT-SIDE LOCAL ENCRYPTED</span>
           </div>
-          <h2 className="font-display text-2xl sm:text-3xl tracking-wider text-white uppercase mt-2">Establish your operative identity</h2>
-          <p className="text-sm text-paper-muted leading-relaxed mt-1 max-w-2xl">
+          <h2 className="identity-title">Establish your operative identity</h2>
+          <p className="identity-lede">
             Choose your street callsign and provide an operational portrait or select
             an authored silhouette. Identity data remains entirely local to your session.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="identity-grid">
           {/* Left Column: Alias & Profile Config */}
-          <div className="lg:col-span-7 bg-charcoal-900/80 border border-coral/30 rounded-xl p-6 backdrop-blur-md shadow-2xl space-y-6">
+          <div className="identity-panel">
             {/* 1. Alias Section */}
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 border-b border-white/10 pb-2">
-                <span className="font-mono text-sm font-bold text-coral">01</span>
+            <div className="identity-section">
+              <div className="identity-section-header">
+                <span className="section-number">01</span>
                 <div>
-                  <h3 className="font-display text-base tracking-wide text-white uppercase">Operative Alias / Callsign</h3>
-                  <p className="text-xs text-paper-muted leading-tight">
+                  <h3 className="section-title">Operative Alias / Callsign</h3>
+                  <p className="section-desc">
                     Your identifier across tactical logs, notes, and the final dossier.
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex gap-2">
+              <div className="alias-input-wrapper">
+                <div className="alias-input-row">
                   <input
                     id="identity-alias-input"
                     type="text"
-                    className={`flex-1 px-4 py-2.5 rounded-lg bg-charcoal-950 border text-white placeholder:text-paper-muted/60 text-base font-mono font-display tracking-wider focus:outline-none ${
-                      !aliasValidation.valid && alias.length > 0 ? "border-coral" : "border-coral/30 focus:border-coral"
-                    }`}
+                    className={`alias-input ${!aliasValidation.valid && alias.length > 0 ? "has-error" : ""}`}
                     value={alias}
                     onChange={(e) => setAlias(e.target.value)}
                     placeholder="e.g. CIPHER, ROOK-9, NIGHTBIRD"
@@ -226,7 +224,7 @@ export function IdentityView({
                   />
                   <button
                     type="button"
-                    className="px-3 py-2 rounded-lg bg-charcoal-800 hover:bg-charcoal-700 text-petrol border border-petrol/30 font-mono text-xs font-bold whitespace-nowrap transition-colors cursor-pointer"
+                    className="random-callsign-btn"
                     onClick={handleRandomCallsign}
                     title="Generate a random tactical callsign"
                   >
@@ -234,54 +232,50 @@ export function IdentityView({
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between text-xs font-mono" id="alias-feedback">
+                <div className="alias-feedback-row" id="alias-feedback">
                   {!aliasValidation.valid && alias.length > 0 ? (
-                    <span className="text-coral">{aliasValidation.error}</span>
+                    <span className="alias-error">{aliasValidation.error}</span>
                   ) : (
-                    <span className="text-petrol">
+                    <span className="alias-valid">
                       ✓ Ready for mission brief ({aliasValidation.sanitized})
                     </span>
                   )}
-                  <span className="text-paper-muted/60">{alias.length} / 32</span>
+                  <span className="char-count">{alias.length} / 32</span>
                 </div>
               </div>
             </div>
 
             {/* 2. Portrait Selection Type Switcher */}
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 border-b border-white/10 pb-2">
-                <span className="font-mono text-sm font-bold text-coral">02</span>
+            <div className="identity-section">
+              <div className="identity-section-header">
+                <span className="section-number">02</span>
                 <div>
-                  <h3 className="font-display text-base tracking-wide text-white uppercase">Operational Portrait</h3>
-                  <p className="text-xs text-paper-muted leading-tight">
+                  <h3 className="section-title">Operational Portrait</h3>
+                  <p className="section-desc">
                     Select an authored silhouette archetype or upload and filter a photo.
                   </p>
                 </div>
               </div>
 
-              <div className="flex rounded-lg bg-charcoal-950 p-1 border border-white/10 gap-1" role="tablist">
+              <div className="portrait-tabs" role="tablist">
                 <button
                   type="button"
                   role="tab"
                   aria-selected={portraitSource === "silhouette"}
-                  className={`flex-1 py-2 px-3 rounded-md text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    portraitSource === "silhouette" ? "bg-coral text-white shadow-sm" : "text-paper-muted hover:text-white"
-                  }`}
+                  className={`portrait-tab-btn ${portraitSource === "silhouette" ? "active" : ""}`}
                   onClick={() => {
                     setIsProcessing(false);
                     setPortraitSource("silhouette");
                   }}
                 >
-                  <span>👤</span>
+                  <span className="tab-icon">👤</span>
                   <span>Authored Silhouettes</span>
                 </button>
                 <button
                   type="button"
                   role="tab"
                   aria-selected={portraitSource === "custom"}
-                  className={`flex-1 py-2 px-3 rounded-md text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    portraitSource === "custom" ? "bg-coral text-white shadow-sm" : "text-paper-muted hover:text-white"
-                  }`}
+                  className={`portrait-tab-btn ${portraitSource === "custom" ? "active" : ""}`}
                   onClick={() => {
                     if (portraitSource === "custom") return;
                     if (uploadedImage) setIsProcessing(true);
@@ -291,18 +285,18 @@ export function IdentityView({
                     }
                   }}
                 >
-                  <span>📷</span>
+                  <span className="tab-icon">📷</span>
                   <span>Upload &amp; Filter Photo</span>
                 </button>
               </div>
 
               {/* Mode A: Silhouette Grid */}
               {portraitSource === "silhouette" && (
-                <div className="space-y-3 pt-2">
-                  <p className="text-xs text-paper-muted">
+                <div className="silhouette-selection-area">
+                  <p className="silhouette-hint">
                     Designed archetypes allow immediate continuation without uploading a personal photo:
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Authored Silhouettes">
+                  <div className="silhouette-grid" role="radiogroup" aria-label="Authored Silhouettes">
                     {SILHOUETTE_ARCHETYPES.map((arch) => {
                       const isSelected = silhouetteId === arch.id;
                       return (
@@ -311,11 +305,7 @@ export function IdentityView({
                           role="radio"
                           aria-checked={isSelected}
                           tabIndex={0}
-                          className={`p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-2 ${
-                            isSelected
-                              ? "bg-charcoal-800 border-coral shadow-lg shadow-coral/10"
-                              : "bg-charcoal-800/60 border-white/5 hover:border-white/20"
-                          }`}
+                          className={`silhouette-card ${isSelected ? "selected" : ""}`}
                           onClick={() => setSilhouetteId(arch.id)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
@@ -324,23 +314,23 @@ export function IdentityView({
                             }
                           }}
                         >
-                          <div className="w-14 h-14 rounded-full bg-charcoal-950 border border-white/10 flex items-center justify-center relative overflow-hidden text-coral">
+                          <div className="silhouette-avatar-frame">
                             <svg
                               viewBox="0 0 24 24"
-                              className="w-8 h-8"
+                              className="silhouette-svg"
                               fill="currentColor"
                               aria-hidden="true"
                             >
                               <path d={arch.svgPath} />
                             </svg>
-                            {isSelected && <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-coral text-white text-[10px] font-bold flex items-center justify-center">✓</span>}
+                            {isSelected && <span className="selected-indicator">✓</span>}
                           </div>
-                          <div className="w-full text-center space-y-0.5">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <strong className="text-xs text-white block">{arch.name}</strong>
-                              <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-paper-muted">{arch.role}</span>
+                          <div className="silhouette-meta">
+                            <div className="silhouette-name-row">
+                              <strong className="silhouette-name">{arch.name}</strong>
+                              <span className="silhouette-role-badge">{arch.role}</span>
                             </div>
-                            <p className="text-[11px] text-paper-muted line-clamp-2">{arch.description}</p>
+                            <p className="silhouette-desc">{arch.description}</p>
                           </div>
                         </div>
                       );
@@ -351,21 +341,21 @@ export function IdentityView({
 
               {/* Mode B: Photo Upload & Cropper */}
               {portraitSource === "custom" && (
-                <div className="space-y-3 pt-2">
+                <div className="photo-upload-area">
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
-                    className="sr-only"
+                    className="visually-hidden"
                     onChange={handleFileInputChange}
                   />
 
                   {uploadError && (
-                    <div className="p-2.5 rounded-lg bg-coral/20 border border-coral text-coral text-xs font-mono flex items-center justify-between" role="alert">
+                    <div className="upload-error-alert" role="alert">
                       <span>⚠️ {uploadError}</span>
                       <button
                         type="button"
-                        className="text-coral hover:text-white px-1 cursor-pointer"
+                        className="clear-error-btn"
                         onClick={() => setUploadError(null)}
                       >
                         ✕
@@ -375,24 +365,22 @@ export function IdentityView({
 
                   {!uploadedImage ? (
                     <div
-                      className={`p-8 border-2 border-dashed rounded-xl bg-charcoal-950/60 text-center flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${
-                        isDraggingOver ? "border-coral bg-coral/10" : "border-coral/30 hover:border-coral"
-                      }`}
+                      className={`upload-dropzone ${isDraggingOver ? "drag-over" : ""}`}
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <span className="text-3xl">📷</span>
-                      <strong className="text-sm font-mono text-white block">
+                      <span className="dropzone-icon">📷</span>
+                      <strong className="dropzone-title">
                         Click or drag a portrait photo here
                       </strong>
-                      <span className="text-xs text-paper-muted block">
+                      <span className="dropzone-sub">
                         PNG, JPEG, or WebP up to 5MB. Photo is processed entirely in your browser.
                       </span>
                       <button
                         type="button"
-                        className="mt-2 px-4 py-2 rounded-lg bg-charcoal-800 hover:bg-charcoal-700 text-white font-mono text-xs font-semibold border border-white/10 transition-colors"
+                        className="button button-secondary upload-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           fileInputRef.current?.click();
@@ -402,14 +390,14 @@ export function IdentityView({
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-4 p-4 rounded-lg bg-charcoal-950 border border-white/5">
-                      <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-petrol font-bold">
+                    <div className="photo-controls-container">
+                      <div className="photo-actions-bar">
+                        <span className="photo-status">
                           {isProcessing ? "Rendering filter…" : "✓ Portrait framed"}
                         </span>
                         <button
                           type="button"
-                          className="px-2.5 py-1 rounded bg-charcoal-800 hover:bg-charcoal-700 text-white text-xs border border-white/10 transition-colors cursor-pointer"
+                          className="replace-photo-btn"
                           onClick={() => fileInputRef.current?.click()}
                         >
                           Change Photo
@@ -417,8 +405,8 @@ export function IdentityView({
                       </div>
 
                       {/* Zoom & Offset Sliders */}
-                      <div className="grid grid-cols-3 gap-2.5">
-                        <label className="text-[10px] font-mono text-paper-muted flex flex-col gap-1">
+                      <div className="crop-sliders-row">
+                        <label className="crop-slider-label">
                           <span>Zoom: {zoom.toFixed(1)}x</span>
                           <input
                             type="range"
@@ -430,10 +418,10 @@ export function IdentityView({
                               setIsProcessing(true);
                               setZoom(parseFloat(e.target.value));
                             }}
-                            className="w-full accent-coral cursor-pointer"
+                            className="crop-range-slider"
                           />
                         </label>
-                        <label className="text-[10px] font-mono text-paper-muted flex flex-col gap-1">
+                        <label className="crop-slider-label">
                           <span>Pan X</span>
                           <input
                             type="range"
@@ -444,10 +432,10 @@ export function IdentityView({
                               setIsProcessing(true);
                               setOffsetX(parseInt(e.target.value, 10));
                             }}
-                            className="w-full accent-coral cursor-pointer"
+                            className="crop-range-slider"
                           />
                         </label>
-                        <label className="text-[10px] font-mono text-paper-muted flex flex-col gap-1">
+                        <label className="crop-slider-label">
                           <span>Pan Y</span>
                           <input
                             type="range"
@@ -458,32 +446,28 @@ export function IdentityView({
                               setIsProcessing(true);
                               setOffsetY(parseInt(e.target.value, 10));
                             }}
-                            className="w-full accent-coral cursor-pointer"
+                            className="crop-range-slider"
                           />
                         </label>
                       </div>
 
                       {/* Filter Presets */}
-                      <div className="space-y-2 pt-2 border-t border-white/5">
-                        <span className="text-xs font-mono text-paper-muted uppercase tracking-wider block">Thriller Surveillance Filter:</span>
-                        <div className="grid grid-cols-2 gap-2">
+                      <div className="filter-presets-section">
+                        <span className="filter-label">Thriller Surveillance Filter:</span>
+                        <div className="filter-chips">
                           {PORTRAIT_FILTERS.map((f) => (
                             <button
                               key={f.id}
                               type="button"
-                              className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
-                                portraitFilter === f.id
-                                  ? "bg-charcoal-800 border-petrol text-white shadow-sm"
-                                  : "bg-charcoal-800/60 border-white/5 text-paper-muted hover:border-white/20"
-                              }`}
+                              className={`filter-chip ${portraitFilter === f.id ? "active" : ""}`}
                               onClick={() => {
                                 if (portraitFilter === f.id) return;
                                 setIsProcessing(true);
                                 setPortraitFilter(f.id);
                               }}
                             >
-                              <strong className="text-xs font-bold block text-white">{f.name}</strong>
-                              <small className="text-[10px] text-paper-muted block">{f.tagline}</small>
+                              <strong className="chip-name">{f.name}</strong>
+                              <small className="chip-tag">{f.tagline}</small>
                             </button>
                           ))}
                         </div>
@@ -496,62 +480,62 @@ export function IdentityView({
           </div>
 
           {/* Right Column: Live Dossier Identity Card Preview */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="p-6 rounded-xl border-2 border-petrol/40 bg-charcoal-900/90 backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col items-center text-center space-y-4">
-              <div className="font-mono text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-petrol/20 text-petrol border border-petrol/40">OPERATIVE DOSSIER BADGE</div>
+          <div className="identity-preview-column">
+            <div className="identity-dossier-card">
+              <div className="dossier-card-badge">OPERATIVE DOSSIER BADGE</div>
 
-              <div className="relative w-40 h-40 rounded-full border-2 border-petrol overflow-hidden bg-charcoal-950 flex items-center justify-center shadow-lg shadow-petrol/20">
+              <div className="dossier-avatar-container">
                 {portraitSource === "custom" && previewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={previewUrl}
                     alt={`${alias} operative portrait`}
-                    className="w-full h-full object-cover"
+                    className="dossier-avatar-img"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-petrol">
-                    <svg viewBox="0 0 24 24" className="w-24 h-24" fill="currentColor">
+                  <div className="dossier-silhouette-avatar">
+                    <svg viewBox="0 0 24 24" className="dossier-svg" fill="currentColor">
                       <path d={activeSilhouette.svgPath} />
                     </svg>
                   </div>
                 )}
-                <div className="absolute inset-0 pointer-events-none border border-petrol/30 rounded-full" />
+                <div className="dossier-avatar-reticle" />
               </div>
 
-              <div className="w-full space-y-3">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-paper-muted block">CALLSIGN / ALIAS</span>
-                  <span className="font-display text-2xl tracking-wider text-white block uppercase">
+              <div className="dossier-meta">
+                <div className="dossier-alias-heading">
+                  <span className="dossier-label">CALLSIGN / ALIAS</span>
+                  <span className="dossier-alias-text">
                     {aliasValidation.sanitized || "UNIDENTIFIED"}
                   </span>
                 </div>
 
-                <div className="w-full rounded-lg bg-charcoal-950/80 border border-white/5 p-3 space-y-2 text-left font-mono text-xs">
-                  <div className="flex items-center justify-between border-b border-white/5 pb-1">
-                    <span className="text-paper-muted text-[10px]">CLEARANCE</span>
-                    <span className="text-white font-bold text-[11px]">LEVEL 4 SPECIAL ACCESS</span>
+                <div className="dossier-stats-table">
+                  <div className="stat-row">
+                    <span className="stat-key">CLEARANCE</span>
+                    <span className="stat-val">LEVEL 4 SPECIAL ACCESS</span>
                   </div>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-1">
-                    <span className="text-paper-muted text-[10px]">ARCHETYPE</span>
-                    <span className="text-white font-bold text-[11px]">
+                  <div className="stat-row">
+                    <span className="stat-key">ARCHETYPE</span>
+                    <span className="stat-val">
                       {portraitSource === "silhouette"
                         ? `${activeSilhouette.name} (${activeSilhouette.role})`
                         : `FIELD AGENT (${portraitFilter.toUpperCase()})`}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-paper-muted text-[10px]">STORAGE</span>
-                    <span className="text-petrol font-bold text-[11px]">LOCAL SESSION EPHEMERAL</span>
+                  <div className="stat-row">
+                    <span className="stat-key">STORAGE</span>
+                    <span className="stat-val text-cyan">LOCAL SESSION EPHEMERAL</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Stage Actions */}
-            <div className="space-y-2.5 w-full">
+            <div className="identity-actions">
               <button
                 type="button"
-                className="w-full py-3 px-6 rounded-xl bg-coral hover:bg-coral-soft text-white font-mono text-sm font-bold uppercase tracking-wider transition-all shadow-lg hover:shadow-coral/25 cursor-pointer disabled:opacity-50"
+                className="action-button primary confirm-identity-btn"
                 onClick={handleConfirm}
                 disabled={!aliasValidation.valid || isProcessing}
               >
@@ -561,7 +545,7 @@ export function IdentityView({
               {onReturnToTerritory && (
                 <button
                   type="button"
-                  className="w-full py-2 px-4 rounded-lg bg-transparent hover:bg-white/5 text-paper-muted hover:text-white font-mono text-xs transition-colors cursor-pointer text-center"
+                  className="action-button tertiary return-btn"
                   onClick={onReturnToTerritory}
                 >
                   ← Return to Territory Selection

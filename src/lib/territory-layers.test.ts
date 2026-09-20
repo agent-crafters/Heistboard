@@ -5,7 +5,7 @@ import {
   type ConfigurableMap,
   isMainPlaceLayer,
   updateTargetLocationMarker,
-} from "@/lib/territory-layers";
+} from "./territory-layers";
 
 describe("applyMapLayers", () => {
   function createMockMap(hasExistingBuilding3d = true): ConfigurableMap & {

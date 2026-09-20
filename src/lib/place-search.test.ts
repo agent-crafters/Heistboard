@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { PlaceSearchService } from "@/lib/place-search";
+import { PlaceSearchService } from "./place-search";
 
 describe("PlaceSearchService", () => {
   it("returns empty array for whitespace query without calling fetch", async () => {

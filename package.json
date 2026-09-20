@@ -23,14 +23,11 @@
     "react-dom": "latest"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "eslint": "^9.39.1",
     "eslint-config-next": "latest",
-    "postcss": "^8.5.28",
-    "tailwindcss": "^4.3.3",
     "typescript": "6.0.3",
     "vitest": "latest"
   }

@@ -6,7 +6,7 @@ import {
   type SilhouetteId,
   validateAlias,
   validatePortraitFile,
-} from "@/domain/identity";
+} from "./identity";
 
 describe("Identity Domain Model", () => {
   describe("validateAlias", () => {

@@ -460,47 +460,47 @@ export function HeistboardEditorProof() {
   }, [stage]);
 
   return (
-    <main className="relative mx-auto min-h-screen w-full max-w-[1540px] p-4 sm:p-6 lg:p-10">
-      <header className="relative flex flex-col md:flex-row md:items-end justify-between gap-8 overflow-hidden rounded-2xl border border-synth-pink/30 bg-[#0e091e]/75 p-6 sm:p-8 lg:p-10 shadow-[0_16px_45px_rgba(0,0,0,0.6),0_0_25px_rgba(255,0,127,0.15)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[3px] after:bg-gradient-to-r after:from-[#ff007f] after:via-[#ffaa00] after:to-[#00f5d4] after:shadow-[0_0_14px_rgba(255,0,127,0.7)] after:content-['']">
-        <div className="pointer-events-none absolute -inset-3 z-0 overflow-hidden" aria-hidden="true">
+    <main className="shell">
+      <header className="masthead">
+        <div className="masthead-banner-backdrop" aria-hidden="true">
           {BANNER_SLIDES.map((src, i) => (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               key={src}
               src={src}
               alt=""
-              className={`pointer-events-none absolute inset-0 h-[calc(100%+24px)] w-[calc(100%+24px)] object-cover object-[center_25%] brightness-[0.6] contrast-[1.15] scale-105 transition-opacity duration-1000 ${i === activeBannerIndex ? "opacity-100" : "opacity-0"}`}
+              className={`masthead-banner-image ${i === activeBannerIndex ? "active" : ""}`}
               loading={i === 0 ? "eager" : "lazy"}
             />
           ))}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0e091e]/95 via-[#0e091e]/75 to-[#1c1136]/70" />
+          <div className="masthead-banner-overlay" />
         </div>
-        <div className="relative z-10 max-w-[820px]">
-          <div className="mb-3 flex flex-wrap items-center gap-3">
-            <span className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-petrol drop-shadow-[0_0_8px_rgba(0,245,212,0.4)]">VICE CITY // TACTICAL MISSION COMMAND · LEONIDA</span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-petrol/50 bg-petrol/10 px-3 py-1 font-mono text-[0.68rem] font-extrabold uppercase tracking-[0.12em] text-petrol shadow-[0_0_14px_rgba(0,245,212,0.3)]">
-              <span className="h-[7px] w-[7px] rounded-full bg-petrol shadow-[0_0_8px_#00f5d4] animate-pulse" aria-hidden="true" />
+        <div className="masthead-content">
+          <div className="masthead-badge-row">
+            <span className="eyebrow">VICE CITY // TACTICAL MISSION COMMAND · LEONIDA</span>
+            <span className="unlayer-hackathon-badge">
+              <span className="unlayer-pulse-dot" aria-hidden="true" />
               UNLAYER HACKATHON EDITION
             </span>
           </div>
-          <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-black leading-[0.92] tracking-[0.02em] text-white drop-shadow-[0_0_24px_rgba(255,0,127,0.5)]">
-            HEIST<span className="bg-gradient-to-r from-[#ff007f] via-[#ff71ce] to-[#00f5d4] bg-clip-text text-transparent px-1">VI</span>BOARD
+          <h1 className="brand-heading">
+            HEIST<span className="gta-roman-vi">VI</span>BOARD
           </h1>
-          <p className="mt-3 max-w-[720px] text-sm sm:text-base leading-relaxed text-paper-muted">
+          <p className="lede">
             Plan the heist. Mark the streets. Powered by Unlayer React Image Editor with real-world 3D
             satellite rasterization, tactical vector authoring, and instant full-view export.
           </p>
         </div>
-        <div className="relative z-10 flex flex-col items-start md:items-end gap-1 rounded-xl border border-mustard/40 bg-[#0e091e]/85 p-4 sm:px-6 sm:py-3.5 shadow-[0_0_16px_rgba(255,170,0,0.15)] text-left md:text-right shrink-0" aria-label="Fictional scenario">
-          <div className="hidden" aria-hidden="true" />
-          <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-mustard">VICE CITY OPS</span>
-          <strong className="font-display text-lg tracking-wider text-white">THE LAST DELIVERY</strong>
-          <small className="font-mono text-[9px] uppercase tracking-widest text-paper-muted/70">FICTIONAL USE ONLY · LEONIDA</small>
+        <div className="status-stamp" aria-label="Fictional scenario">
+          <div className="stamp-radar-ring" aria-hidden="true" />
+          <span>VICE CITY OPS</span>
+          <strong>THE LAST DELIVERY</strong>
+          <small>FICTIONAL USE ONLY · LEONIDA</small>
         </div>
       </header>
 
       {/* 4-Stage Nav Stepper */}
-      <nav className="my-6 flex flex-wrap items-center gap-2 sm:gap-3 rounded-xl border border-synth-pink/20 bg-charcoal-900/80 p-2 sm:p-3 shadow-lg backdrop-blur-md" aria-label="Operation Stages">
+      <nav className="stage-indicator" aria-label="Operation Stages">
         {OPERATION_STAGES.map((s, idx) => {
           const isCurrent = stage === s.id;
           const stageOrder: OperationStage[] = ["file", "territory", "mission-plan", "dossier"];
@@ -515,17 +515,11 @@ export function HeistboardEditorProof() {
             (s.id === "dossier" && journey.hasAnnotatedMap);
 
           return (
-            <div key={s.id} className="inline-flex items-center gap-2">
-              {idx > 0 && <span className="font-mono text-sm text-paper-muted/40" aria-hidden="true">›</span>}
+            <div key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+              {idx > 0 && <span className="stage-nav-divider" aria-hidden="true">›</span>}
               <button
                 type="button"
-                className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-200 ${
-                  isCurrent
-                    ? "bg-coral text-white shadow-[0_0_16px_rgba(255,0,127,0.5)] border border-coral-soft"
-                    : isPast
-                      ? "border border-petrol/40 bg-petrol/15 text-petrol hover:bg-petrol/25"
-                      : "border border-white/10 bg-charcoal-800/50 text-paper-muted/50 cursor-not-allowed"
-                }`}
+                className={`stage-nav-btn ${isCurrent ? "active" : isPast ? "complete" : ""}`}
                 onClick={() => {
                   if (isCurrent) return;
                   if (s.id === "territory" && (journey.hasMissionEdits || journey.hasAnnotatedMap)) {
@@ -539,13 +533,7 @@ export function HeistboardEditorProof() {
                 aria-label={`Stage ${s.number}: ${s.label} - ${s.shortDescription}`}
                 title={`${s.number} / ${s.label}: ${s.shortDescription}`}
               >
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-mono font-black ${
-                  isCurrent
-                    ? "bg-white text-charcoal-950"
-                    : isPast
-                      ? "bg-petrol text-charcoal-950"
-                      : "bg-charcoal-700 text-paper-muted"
-                }`}>{s.number}</span>
+                <span className="stage-nav-num">{s.number}</span>
                 <span>{s.label}</span>
               </button>
             </div>
@@ -555,18 +543,18 @@ export function HeistboardEditorProof() {
 
       {/* Stage 01: Case File Briefing */}
       {stage === "file" && (
-        <section className="rounded-2xl border border-synth-pink/25 bg-charcoal-900/90 p-6 sm:p-10 shadow-2xl backdrop-blur-xl" aria-labelledby="case-file-title">
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-synth-pink/20 pb-6">
+        <section className="case-file-panel" aria-labelledby="case-file-title">
+          <div className="case-file-header">
             <div>
-              <span className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-petrol">Operation Case File // 01</span>
-              <h2 id="case-file-title" className="font-display text-3xl sm:text-4xl font-black uppercase tracking-wide text-white">
+              <span className="case-file-eyebrow">Operation Case File // 01</span>
+              <h2 id="case-file-title" className="case-file-title">
                 The Last Delivery
               </h2>
             </div>
-            <span className="rounded-md border border-coral/40 bg-coral/10 px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-coral-soft shadow-[0_0_10px_rgba(255,0,127,0.2)]">Courier Directive // Eyes Only</span>
+            <span className="case-file-stamp-badge">Courier Directive // Eyes Only</span>
           </div>
 
-          <div className="my-6 space-y-4 text-sm sm:text-base leading-relaxed text-paper-muted">
+          <div className="case-file-body">
             <p>
               A single high-priority courier package must be picked up and routed to a secure
               safehouse before first light. Search your neighborhood, lock your 3D Territory
@@ -578,34 +566,34 @@ export function HeistboardEditorProof() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-6 rounded-xl border border-synth-pink/15 bg-charcoal-950/60 p-4 sm:p-6">
-            <div className="flex flex-col gap-1">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-paper-muted/70">Objective</span>
-              <span className="font-sans text-sm sm:text-base font-extrabold text-white">Package before sunrise</span>
+          <div className="case-file-grid">
+            <div>
+              <span className="case-file-stat-label">Objective</span>
+              <span className="case-file-stat-value">Package before sunrise</span>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-paper-muted/70">Operational Duration</span>
-              <span className="font-sans text-sm sm:text-base font-extrabold text-white">2–5 Minutes</span>
+            <div>
+              <span className="case-file-stat-label">Operational Duration</span>
+              <span className="case-file-stat-value">2–5 Minutes</span>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-paper-muted/70">Territory Engine</span>
-              <span className="font-sans text-sm sm:text-base font-extrabold text-white">OpenFreeMap 3D &amp; OSM</span>
+            <div>
+              <span className="case-file-stat-label">Territory Engine</span>
+              <span className="case-file-stat-value">OpenFreeMap 3D &amp; OSM</span>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-paper-muted/70">Final Artifact</span>
-              <span className="font-sans text-sm sm:text-base font-extrabold text-white">2400 × 1600 Dossier PNG</span>
+            <div>
+              <span className="case-file-stat-label">Final Artifact</span>
+              <span className="case-file-stat-value">2400 × 1600 Dossier PNG</span>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-synth-pink/15">
+          <div className="case-file-actions">
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-xl border border-coral-soft bg-gradient-to-r from-coral to-coral-dark px-6 py-3.5 font-display text-lg font-bold tracking-wider text-white shadow-[0_0_20px_rgba(255,0,127,0.4)] transition hover:brightness-110 active:scale-[0.98]"
+              className="button button-primary case-file-cta"
               onClick={handleStartOperation}
             >
               Start Operation: Select Territory →
             </button>
-            <span className="max-w-md text-xs text-paper-muted/60 leading-relaxed">
+            <span className="case-file-disclaimer">
               Fictional creative use only. Extruded 3D context is approximate and not intended
               for real navigation, surveillance, or safety claims.
             </span>
@@ -627,32 +615,32 @@ export function HeistboardEditorProof() {
       {/* Stage 03: Mission Editor (preserved in DOM across preview to maintain active Fabric objects) */}
       {(stage === "mission-plan" || stage === "dossier") && (
         <section
-          className="w-full space-y-4"
+          className="workspace workspace-editor-full"
           aria-labelledby="workspace-title"
           style={{ display: stage === "mission-plan" ? undefined : "none" }}
         >
-          <a href="#editor-frame-container" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-md focus:bg-coral focus:px-4 focus:py-2 focus:text-white">
+          <a href="#editor-frame-container" className="skip-to-editor-link">
             Skip to Mission Plan Editor Canvas
           </a>
 
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-synth-pink/20 bg-charcoal-900/70 p-4 backdrop-blur-md">
+          <div className="editor-column">
+            <div className="editor-heading">
               <div>
-                <p className="font-mono text-xs font-bold uppercase tracking-widest text-petrol">
+                <p className="section-label">
                   Map Base / {isSampleMap ? "Southbank District (Sample)" : "3D Territory"}
                 </p>
-                <h2 id="workspace-title" className="font-display text-2xl font-black text-white">Mission Plan editor</h2>
+                <h2 id="workspace-title">Mission Plan editor</h2>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="editor-heading-actions">
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-coral/40 bg-coral/10 px-3 py-1.5 font-mono text-xs font-bold text-coral-soft transition hover:bg-coral/20 hover:border-coral"
+                  className="action-button tertiary change-territory-btn"
                   onClick={handleReturnToTerritory}
                   title="Return to 3D Territory selection (resets plan)"
                 >
                   ← Change Territory (resets plan)
                 </button>
-                <span className="rounded-full border border-petrol/30 bg-petrol/10 px-3 py-1 font-mono text-xs font-bold uppercase tracking-wider text-petrol" aria-live="polite">
+                <span className={`phase phase-${workflow.phase}`} aria-live="polite">
                   {phaseLabel(workflow.phase)}
                 </span>
               </div>
@@ -666,13 +654,13 @@ export function HeistboardEditorProof() {
               <div
                 id="editor-frame-container"
                 ref={editorFrameRef}
-                className="editor-frame relative min-h-[640px] w-full overflow-hidden rounded-xl border border-synth-pink/30 bg-[#090614] shadow-[0_12px_40px_rgba(0,0,0,0.8)]"
+                className="editor-frame"
                 aria-busy={workflow.phase !== "editing"}
                 onDragOver={handleDragOver}
                 onDrop={(e) => void handleDrop(e)}
               >
                 {workflow.phase === "loading-editor" && (
-                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-charcoal-950/80 backdrop-blur-sm">
+                  <div className="editor-overlay">
                     <EditorLoading label="Loading React Image Editor…" />
                   </div>
                 )}
@@ -707,7 +695,7 @@ export function HeistboardEditorProof() {
             )}
 
             {workflow.phase === "saving" && (
-              <p className="font-mono text-sm text-mustard animate-pulse text-center py-2" role="status">
+              <p className="inline-status" role="status">
                 Verifying the saved image…
               </p>
             )}
@@ -745,7 +733,7 @@ export function HeistboardEditorProof() {
 
       {/* Stage 5: Dossier Preview & Cinematic Reveal */}
       {stage === "dossier" && annotatedMap && (
-        <section className="w-full space-y-6" aria-labelledby="preview-title">
+        <section className="preview-panel" aria-labelledby="preview-title">
           {isRevealing ? (
             <CinematicReveal
               annotatedMapUrl={annotatedMap.previewUrl}
@@ -756,17 +744,17 @@ export function HeistboardEditorProof() {
           ) : (
             <>
               {/* Clean 16:9 Dossier Command Header */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 rounded-2xl border border-synth-pink/25 bg-charcoal-900/80 p-6 sm:p-8 backdrop-blur-xl shadow-xl">
-                <div className="space-y-2 max-w-2xl">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="rounded-md border border-petrol/40 bg-petrol/10 px-2.5 py-1 font-mono text-[11px] font-black uppercase tracking-wider text-petrol">STAGE 04 / FINAL MISSION DOSSIER</span>
-                    <span className="rounded-md border border-synth-pink/40 bg-synth-pink/10 px-2.5 py-1 font-mono text-[11px] font-black uppercase tracking-wider text-synth-pink">16:9 CINEMATIC</span>
-                    <span className="rounded-md border border-mustard/40 bg-mustard/10 px-2.5 py-1 font-mono text-[11px] font-black uppercase tracking-wider text-mustard">
+              <div className="dossier-clean-header">
+                <div className="dossier-title-col">
+                  <div className="dossier-badge-row">
+                    <span className="dossier-stage-pill">STAGE 04 / FINAL MISSION DOSSIER</span>
+                    <span className="dossier-ratio-pill">16:9 CINEMATIC</span>
+                    <span className={`dossier-res-pill res-${selectedResolution}`}>
                       {selectedResolution === "4k" ? "4K ULTRA-HD (3840×2160)" : "2K QUAD-HD (2560×1440)"}
                     </span>
                   </div>
-                  <h2 id="preview-title" className="font-display text-3xl sm:text-4xl font-black text-white">Tactical Mission Dossier</h2>
-                  <p className="text-xs sm:text-sm text-paper-muted leading-relaxed">
+                  <h2 id="preview-title" className="dossier-main-title">Tactical Mission Dossier</h2>
+                  <p className="dossier-sub-text">
                     {isComposingDossier
                       ? "Rendering 16:9 high-resolution composite canvas…"
                       : dossierError
@@ -776,12 +764,12 @@ export function HeistboardEditorProof() {
                 </div>
 
                 {/* Resolution Switcher & Primary 4K/2K Download Action */}
-                <div className="flex flex-col gap-3 shrink-0">
-                  <div className="flex items-center gap-2 rounded-xl border border-synth-pink/20 bg-charcoal-950/80 p-1.5" role="group" aria-label="Select export resolution">
-                    <span className="pl-2 font-mono text-xs font-bold text-paper-muted/80">Resolution:</span>
+                <div className="dossier-export-card">
+                  <div className="dossier-res-picker" role="group" aria-label="Select export resolution">
+                    <span className="res-picker-label">Resolution:</span>
                     <button
                       type="button"
-                      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-extrabold transition-all duration-200 ${selectedResolution === "4k" ? "bg-gradient-to-r from-coral to-mustard text-white shadow-md shadow-coral/30" : "text-paper-muted hover:text-white"}`}
+                      className={`res-btn ${selectedResolution === "4k" ? "active" : ""}`}
                       onClick={() => {
                         if (selectedResolution === "4k") return;
                         setIsComposingDossier(true);
@@ -791,11 +779,11 @@ export function HeistboardEditorProof() {
                       title="Switch to 4K Ultra-HD (3840 × 2160)"
                       disabled={isComposingDossier}
                     >
-                      🌟 4K Ultra-HD <small className="text-[10px] opacity-75">3840 × 2160</small>
+                      🌟 4K Ultra-HD <small>3840 × 2160</small>
                     </button>
                     <button
                       type="button"
-                      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-extrabold transition-all duration-200 ${selectedResolution === "2k" ? "bg-gradient-to-r from-coral to-mustard text-white shadow-md shadow-coral/30" : "text-paper-muted hover:text-white"}`}
+                      className={`res-btn ${selectedResolution === "2k" ? "active" : ""}`}
                       onClick={() => {
                         if (selectedResolution === "2k") return;
                         setIsComposingDossier(true);
@@ -805,25 +793,25 @@ export function HeistboardEditorProof() {
                       title="Switch to 2K Quad-HD (2560 × 1440)"
                       disabled={isComposingDossier}
                     >
-                      ⚡ 2K Quad-HD <small className="text-[10px] opacity-75">2560 × 1440</small>
+                      ⚡ 2K Quad-HD <small>2560 × 1440</small>
                     </button>
                   </div>
 
                   <a
-                    className={`group flex items-center gap-3.5 rounded-xl border border-petrol/60 bg-gradient-to-r from-petrol/20 via-petrol/10 to-transparent p-3 sm:px-6 sm:py-3.5 text-petrol transition hover:border-petrol hover:bg-petrol/25 hover:shadow-[0_0_24px_rgba(0,245,212,0.3)] ${isComposingDossier ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`dossier-primary-download-btn ${isComposingDossier ? "disabled" : ""}`}
                     href={dossierArtifact?.downloadUrl ?? annotatedMap.download.href}
                     download={dossierArtifact?.fileName ?? `heistboard-mission-map-${selectedResolution.toUpperCase()}.png`}
                     aria-disabled={isComposingDossier}
                     aria-label={`Download verified ${selectedResolution.toUpperCase()} 16:9 High-Resolution Edited Map PNG`}
                   >
-                    <span className="text-2xl transition group-hover:scale-110" aria-hidden="true">⬇️</span>
-                    <div className="flex flex-col text-left">
-                      <span className="font-display text-base sm:text-lg font-black tracking-wider text-white">
+                    <span className="download-icon" aria-hidden="true">⬇️</span>
+                    <div className="download-label-group">
+                      <span className="download-title">
                         {isComposingDossier
                           ? "Encoding High-Res PNG…"
                           : `Download ${selectedResolution.toUpperCase()} High-Res PNG`}
                       </span>
-                      <span className="font-mono text-[10px] text-petrol/80">
+                      <span className="download-subtitle">
                         {selectedResolution === "4k"
                           ? "3840 × 2160 • 16:9 Cinematic Widescreen • Lossless Quality"
                           : "2560 × 1440 • 16:9 High Definition • Lossless Quality"}
@@ -834,10 +822,10 @@ export function HeistboardEditorProof() {
               </div>
 
               {/* Clean Secondary Tool Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-synth-pink/20 bg-charcoal-900/60 p-2.5 sm:p-3">
-                <div className="flex flex-wrap items-center gap-2">
+              <div className="dossier-secondary-bar">
+                <div className="secondary-left-actions">
                   <button
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-synth-pink/20 bg-charcoal-800/60 px-3 py-2 font-mono text-xs font-bold text-paper transition hover:border-synth-pink/50 hover:bg-charcoal-700/80 active:scale-95"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={() => {
                       dispatch({ type: "edit-again" });
@@ -848,7 +836,7 @@ export function HeistboardEditorProof() {
                     ✏️ Edit Mission Plan
                   </button>
                   <button
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-synth-pink/20 bg-charcoal-800/60 px-3 py-2 font-mono text-xs font-bold text-paper transition hover:border-synth-pink/50 hover:bg-charcoal-700/80 active:scale-95"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={() => {
                       dispatch({ type: "edit-again" });
@@ -860,7 +848,7 @@ export function HeistboardEditorProof() {
                     🪪 Edit Operative ID
                   </button>
                   <button
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-synth-pink/20 bg-charcoal-800/60 px-3 py-2 font-mono text-xs font-bold text-paper transition hover:border-synth-pink/50 hover:bg-charcoal-700/80 active:scale-95"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={handleReturnToTerritory}
                     aria-label="Select a new territory location"
@@ -868,7 +856,7 @@ export function HeistboardEditorProof() {
                     🗺️ Change Territory
                   </button>
                   <button
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-synth-pink/20 bg-charcoal-800/60 px-3 py-2 font-mono text-xs font-bold text-paper transition hover:border-synth-pink/50 hover:bg-charcoal-700/80 active:scale-95"
+                    className="dossier-tool-btn"
                     type="button"
                     onClick={() => setIsRevealing(true)}
                     title="Replay cinematic reveal transition"
@@ -878,7 +866,7 @@ export function HeistboardEditorProof() {
                   </button>
                 </div>
                 <button
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-coral/30 bg-coral/10 px-3 py-2 font-mono text-xs font-bold text-coral-soft transition hover:border-coral hover:bg-coral/20 active:scale-95"
+                  className="dossier-tool-btn restart-btn"
                   type="button"
                   onClick={handleRestartOperation}
                   aria-label="Restart operation from stage one"
@@ -888,40 +876,40 @@ export function HeistboardEditorProof() {
               </div>
 
               {/* Composed 16:9 Dossier Viewport */}
-              <div className="relative aspect-video w-full overflow-hidden rounded-2xl border-2 border-synth-pink/40 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(255,0,127,0.15)]" role="region" aria-label="16:9 Final Dossier Viewport">
+              <div className="dossier-map-viewport" role="region" aria-label="16:9 Final Dossier Viewport">
                 {isComposingDossier && !dossierArtifact ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-charcoal-950/90 text-center p-6" role="status">
-                    <div className="h-8 w-8 rounded-full border-2 border-petrol/30 border-t-petrol animate-spin" aria-hidden="true" />
-                    <p className="font-display text-lg tracking-wider text-white">Composing {selectedResolution.toUpperCase()} (16:9) Tactical Dossier…</p>
-                    <small className="font-mono text-xs text-paper-muted/80">
+                  <div className="dossier-composing-overlay" role="status">
+                    <span className="loading-mark" aria-hidden="true" />
+                    <p>Composing {selectedResolution.toUpperCase()} (16:9) Tactical Dossier…</p>
+                    <small>
                       Rendering high-fidelity map base, custom stickers, operative identity badge, and tactical routes
                     </small>
                   </div>
                 ) : (
-                  <div className="relative h-full w-full">
+                  <div className="dossier-image-frame">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      className="h-full w-full object-contain"
+                      className="annotated-map-16-9"
                       src={dossierArtifact?.previewUrl ?? annotatedMap.previewUrl}
                       alt={`16:9 ${selectedResolution.toUpperCase()} Operation Dossier composite saved from mission editor`}
                     />
                     {/* Corner HUD Telemetry Reticles */}
-                    <div className="pointer-events-none absolute inset-0 p-4 sm:p-6" aria-hidden="true">
-                      <div className="absolute top-3 left-3 flex items-center gap-1 font-mono text-[10px] font-black tracking-widest text-petrol/80 drop-shadow-md">
-                        <span>⌜</span>
-                        <span>SECTOR // {selectedResolution.toUpperCase()} RECON</span>
+                    <div className="dossier-hud-overlay" aria-hidden="true">
+                      <div className="hud-corner top-left">
+                        <span className="hud-reticle">⌜</span>
+                        <span className="hud-tag">SECTOR // {selectedResolution.toUpperCase()} RECON</span>
                       </div>
-                      <div className="absolute top-3 right-3 flex items-center gap-1 font-mono text-[10px] font-black tracking-widest text-petrol/80 drop-shadow-md">
-                        <span>{selectedResolution === "4k" ? "3840 × 2160 UHD" : "2560 × 1440 QHD"}</span>
-                        <span>⌝</span>
+                      <div className="hud-corner top-right">
+                        <span className="hud-tag">{selectedResolution === "4k" ? "3840 × 2160 UHD" : "2560 × 1440 QHD"}</span>
+                        <span className="hud-reticle">⌝</span>
                       </div>
-                      <div className="absolute bottom-3 left-3 flex items-center gap-1 font-mono text-[10px] font-black tracking-widest text-petrol/80 drop-shadow-md">
-                        <span>⌞</span>
-                        <span>16:9 WIDESCREEN</span>
+                      <div className="hud-corner bottom-left">
+                        <span className="hud-reticle">⌞</span>
+                        <span className="hud-tag">16:9 WIDESCREEN</span>
                       </div>
-                      <div className="absolute bottom-3 right-3 flex items-center gap-1 font-mono text-[10px] font-black tracking-widest text-petrol/80 drop-shadow-md">
-                        <span>LEONIDA SEC-INTEL</span>
-                        <span>⌟</span>
+                      <div className="hud-corner bottom-right">
+                        <span className="hud-tag">LEONIDA SEC-INTEL</span>
+                        <span className="hud-reticle">⌟</span>
                       </div>
                     </div>
                   </div>
@@ -929,19 +917,18 @@ export function HeistboardEditorProof() {
               </div>
 
               {/* Legally required attribution line under the Annotated Map */}
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-synth-pink/15 bg-charcoal-950/70 p-3.5 text-xs text-paper-muted">
+              <div className="dossier-attribution-block">
                 <span>
-                  <strong className="text-white">Map Base Attribution:</strong> {attribution.noticeText} ·{" "}
+                  <strong>Map Base Attribution:</strong> {attribution.noticeText} ·{" "}
                   <span>{attribution.printedUrl}</span>
                 </span>
-                <div className="flex items-center gap-3">
+                <div className="dossier-attribution-links">
                   {attribution.links.map((link) => (
                     <a
                       key={link.href}
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-petrol hover:underline"
                     >
                       {link.label}
                     </a>
@@ -955,26 +942,26 @@ export function HeistboardEditorProof() {
 
       {/* Accessible Territory Reset Warning Dialog */}
       {journey.isConfirmingTerritoryReset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4" role="presentation">
+        <div className="dialog-backdrop" role="presentation">
           <div
-            className="w-full max-w-lg rounded-2xl border border-coral/50 bg-charcoal-900 p-6 sm:p-8 shadow-[0_20px_60px_rgba(255,0,127,0.3)] space-y-4"
+            className="dialog-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="territory-dialog-title"
             aria-describedby="territory-dialog-desc"
           >
-            <h3 id="territory-dialog-title" className="font-display text-2xl font-black text-white">
+            <h3 id="territory-dialog-title" className="dialog-title">
               ⚠️ Reset Mission Plan?
             </h3>
-            <p id="territory-dialog-desc" className="text-sm text-paper-muted leading-relaxed">
+            <p id="territory-dialog-desc" className="dialog-body">
               Changing Territory resets your current Mission Plan and Annotated Map. All
               routes, markers, notes, and custom stickers authored on this map base will be
               permanently discarded.
             </p>
-            <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+            <div className="dialog-actions">
               <button
                 type="button"
-                className="rounded-lg border border-white/20 bg-charcoal-800 px-4 py-2 font-mono text-xs font-bold text-paper transition hover:bg-charcoal-700"
+                className="button button-secondary"
                 onClick={() => journeyDispatch({ type: "cancel-change-territory" })}
                 autoFocus
               >
@@ -982,7 +969,7 @@ export function HeistboardEditorProof() {
               </button>
               <button
                 type="button"
-                className="rounded-lg border border-coral bg-coral px-4 py-2 font-mono text-xs font-bold text-white transition hover:bg-coral-dark"
+                className="button button-danger"
                 onClick={handleConfirmChangeTerritory}
               >
                 Discard &amp; Change Territory
@@ -992,7 +979,7 @@ export function HeistboardEditorProof() {
         </div>
       )}
 
-      <footer className="mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-8 border-t border-synth-pink/15 py-6 text-xs text-paper-muted/60">
+      <footer className="footer-note">
         <span>{formatAttributionString(attribution)}</span>
         <span>No route calculation</span>
         <span>Fictional use only</span>
@@ -1004,9 +991,9 @@ export function HeistboardEditorProof() {
 
 function EditorLoading({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-8 text-center" role="status">
-      <div className="h-8 w-8 rounded-full border-2 border-petrol/30 border-t-petrol animate-spin" aria-hidden="true" />
-      <p className="font-mono text-sm text-petrol">{label}</p>
+    <div className="loading-panel" role="status">
+      <span className="loading-mark" aria-hidden="true" />
+      <p>{label}</p>
     </div>
   );
 }
@@ -1027,17 +1014,17 @@ function RecoveryPanel({
   secondaryAction,
 }: RecoveryPanelProps) {
   return (
-    <section className="rounded-xl border border-mustard/40 bg-charcoal-900/90 p-6 shadow-xl space-y-3" role="alert">
-      <p className="font-mono text-xs font-bold uppercase tracking-widest text-mustard">Recovery available</p>
-      <h2 className="font-display text-xl font-bold text-white">{title}</h2>
-      <p className="text-sm text-paper-muted">{message}</p>
-      <div className="flex items-center gap-3 pt-2">
-        <button className="rounded-lg border border-mustard bg-mustard px-4 py-2 font-mono text-xs font-bold text-charcoal-950 transition hover:bg-mustard-subtle" type="button" onClick={onAction}>
+    <section className="recovery-panel" role="alert">
+      <p className="section-label">Recovery available</p>
+      <h2>{title}</h2>
+      <p>{message}</p>
+      <div className="actions">
+        <button className="button button-primary" type="button" onClick={onAction}>
           {actionLabel}
         </button>
         {secondaryAction && (
           <button
-            className="rounded-lg border border-white/20 bg-charcoal-800 px-4 py-2 font-mono text-xs font-bold text-paper transition hover:bg-charcoal-700"
+            className="button button-secondary"
             type="button"
             onClick={secondaryAction.onClick}
           >

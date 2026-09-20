@@ -81,16 +81,12 @@ export function CinematicReveal({
 
   if (isReducedMotion) {
     return (
-      <div
-        className="relative max-w-5xl w-full aspect-video rounded-xl overflow-hidden border border-coral/40 mx-auto my-8 shadow-2xl bg-charcoal-900"
-        role="region"
-        aria-label="Cinematic Dossier Reveal"
-      >
+      <div className="cinematic-reveal-container static-reveal" role="region" aria-label="Cinematic Dossier Reveal">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={dossierUrl || annotatedMapUrl}
           alt="Completed 2400 × 1600 Operation Dossier"
-          className="w-full h-full object-contain"
+          className="reveal-image-static"
         />
       </div>
     );
@@ -98,18 +94,18 @@ export function CinematicReveal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-charcoal-950/95 backdrop-blur-xl select-none overflow-hidden"
+      className="cinematic-reveal-wrapper"
       role="region"
       aria-label="Cinematic Dossier Reveal"
     >
-      <div className="flex items-center justify-between px-6 py-4 border-b border-coral/20 bg-charcoal-900/80">
-        <div className="flex items-center gap-2.5 font-mono text-xs font-bold tracking-widest text-petrol uppercase">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-petrol animate-pulse shadow-[0_0_10px_#00f5d4]" aria-hidden="true" />
+      <div className="reveal-top-bar">
+        <div className="reveal-status-tag">
+          <span className="reveal-dot" aria-hidden="true" />
           <span>REVEAL // OPERATION DOSSIER</span>
         </div>
         <button
           type="button"
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-coral/40 bg-coral/10 hover:bg-coral/25 text-coral hover:text-white font-mono text-xs font-bold tracking-wider transition-all cursor-pointer"
+          className="reveal-skip-btn"
           onClick={handleSkip}
           title="Skip Reveal animation (Esc)"
         >
@@ -117,18 +113,16 @@ export function CinematicReveal({
         </button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-hidden">
+      <div className="cinematic-reveal-stage">
         <div
-          className={`relative max-w-5xl w-full aspect-video rounded-xl overflow-hidden shadow-2xl border border-coral/40 transition-transform ease-out ${
-            isPullingBack ? "scale-100 duration-[2000ms]" : "scale-125 duration-0"
-          }`}
-          style={{ transitionDuration: `${durationMs}ms` }}
+          className={`reveal-card-viewport ${isPullingBack ? "pull-back" : "zoom-in"}`}
+          style={{ animationDuration: `${durationMs}ms` }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={dossierUrl || annotatedMapUrl}
             alt="Exact user-authored Annotated Map pulling back into final Operation Dossier"
-            className="w-full h-full object-contain"
+            className="reveal-dossier-image"
           />
         </div>
       </div>

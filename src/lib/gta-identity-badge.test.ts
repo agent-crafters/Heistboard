@@ -5,8 +5,8 @@ import {
   hasBadgeOnFabricCanvas,
   placeOrUpdateBadgeOnFabricCanvas,
   renderGtaIdentityBadgeToCanvas,
-} from "@/lib/gta-identity-badge";
-import type { FabricCanvasLike, FabricObjectLike } from "@/lib/sticker-canvas-importer";
+} from "./gta-identity-badge";
+import type { FabricCanvasLike, FabricObjectLike } from "./sticker-canvas-importer";
 
 describe("GTA VI Identity Badge Renderer", () => {
   const originalDocument = globalThis.document;

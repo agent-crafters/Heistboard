@@ -329,7 +329,7 @@ export function changeFabricTextFont(
  */
 export function setupNativeFontMenuObserver(rootElement?: HTMLElement | null): () => void {
   if (typeof window === "undefined" || typeof MutationObserver === "undefined") {
-    return () => { };
+    return () => {};
   }
 
   const container = rootElement ?? document.body;
@@ -348,8 +348,9 @@ export function setupNativeFontMenuObserver(rootElement?: HTMLElement | null): (
         if (fontMenu && !fontMenu.getAttribute("data-heistboard-custom-fonts")) {
           fontMenu.setAttribute("data-heistboard-custom-fonts", "true");
 
+          // Create header for GTA & stylish fonts
           const header = document.createElement("div");
-          header.className = "px-3 py-1.5 bg-mustard/15 border-b border-mustard/30 font-mono text-[11px] font-extrabold text-mustard tracking-wider uppercase";
+          header.className = "unlayer-custom-font-header";
           header.innerHTML = `<span>👑 ROCKSTAR &amp; GTA FONTS</span>`;
           fontMenu.prepend(header);
 
@@ -367,7 +368,7 @@ export function setupNativeFontMenuObserver(rootElement?: HTMLElement | null): (
             const btn = document.createElement("button");
             btn.type = "button";
             btn.setAttribute("role", "option");
-            btn.className = "flex w-full items-center gap-2.5 px-3 py-1.5 cursor-pointer text-sm whitespace-nowrap text-left transition-colors duration-150 ease-in-out text-white hover:bg-mustard/20 hover:text-mustard border-b border-white/5";
+            btn.className = "unlayer-custom-font-btn";
             btn.style.fontFamily = `"${f.family}", sans-serif`;
             btn.textContent = f.name;
 

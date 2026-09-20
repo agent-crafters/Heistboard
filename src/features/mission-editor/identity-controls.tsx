@@ -380,55 +380,51 @@ export function IdentityControls({
 
   return (
     <div
-      className={`flex flex-col h-full bg-charcoal-900/95 border-l border-coral/30 text-paper overflow-hidden select-none ${compact ? "w-full" : ""}`}
+      className={`identity-controls-panel ${compact ? "compact" : ""}`}
       aria-label="Operative Identity & GTA VI Badge Controls"
     >
       {/* Header: Establish your operative identity */}
-      <div className="p-4 border-b border-coral/20 bg-charcoal-850/80 shrink-0">
+      <div className="identity-controls-header">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-coral/20 text-coral border border-coral/40">★ GTA VI RECORD</span>
-          <span className="font-mono text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-petrol/20 text-petrol border border-petrol/40">🔒 LOCAL ENCRYPTED</span>
+          <span className="gta-neon-badge">★ GTA VI RECORD</span>
+          <span className="identity-secure-tag">🔒 LOCAL ENCRYPTED</span>
         </div>
-        <h2 className="font-display text-lg tracking-wider text-white uppercase mt-2">Establish your operative identity</h2>
-        <p className="text-xs text-paper-muted leading-tight mt-1">
+        <h2 className="identity-panel-title">Establish your operative identity</h2>
+        <p className="gta-subtitle">
           Configure your street callsign, select a silhouette archetype or upload a photo,
           and customize your live tactical badge on the map canvas.
         </p>
       </div>
 
       {/* Badge Style Selector — shown prominently before the preview */}
-      <div className="p-4 border-b border-white/10 shrink-0">
-        <div className="flex items-center justify-between text-xs font-mono text-paper-muted mb-2">
-          <span className="font-bold text-white">🎨 Badge Style</span>
-          <span className="text-petrol font-bold">{BADGE_STYLES.find(s => s.id === badgeStyle)?.name}</span>
+      <div className="badge-style-selector-section">
+        <div className="badge-style-section-header">
+          <span className="badge-style-label">🎨 Badge Style</span>
+          <span className="badge-style-current">{BADGE_STYLES.find(s => s.id === badgeStyle)?.name}</span>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="badge-style-cards">
           {BADGE_STYLES.map((style) => {
             const isActive = badgeStyle === style.id;
             return (
               <button
                 key={style.id}
                 type="button"
-                className={`p-2 rounded-lg border text-left flex items-center gap-2.5 transition-all cursor-pointer relative ${
-                  isActive
-                    ? "bg-charcoal-800 border-petrol shadow-lg shadow-petrol/10"
-                    : "bg-charcoal-800/60 border-white/5 hover:border-white/20"
-                }`}
+                className={`badge-style-card ${isActive ? "active" : ""}`}
                 onClick={() => setBadgeStyle(style.id)}
                 title={style.description}
                 aria-pressed={isActive}
               >
                 <div
-                  className="w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs shadow-inner shrink-0"
+                  className="badge-style-card-preview"
                   style={{ background: style.previewGradient }}
                 >
-                  <span style={{ color: style.accent }}>VI</span>
+                  <span className="badge-style-card-accent" style={{ color: style.accent }}>VI</span>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <strong className="text-xs text-white block truncate">{style.name}</strong>
-                  <small className="text-[10px] text-paper-muted block truncate">{style.tagline}</small>
+                <div className="badge-style-card-info">
+                  <strong className="badge-style-card-name">{style.name}</strong>
+                  <small className="badge-style-card-tag">{style.tagline}</small>
                 </div>
-                {isActive && <span className="absolute top-1 right-1.5 text-petrol text-xs" aria-hidden="true">✦</span>}
+                {isActive && <span className="badge-style-active-dot" aria-hidden="true">✦</span>}
               </button>
             );
           })}
@@ -436,13 +432,13 @@ export function IdentityControls({
       </div>
 
       {/* Live Badge Preview Box — Draggable directly onto map */}
-      <div className="p-4 bg-charcoal-950 border-b border-white/10 flex items-center justify-center min-h-[140px] shrink-0">
+      <div className="gta-badge-live-preview-box">
         {previewDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={previewDataUrl}
             alt="GTA VI Identity Badge Live Preview"
-            className="max-h-36 max-w-full object-contain filter drop-shadow-lg"
+            className="gta-badge-preview-img"
             style={{ cursor: "grab" }}
             draggable={true}
             onDragStart={(e) => {
@@ -452,20 +448,20 @@ export function IdentityControls({
             title="Drag and drop this badge directly onto any spot on the map!"
           />
         ) : (
-          <div className="font-mono text-xs text-paper-muted animate-pulse">Rendering GTA VI badge…</div>
+          <div className="badge-loading-placeholder">Rendering GTA VI badge…</div>
         )}
       </div>
 
       {/* Quick Canvas Actions Strip */}
-      <div className="p-3 bg-charcoal-850 border-b border-coral/20 flex flex-col gap-2 shrink-0">
+      <div className="gta-badge-actions-strip">
         {/* Badge presence status pill */}
         <div className="flex items-center justify-between px-0.5 py-0.5">
           {isBadgeOnCanvas ? (
-            <span className="font-mono text-[11px] text-petrol font-bold flex items-center gap-1">
+            <span className="gta-on-canvas-badge">
               ✓ Active on Map Canvas — Drag Anywhere to Reposition
             </span>
           ) : (
-            <span className="text-[11px] text-paper-muted font-mono">
+            <span className="text-[11px] text-gray-400 font-mono">
               Not placed on map yet
             </span>
           )}
@@ -473,7 +469,7 @@ export function IdentityControls({
 
         <button
           type="button"
-          className="w-full py-2.5 px-4 rounded-lg bg-coral hover:bg-coral-soft text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-lg hover:shadow-coral/25 cursor-pointer disabled:opacity-50"
+          className={`action-button primary gta-pin-btn ${isBadgeOnCanvas ? "active-update" : ""}`}
           onClick={() => void handlePlaceOnCanvas(isBadgeOnCanvas ? undefined : "center")}
           disabled={isUpdatingCanvas}
           title={
@@ -492,7 +488,7 @@ export function IdentityControls({
         <div className="flex gap-1.5 flex-wrap">
           <button
             type="button"
-            className="flex-1 py-1.5 px-2 rounded-md bg-charcoal-800 hover:bg-charcoal-700 text-white font-mono text-[10px] font-bold border border-white/10 transition-colors text-center cursor-pointer"
+            className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("top-left")}
             title="Move to Top-Left"
           >
@@ -500,7 +496,7 @@ export function IdentityControls({
           </button>
           <button
             type="button"
-            className="flex-1 py-1.5 px-2 rounded-md bg-charcoal-800 hover:bg-charcoal-700 text-white font-mono text-[10px] font-bold border border-white/10 transition-colors text-center cursor-pointer"
+            className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("top-right")}
             title="Move to Top-Right"
           >
@@ -508,7 +504,7 @@ export function IdentityControls({
           </button>
           <button
             type="button"
-            className="flex-1 py-1.5 px-2 rounded-md bg-charcoal-800 hover:bg-charcoal-700 text-white font-mono text-[10px] font-bold border border-white/10 transition-colors text-center cursor-pointer"
+            className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("center")}
             title="Move to Center"
           >
@@ -516,7 +512,7 @@ export function IdentityControls({
           </button>
           <button
             type="button"
-            className="flex-1 py-1.5 px-2 rounded-md bg-charcoal-800 hover:bg-charcoal-700 text-white font-mono text-[10px] font-bold border border-white/10 transition-colors text-center cursor-pointer"
+            className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("bottom-left")}
             title="Move to Bottom-Left"
           >
@@ -524,7 +520,7 @@ export function IdentityControls({
           </button>
           <button
             type="button"
-            className="flex-1 py-1.5 px-2 rounded-md bg-charcoal-800 hover:bg-charcoal-700 text-white font-mono text-[10px] font-bold border border-white/10 transition-colors text-center cursor-pointer"
+            className="action-button secondary gta-sub-pin-btn"
             onClick={() => void handlePlaceOnCanvas("bottom-right")}
             title="Move to Bottom-Right"
           >
@@ -532,35 +528,35 @@ export function IdentityControls({
           </button>
           <button
             type="button"
-            className="py-1.5 px-3 rounded-md bg-charcoal-800 hover:bg-coral/20 text-coral font-mono text-[10px] font-bold border border-coral/30 transition-colors cursor-pointer"
+            className="action-button tertiary gta-remove-btn"
             onClick={handleRemoveFromCanvas}
             title="Remove badge from map canvas"
           >
             ✕
           </button>
         </div>
-        <p className="text-[11px] text-paper-muted mt-1 font-mono text-center">
+        <p className="text-[11px] text-gray-400 mt-1 font-mono text-center">
           💡 Drag badge directly onto map, or click above to place &amp; drag anywhere
         </p>
       </div>
 
       {placedStatus && (
-        <div className="mx-4 my-2 px-3 py-1.5 rounded-md bg-petrol/20 text-petrol font-mono text-xs font-bold border border-petrol/40 text-center animate-pulse" role="status">
+        <div className="gta-placed-toast" role="status">
           {placedStatus}
         </div>
       )}
 
       {/* Scrollable Configuration Sections */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="gta-fields-scroll">
         {/* Section 1: Callsign / Alias */}
-        <div className="space-y-1.5">
+        <div className="gta-field-group">
           <div className="flex justify-between items-center">
-            <label htmlFor="gta-alias-input" className="text-xs font-mono font-bold uppercase text-paper-muted block">
+            <label htmlFor="gta-alias-input" className="gta-field-label">
               Operative Callsign / Alias
             </label>
             <button
               type="button"
-              className="font-mono text-[10px] px-2 py-0.5 rounded bg-charcoal-800 hover:bg-charcoal-700 text-petrol border border-petrol/30 transition-colors cursor-pointer"
+              className="gta-rand-btn"
               onClick={() => setAlias(getRandomCallsign(alias))}
             >
               🎲 Random Callsign
@@ -569,48 +565,48 @@ export function IdentityControls({
           <input
             id="gta-alias-input"
             type="text"
-            className={`w-full px-3 py-2 rounded-lg bg-charcoal-950 border text-white placeholder:text-paper-muted/60 text-sm font-mono font-display tracking-wider focus:outline-none ${
-              !aliasValidation.valid && alias.length > 0 ? "border-coral" : "border-coral/30 focus:border-coral"
+            className={`gta-text-input gta-pricedown-text ${
+              !aliasValidation.valid && alias.length > 0 ? "has-error" : ""
             }`}
             value={alias}
             onChange={(e) => setAlias(e.target.value.toUpperCase())}
             maxLength={24}
             placeholder="e.g. CIPHER"
           />
-          <div className="flex items-center justify-between text-[11px] font-mono">
+          <div className="alias-feedback-row">
             {!aliasValidation.valid && alias.length > 0 ? (
-              <span className="text-coral">{aliasValidation.error}</span>
+              <span className="alias-error">{aliasValidation.error}</span>
             ) : (
-              <span className="text-petrol">
+              <span className="alias-valid">
                 ✓ Callsign ready ({aliasValidation.sanitized || "CIPHER"})
               </span>
             )}
-            <span className="text-paper-muted/60">{alias.length} / 24</span>
+            <span className="char-count">{alias.length} / 24</span>
           </div>
         </div>
 
         {/* Section 2: Operational Portrait (Silhouettes vs Photo) */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-mono font-bold uppercase text-paper-muted block">Operational Portrait</label>
-          <div className="flex rounded-lg bg-charcoal-950 p-1 border border-white/10 gap-1" role="tablist">
+        <div className="gta-field-group">
+          <label className="gta-field-label">Operational Portrait</label>
+          <div className="portrait-tabs" role="tablist">
             <button
               type="button"
               role="tab"
               aria-selected={portraitSource === "silhouette"}
-              className={`flex-1 py-1.5 px-3 rounded-md text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                portraitSource === "silhouette" ? "bg-coral text-white shadow-sm" : "text-paper-muted hover:text-white"
+              className={`portrait-tab-btn ${
+                portraitSource === "silhouette" ? "active" : ""
               }`}
               onClick={() => setPortraitSource("silhouette")}
             >
-              <span>👤</span>
+              <span className="tab-icon">👤</span>
               <span>Authored Silhouettes</span>
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={portraitSource === "custom"}
-              className={`flex-1 py-1.5 px-3 rounded-md text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                portraitSource === "custom" ? "bg-coral text-white shadow-sm" : "text-paper-muted hover:text-white"
+              className={`portrait-tab-btn ${
+                portraitSource === "custom" ? "active" : ""
               }`}
               onClick={() => {
                 setPortraitSource("custom");
@@ -619,14 +615,14 @@ export function IdentityControls({
                 }
               }}
             >
-              <span>📷</span>
+              <span className="tab-icon">📷</span>
               <span>Upload Photo</span>
             </button>
           </div>
 
           {/* Mode A: Silhouette Grid */}
           {portraitSource === "silhouette" && (
-            <div className="grid grid-cols-3 gap-2 mt-2" role="radiogroup">
+            <div className="silhouette-grid compact" role="radiogroup">
               {SILHOUETTE_ARCHETYPES.map((arch) => {
                 const isSelected = silhouetteId === arch.id;
                 return (
@@ -636,11 +632,7 @@ export function IdentityControls({
                     aria-checked={isSelected}
                     aria-label={`Archetype: ${arch.name}, Role: ${arch.role}`}
                     tabIndex={0}
-                    className={`p-2 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
-                      isSelected
-                        ? "bg-charcoal-800 border-coral shadow-md shadow-coral/10"
-                        : "bg-charcoal-800/60 border-white/5 hover:border-white/20"
-                    }`}
+                    className={`silhouette-card ${isSelected ? "selected" : ""}`}
                     onClick={() => setSilhouetteId(arch.id)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -649,20 +641,22 @@ export function IdentityControls({
                       }
                     }}
                   >
-                    <div className="w-12 h-12 rounded-full bg-charcoal-950 border border-white/10 flex items-center justify-center relative overflow-hidden text-coral">
+                    <div className="silhouette-avatar-frame">
                       <svg
                         viewBox="0 0 24 24"
-                        className="w-7 h-7"
+                        className="silhouette-svg"
                         fill="currentColor"
                         aria-hidden="true"
                       >
                         <path d={arch.svgPath} />
                       </svg>
-                      {isSelected && <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-coral text-white text-[9px] font-bold flex items-center justify-center">✓</span>}
+                      {isSelected && <span className="selected-indicator">✓</span>}
                     </div>
-                    <div className="min-w-0 w-full text-center">
-                      <strong className="text-xs text-white block truncate">{arch.name}</strong>
-                      <span className="text-[10px] text-paper-muted block truncate">{arch.role}</span>
+                    <div className="silhouette-meta">
+                      <div className="silhouette-name-row">
+                        <strong className="silhouette-name">{arch.name}</strong>
+                        <span className="silhouette-role-badge">{arch.role}</span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -672,22 +666,22 @@ export function IdentityControls({
 
           {/* Mode B: Photo Upload & Cropper */}
           {portraitSource === "custom" && (
-            <div className="mt-2">
+            <div className="photo-upload-area compact">
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
-                className="sr-only"
+                className="visually-hidden"
                 aria-label="Upload operative portrait photo (PNG, JPEG, WebP up to 5MB)"
                 onChange={handleFileInputChange}
               />
 
               {uploadError && (
-                <div className="p-2 rounded-lg bg-coral/20 border border-coral text-coral text-xs font-mono flex items-center justify-between mb-2" role="alert">
+                <div className="upload-error-alert" role="alert">
                   <span>⚠️ {uploadError}</span>
                   <button
                     type="button"
-                    className="text-coral hover:text-white cursor-pointer px-1"
+                    className="clear-error-btn"
                     onClick={() => setUploadError(null)}
                   >
                     ✕
@@ -697,29 +691,27 @@ export function IdentityControls({
 
               {!uploadedImage ? (
                 <div
-                  className={`p-6 border-2 border-dashed rounded-xl bg-charcoal-950/60 text-center flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors ${
-                    isDraggingOver ? "border-coral bg-coral/10" : "border-coral/30 hover:border-coral"
-                  }`}
+                  className={`upload-dropzone ${isDraggingOver ? "drag-over" : ""}`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <span className="text-2xl">📷</span>
-                  <strong className="text-xs font-mono text-white block">Click or drag photo here</strong>
-                  <span className="text-[10px] text-paper-muted block">
+                  <span className="dropzone-icon">📷</span>
+                  <strong className="dropzone-title">Click or drag photo here</strong>
+                  <span className="dropzone-sub">
                     PNG, JPEG, or WebP up to 5MB. Processed locally in browser.
                   </span>
                 </div>
               ) : (
-                <div className="space-y-3 p-3 rounded-lg bg-charcoal-950 border border-white/5">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-petrol font-bold">
+                <div className="photo-controls-container">
+                  <div className="photo-actions-bar">
+                    <span className="photo-status">
                       {isProcessing ? "Rendering filter…" : "✓ Photo framed"}
                     </span>
                     <button
                       type="button"
-                      className="px-2 py-1 rounded bg-charcoal-800 hover:bg-charcoal-700 text-white text-[11px] border border-white/10 transition-colors cursor-pointer"
+                      className="replace-photo-btn"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       Change Photo
@@ -727,8 +719,8 @@ export function IdentityControls({
                   </div>
 
                   {/* Zoom & Pan Sliders */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <label className="text-[10px] font-mono text-paper-muted flex flex-col gap-1">
+                  <div className="crop-sliders-row">
+                    <label className="crop-slider-label">
                       <span>Zoom: {zoom.toFixed(1)}x</span>
                       <input
                         type="range"
@@ -737,10 +729,10 @@ export function IdentityControls({
                         step="0.1"
                         value={zoom}
                         onChange={(e) => setZoom(parseFloat(e.target.value))}
-                        className="w-full accent-coral cursor-pointer"
+                        className="crop-range-slider"
                       />
                     </label>
-                    <label className="text-[10px] font-mono text-paper-muted flex flex-col gap-1">
+                    <label className="crop-slider-label">
                       <span>Pan X</span>
                       <input
                         type="range"
@@ -748,10 +740,10 @@ export function IdentityControls({
                         max="100"
                         value={offsetX}
                         onChange={(e) => setOffsetX(parseInt(e.target.value, 10))}
-                        className="w-full accent-coral cursor-pointer"
+                        className="crop-range-slider"
                       />
                     </label>
-                    <label className="text-[10px] font-mono text-paper-muted flex flex-col gap-1">
+                    <label className="crop-slider-label">
                       <span>Pan Y</span>
                       <input
                         type="range"
@@ -759,30 +751,28 @@ export function IdentityControls({
                         max="100"
                         value={offsetY}
                         onChange={(e) => setOffsetY(parseInt(e.target.value, 10))}
-                        className="w-full accent-coral cursor-pointer"
+                        className="crop-range-slider"
                       />
                     </label>
                   </div>
 
                   {/* Surveillance Filters */}
-                  <div className="space-y-1.5 pt-1 border-t border-white/5">
-                    <span className="text-[11px] font-mono text-paper-muted uppercase tracking-wider block">Surveillance Filter:</span>
-                    <div className="grid grid-cols-2 gap-1.5">
+                  <div className="filter-presets-section">
+                    <span className="filter-label">Surveillance Filter:</span>
+                    <div className="filter-chips">
                       {PORTRAIT_FILTERS.map((f) => (
                         <button
                           key={f.id}
                           type="button"
-                          className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
-                            portraitFilter === f.id
-                              ? "bg-charcoal-800 border-petrol text-white shadow-sm"
-                              : "bg-charcoal-800/60 border-white/5 text-paper-muted hover:border-white/20"
+                          className={`filter-chip ${
+                            portraitFilter === f.id ? "active" : ""
                           }`}
                           onClick={() => setPortraitFilter(f.id)}
                           aria-label={`${f.name} filter: ${f.tagline}`}
                           aria-pressed={portraitFilter === f.id}
                         >
-                          <strong className="text-xs font-bold block text-white">{f.name}</strong>
-                          <small className="text-[10px] text-paper-muted block">{f.tagline}</small>
+                          <strong className="chip-name">{f.name}</strong>
+                          <small className="chip-tag">{f.tagline}</small>
                         </button>
                       ))}
                     </div>
@@ -794,13 +784,13 @@ export function IdentityControls({
         </div>
 
         {/* Section 3: Operative Role */}
-        <div className="space-y-1.5">
-          <label htmlFor="gta-role-select" className="text-xs font-mono font-bold uppercase text-paper-muted block">
+        <div className="gta-field-group">
+          <label htmlFor="gta-role-select" className="gta-field-label">
             Operative Role &amp; Specialization
           </label>
           <select
             id="gta-role-select"
-            className="w-full px-3 py-2 rounded-lg bg-charcoal-950 border border-coral/30 text-white text-xs font-mono focus:outline-none focus:border-coral"
+            className="gta-select-input"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
@@ -813,9 +803,9 @@ export function IdentityControls({
         </div>
 
         {/* Section 4: Wanted Level Stars */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-mono font-bold uppercase text-paper-muted block">Wanted Level: {wantedStars} / 5 Stars</label>
-          <div className="flex gap-2 text-xl" role="radiogroup" aria-label="Wanted stars">
+        <div className="gta-field-group">
+          <label className="gta-field-label">Wanted Level: {wantedStars} / 5 Stars</label>
+          <div className="gta-stars-picker" role="radiogroup" aria-label="Wanted stars">
             {[1, 2, 3, 4, 5].map((s) => {
               const isFilled = wantedStars >= s;
               return (
@@ -824,9 +814,7 @@ export function IdentityControls({
                   type="button"
                   role="radio"
                   aria-checked={wantedStars === s}
-                  className={`p-1 text-2xl transition-transform hover:scale-125 cursor-pointer ${
-                    isFilled ? "text-mustard drop-shadow-[0_0_8px_rgba(255,170,0,0.6)]" : "text-white/20"
-                  }`}
+                  className={`gta-star-btn ${isFilled ? "filled" : ""}`}
                   onClick={() => setWantedStars(s)}
                 >
                   ★
@@ -837,27 +825,23 @@ export function IdentityControls({
         </div>
 
         {/* Section 5: Visual Theme Presets */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-mono font-bold uppercase text-paper-muted block">GTA VI Visual Theme</label>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="gta-field-group">
+          <label className="gta-field-label">GTA VI Visual Theme</label>
+          <div className="gta-themes-grid">
             {THEMES.map((th) => {
               const isSelected = theme === th.id;
               return (
                 <button
                   key={th.id}
                   type="button"
-                  className={`p-2 rounded-lg border flex items-center gap-2 transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-charcoal-800 border-coral shadow-md shadow-coral/10"
-                      : "bg-charcoal-800/60 border-white/5 hover:border-white/20"
-                  }`}
+                  className={`gta-theme-btn ${isSelected ? "selected" : ""}`}
                   onClick={() => setTheme(th.id)}
                 >
-                  <div className="w-6 h-6 rounded-full overflow-hidden flex shrink-0 border border-white/20">
-                    <span className="w-3 h-full" style={{ background: th.colors[0] }} />
-                    <span className="w-3 h-full" style={{ background: th.colors[1] }} />
+                  <div className="theme-color-swatch">
+                    <span style={{ background: th.colors[0] }} />
+                    <span style={{ background: th.colors[1] }} />
                   </div>
-                  <span className="text-xs text-white font-mono">{th.name}</span>
+                  <span className="theme-btn-name">{th.name}</span>
                 </button>
               );
             })}
@@ -865,28 +849,28 @@ export function IdentityControls({
         </div>
 
         {/* Section 6: Bounty & Crew Cut */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label htmlFor="gta-bounty-input" className="text-xs font-mono font-bold uppercase text-paper-muted block">
+        <div className="gta-dual-row">
+          <div className="gta-field-group">
+            <label htmlFor="gta-bounty-input" className="gta-field-label">
               Bounty Amount
             </label>
             <input
               id="gta-bounty-input"
               type="text"
-              className="w-full px-3 py-2 rounded-lg bg-charcoal-950 border border-coral/30 text-white placeholder:text-paper-muted/60 text-sm font-mono focus:outline-none focus:border-coral"
+              className="gta-text-input"
               value={bounty}
               onChange={(e) => setBounty(e.target.value)}
               placeholder="$1,250,000"
             />
           </div>
-          <div className="space-y-1.5">
-            <label htmlFor="gta-cut-input" className="text-xs font-mono font-bold uppercase text-paper-muted block">
+          <div className="gta-field-group">
+            <label htmlFor="gta-cut-input" className="gta-field-label">
               Crew Cut %
             </label>
             <input
               id="gta-cut-input"
               type="text"
-              className="w-full px-3 py-2 rounded-lg bg-charcoal-950 border border-coral/30 text-white placeholder:text-paper-muted/60 text-sm font-mono focus:outline-none focus:border-coral"
+              className="gta-text-input"
               value={crewCut}
               onChange={(e) => setCrewCut(e.target.value)}
               placeholder="40%"

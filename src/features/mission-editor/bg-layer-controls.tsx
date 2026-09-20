@@ -60,24 +60,24 @@ export function BgLayerControls({
 
   return (
     <div
-      className={`flex flex-col h-full bg-charcoal-900/95 border-l border-coral/30 text-paper overflow-hidden select-none ${compact ? "w-full" : ""}`}
+      className={`bg-layer-controls-panel ${compact ? "compact" : ""}`}
       aria-label="Background Layer & GTA VI Styles Controls"
     >
       {/* Header bar */}
-      <div className="p-4 border-b border-coral/20 bg-charcoal-850/80 flex items-center justify-between shrink-0">
+      <div className="bg-layer-header">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-petrol/20 text-petrol border border-petrol/40">GTA VI FX</span>
-            <h3 className="font-display text-lg tracking-wider text-white uppercase">Background Layer</h3>
+            <span className="bg-layer-gta-badge">GTA VI FX</span>
+            <h3 className="bg-layer-title">Background Layer</h3>
           </div>
-          <p className="text-xs text-paper-muted leading-tight mt-1">
+          <p className="bg-layer-subtitle">
             Control map blur, gradient atmosphere, and authentic Vice City styles.
           </p>
         </div>
 
         <button
           type="button"
-          className="font-mono text-xs uppercase px-2.5 py-1 rounded bg-charcoal-800 hover:bg-coral/20 text-paper-muted hover:text-coral border border-white/10 hover:border-coral/40 transition-colors cursor-pointer"
+          className="bg-layer-reset-btn"
           onClick={handleReset}
           title="Reset background layer to default"
         >
@@ -86,58 +86,54 @@ export function BgLayerControls({
       </div>
 
       {/* Quick Status Pill */}
-      <div className="px-4 py-2 bg-charcoal-950/80 border-b border-white/5 flex items-center gap-2 text-xs font-mono text-paper-muted overflow-x-auto shrink-0">
-        <span>
-          <strong className="text-white">Style:</strong> {activeStyle.name}
+      <div className="bg-layer-status-pill">
+        <span className="status-item">
+          <strong>Style:</strong> {activeStyle.name}
         </span>
-        <span className="text-white/30">·</span>
-        <span>
-          <strong className="text-white">Blur:</strong> {config.blurEnabled ? `${config.blurRadius}px` : "Off"}
+        <span className="status-separator">·</span>
+        <span className="status-item">
+          <strong>Blur:</strong> {config.blurEnabled ? `${config.blurRadius}px` : "Off"}
         </span>
-        <span className="text-white/30">·</span>
-        <span>
-          <strong className="text-white">Gradient:</strong>{" "}
+        <span className="status-separator">·</span>
+        <span className="status-item">
+          <strong>Gradient:</strong>{" "}
           {config.gradientEnabled ? `${Math.round(config.gradientOpacity * 100)}%` : "Off"}
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div className="bg-layer-scroll-body">
         {/* 1. GTA VI STYLES SECTION */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2 border-b border-white/10 pb-1.5">
-            <span className="font-mono text-xs font-bold text-coral">01</span>
-            <h4 className="font-display text-sm tracking-wide text-white uppercase">GTA VI Aesthetic Styles</h4>
+        <section className="bg-layer-section">
+          <div className="section-header-row">
+            <span className="section-number">01</span>
+            <h4>GTA VI Aesthetic Styles</h4>
           </div>
-          <p className="text-xs text-paper-muted leading-relaxed">
+          <p className="section-description">
             Choose iconic visual color gradings tailored for the Vice City &amp; Leonida aesthetic.
           </p>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="gta-styles-grid">
             {GTA_VI_STYLES.map((style) => {
               const isSelected = config.style === style.id;
               return (
                 <button
                   key={style.id}
                   type="button"
-                  className={`p-2 rounded-lg border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-charcoal-800 border-petrol shadow-lg shadow-petrol/10"
-                      : "bg-charcoal-800/60 border-white/5 hover:border-white/20"
-                  }`}
+                  className={`gta-style-card ${isSelected ? "active" : ""}`}
                   onClick={() => updateField("style", style.id)}
                   title={style.tagline}
                 >
                   <div
-                    className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-bold shadow-inner"
+                    className="style-swatch"
                     style={{
                       background: `linear-gradient(135deg, ${style.previewColors[0]}, ${style.previewColors[1]})`,
                     }}
                   >
-                    {isSelected && <span>✓</span>}
+                    {isSelected && <span className="style-check-mark">✓</span>}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <strong className="text-xs text-white block truncate">{style.name}</strong>
-                    <span className="text-[10px] text-paper-muted block truncate">{style.tagline}</span>
+                  <div className="style-card-info">
+                    <strong className="style-card-name">{style.name}</strong>
+                    <span className="style-card-tagline">{style.tagline}</span>
                   </div>
                 </button>
               );
@@ -145,10 +141,10 @@ export function BgLayerControls({
           </div>
 
           {config.style !== "none" && (
-            <div className="space-y-1.5 mt-3">
-              <div className="flex items-center justify-between text-xs font-mono text-paper-muted">
+            <div className="control-slider-group mt-3">
+              <div className="slider-label-row">
                 <label htmlFor="style-intensity-slider">Style Intensity</label>
-                <span className="text-petrol font-bold">
+                <span className="slider-value-badge">
                   {Math.round(config.styleIntensity * 100)}%
                 </span>
               </div>
@@ -160,45 +156,45 @@ export function BgLayerControls({
                 step="0.05"
                 value={config.styleIntensity}
                 onChange={(e) => updateField("styleIntensity", parseFloat(e.target.value))}
-                className="w-full accent-coral cursor-pointer"
+                className="heist-range-slider"
               />
             </div>
           )}
         </section>
 
         {/* 2. LAYER BLUR CONTROLS */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
+        <section className="bg-layer-section">
+          <div className="section-header-row flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-coral">02</span>
-              <h4 className="font-display text-sm tracking-wide text-white uppercase">Layer Blur</h4>
+              <span className="section-number">02</span>
+              <h4>Layer Blur</h4>
             </div>
 
-            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <label className="toggle-switch-wrapper">
               <input
                 type="checkbox"
                 checked={config.blurEnabled}
                 onChange={(e) => updateField("blurEnabled", e.target.checked)}
                 className="sr-only"
               />
-              <span className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${config.blurEnabled ? "bg-coral" : "bg-charcoal-700"}`}>
-                <span className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${config.blurEnabled ? "translate-x-4" : "translate-x-0"}`} />
+              <span className={`toggle-track ${config.blurEnabled ? "active" : ""}`}>
+                <span className="toggle-thumb" />
               </span>
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-paper-muted">
+              <span className="toggle-label-text">
                 {config.blurEnabled ? "Active" : "Disabled"}
               </span>
             </label>
           </div>
-          <p className="text-xs text-paper-muted leading-relaxed">
+          <p className="section-description">
             Softens background map detail so tactical routes and mission stickers pop with high clarity.
           </p>
 
           {config.blurEnabled && (
-            <div className="space-y-3 p-3 rounded-lg bg-charcoal-950 border border-white/5">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-mono text-paper-muted">
+            <div className="blur-controls-container">
+              <div className="control-slider-group">
+                <div className="slider-label-row">
                   <label htmlFor="blur-radius-slider">Blur Radius</label>
-                  <span className="text-petrol font-bold">{config.blurRadius}px</span>
+                  <span className="slider-value-badge">{config.blurRadius}px</span>
                 </div>
                 <input
                   id="blur-radius-slider"
@@ -208,19 +204,17 @@ export function BgLayerControls({
                   step="1"
                   value={config.blurRadius}
                   onChange={(e) => updateField("blurRadius", parseInt(e.target.value, 10))}
-                  className="w-full accent-coral cursor-pointer"
+                  className="heist-range-slider"
                 />
               </div>
 
-              <div className="flex flex-wrap gap-1.5">
+              <div className="blur-quick-presets">
                 {BLUR_PRESETS.map((preset) => (
                   <button
                     key={preset.value}
                     type="button"
-                    className={`px-2.5 py-1 rounded text-xs font-mono transition-all cursor-pointer ${
-                      config.blurRadius === preset.value
-                        ? "bg-petrol text-ink font-bold"
-                        : "bg-charcoal-800 text-paper-muted hover:text-white"
+                    className={`blur-preset-chip ${
+                      config.blurRadius === preset.value ? "active" : ""
                     }`}
                     onClick={() => updateField("blurRadius", preset.value)}
                   >
@@ -233,53 +227,49 @@ export function BgLayerControls({
         </section>
 
         {/* 3. GRADIENT OVERLAY CONTROLS */}
-        <section className="space-y-3">
-          <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
+        <section className="bg-layer-section">
+          <div className="section-header-row flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-coral">03</span>
-              <h4 className="font-display text-sm tracking-wide text-white uppercase">Gradient Overlay</h4>
+              <span className="section-number">03</span>
+              <h4>Gradient Overlay</h4>
             </div>
 
-            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <label className="toggle-switch-wrapper">
               <input
                 type="checkbox"
                 checked={config.gradientEnabled}
                 onChange={(e) => updateField("gradientEnabled", e.target.checked)}
                 className="sr-only"
               />
-              <span className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${config.gradientEnabled ? "bg-coral" : "bg-charcoal-700"}`}>
-                <span className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${config.gradientEnabled ? "translate-x-4" : "translate-x-0"}`} />
+              <span className={`toggle-track ${config.gradientEnabled ? "active" : ""}`}>
+                <span className="toggle-thumb" />
               </span>
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-paper-muted">
+              <span className="toggle-label-text">
                 {config.gradientEnabled ? "Active" : "Disabled"}
               </span>
             </label>
           </div>
-          <p className="text-xs text-paper-muted leading-relaxed">
+          <p className="section-description">
             Infuses the background with cinematic sunset gradients and dual-tone neon lighting.
           </p>
 
           {config.gradientEnabled && (
-            <div className="space-y-3 p-3 rounded-lg bg-charcoal-950 border border-white/5">
+            <div className="gradient-controls-container">
               {/* Presets */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-mono text-paper-muted uppercase tracking-wider block">Atmosphere Preset:</span>
-                <div className="flex flex-wrap gap-1.5">
+              <div className="gradient-presets-row">
+                <span className="sublabel">Atmosphere Preset:</span>
+                <div className="gradient-preset-chips">
                   {GRADIENT_PRESETS.map((preset) => {
                     const isSelected = config.gradientPreset === preset.id;
                     return (
                       <button
                         key={preset.id}
                         type="button"
-                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer border ${
-                          isSelected
-                            ? "bg-charcoal-800 border-coral text-white font-bold"
-                            : "bg-charcoal-850/80 border-white/5 text-paper-muted hover:text-white"
-                        }`}
+                        className={`gradient-preset-btn ${isSelected ? "active" : ""}`}
                         onClick={() => updateField("gradientPreset", preset.id)}
                       >
                         <span
-                          className="w-3 h-3 rounded-full shrink-0"
+                          className="gradient-swatch-dot"
                           style={{
                             background: `linear-gradient(135deg, ${preset.previewColors[0]}, ${preset.previewColors[1]})`,
                           }}
@@ -293,65 +283,63 @@ export function BgLayerControls({
 
               {/* Custom Colors (if custom selected) */}
               {config.gradientPreset === "custom" && (
-                <div className="grid grid-cols-2 gap-2 pt-2">
-                  <div className="space-y-1">
-                    <label htmlFor="custom-color-1" className="text-[11px] font-mono text-paper-muted block">Neon Accent 1</label>
-                    <div className="flex items-center gap-2">
+                <div className="custom-color-pickers-row">
+                  <div className="color-picker-block">
+                    <label htmlFor="custom-color-1">Neon Accent 1</label>
+                    <div className="color-input-wrapper">
                       <input
                         id="custom-color-1"
                         type="color"
                         value={config.customColor1}
                         onChange={(e) => updateField("customColor1", e.target.value)}
-                        className="w-8 h-8 rounded border border-white/10 cursor-pointer bg-transparent"
+                        className="color-input-box"
                       />
-                      <span className="text-xs font-mono text-white">{config.customColor1}</span>
+                      <span className="color-hex-text">{config.customColor1}</span>
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label htmlFor="custom-color-2" className="text-[11px] font-mono text-paper-muted block">Neon Accent 2</label>
-                    <div className="flex items-center gap-2">
+                  <div className="color-picker-block">
+                    <label htmlFor="custom-color-2">Neon Accent 2</label>
+                    <div className="color-input-wrapper">
                       <input
                         id="custom-color-2"
                         type="color"
                         value={config.customColor2}
                         onChange={(e) => updateField("customColor2", e.target.value)}
-                        className="w-8 h-8 rounded border border-white/10 cursor-pointer bg-transparent"
+                        className="color-input-box"
                       />
-                      <span className="text-xs font-mono text-white">{config.customColor2}</span>
+                      <span className="color-hex-text">{config.customColor2}</span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Direction buttons */}
-              <div className="space-y-1.5 pt-2">
-                <span className="text-[11px] font-mono text-paper-muted uppercase tracking-wider block">Gradient Direction:</span>
-                <div className="grid grid-cols-2 gap-1.5">
+              <div className="gradient-direction-row">
+                <span className="sublabel">Gradient Direction:</span>
+                <div className="direction-btn-group">
                   {GRADIENT_DIRECTIONS.map((dir) => (
                     <button
                       key={dir.id}
                       type="button"
-                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-mono transition-all cursor-pointer border ${
-                        config.gradientDirection === dir.id
-                          ? "bg-coral text-white font-bold border-coral"
-                          : "bg-charcoal-850 text-paper-muted border-white/5 hover:text-white"
+                      className={`direction-btn ${
+                        config.gradientDirection === dir.id ? "active" : ""
                       }`}
                       onClick={() => updateField("gradientDirection", dir.id)}
                       title={dir.label}
                     >
-                      <span>{dir.icon}</span>
-                      <span>{dir.label}</span>
+                      <span className="direction-icon">{dir.icon}</span>
+                      <span className="direction-label">{dir.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Opacity Slider */}
-              <div className="space-y-1.5 pt-2">
-                <div className="flex items-center justify-between text-xs font-mono text-paper-muted">
+              <div className="control-slider-group">
+                <div className="slider-label-row">
                   <label htmlFor="gradient-opacity-slider">Gradient Opacity</label>
-                  <span className="text-petrol font-bold">
+                  <span className="slider-value-badge">
                     {Math.round(config.gradientOpacity * 100)}%
                   </span>
                 </div>
@@ -363,13 +351,13 @@ export function BgLayerControls({
                   step="0.05"
                   value={config.gradientOpacity}
                   onChange={(e) => updateField("gradientOpacity", parseFloat(e.target.value))}
-                  className="w-full accent-coral cursor-pointer"
+                  className="heist-range-slider"
                 />
               </div>
 
               {/* Blend Mode */}
-              <div className="space-y-1.5 pt-2">
-                <label htmlFor="gradient-blend-select" className="text-[11px] font-mono text-paper-muted uppercase tracking-wider block">
+              <div className="control-select-group">
+                <label htmlFor="gradient-blend-select" className="sublabel">
                   Blend Mode:
                 </label>
                 <select
@@ -378,7 +366,7 @@ export function BgLayerControls({
                   onChange={(e) =>
                     updateField("gradientBlendMode", e.target.value as GradientBlendMode)
                   }
-                  className="w-full px-3 py-1.5 rounded-lg bg-charcoal-850 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-coral"
+                  className="heist-select"
                 >
                   {BLEND_MODES.map((mode) => (
                     <option key={mode.id} value={mode.id}>
@@ -392,15 +380,15 @@ export function BgLayerControls({
         </section>
 
         {/* 4. MASTER BG LAYER OPACITY */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2 border-b border-white/10 pb-1.5">
-            <span className="font-mono text-xs font-bold text-coral">04</span>
-            <h4 className="font-display text-sm tracking-wide text-white uppercase">Master Layer Transparency</h4>
+        <section className="bg-layer-section">
+          <div className="section-header-row">
+            <span className="section-number">04</span>
+            <h4>Master Layer Transparency</h4>
           </div>
-          <div className="space-y-1.5 mt-2">
-            <div className="flex items-center justify-between text-xs font-mono text-paper-muted">
+          <div className="control-slider-group mt-2">
+            <div className="slider-label-row">
               <label htmlFor="bg-opacity-slider">Base Map Opacity</label>
-              <span className="text-petrol font-bold">
+              <span className="slider-value-badge">
                 {Math.round(config.opacity * 100)}%
               </span>
             </div>
@@ -412,7 +400,7 @@ export function BgLayerControls({
               step="0.05"
               value={config.opacity}
               onChange={(e) => updateField("opacity", parseFloat(e.target.value))}
-              className="w-full accent-coral cursor-pointer"
+              className="heist-range-slider"
             />
           </div>
         </section>

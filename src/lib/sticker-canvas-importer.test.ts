@@ -4,7 +4,7 @@ import {
   importStickerToCanvas,
   type FabricCanvasLike,
   type FabricObjectLike,
-} from "@/lib/sticker-canvas-importer";
+} from "./sticker-canvas-importer";
 
 class MockFabricImage implements FabricObjectLike {
   left = 0;
